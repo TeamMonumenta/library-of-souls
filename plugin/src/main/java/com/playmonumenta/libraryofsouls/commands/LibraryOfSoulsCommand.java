@@ -1,8 +1,5 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,8 +11,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.goncalomb.bukkit.mylib.reflect.BukkitReflect;
-import com.goncalomb.bukkit.mylib.reflect.NBTBase;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
@@ -23,27 +18,13 @@ import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 
 public class LibraryOfSoulsCommand implements CommandExecutor {
-	private static Method parserMethod;
-
 	final static class LibraryOfSoulsInventory extends CustomInventory {
 		public LibraryOfSoulsInventory(Player owner) {
-			super(owner, 54, "Books of Souls Test");
+			super(owner, 54, "Books of Souls Test 2");
 
 			String nbtString = "{id:\"minecraft:zombie\",CustomName:\"{\\\"text\\\":\\\"§6Corrupt Foreman\\\"}\",Health:30.0f,ArmorItems:[{id:\"minecraft:leather_boots\",tag:{display:{color:4210768}},Count:1b},{id:\"minecraft:chainmail_leggings\",tag:{},Count:1b},{id:\"minecraft:leather_chestplate\",tag:{display:{Lore:[\"$$$\"],color:4210768}},Count:1b},{id:\"minecraft:player_head\",tag:{SkullOwner:{Id:\"3eed254a-9f4a-4dd1-8f9c-91a93a448f5e\",Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNDY1YmIxOTJhNjU2YmQ2ZGVjOGQ4YzhlNGRiM2I1NzNjZjcxNjliYjczOTM5MTZlZjlhYzE5ZGExNjNhZGE1In19fQ==\"}]}},display:{Name:\"{\\\"text\\\":\\\"Miner\\\"}\"}},Count:1b}],Attributes:[{Base:30.0d,Name:\"generic.maxHealth\"}],Tags:[\"Elite\"],HandItems:[{id:\"minecraft:stone_pickaxe\",tag:{Enchantments:[{lvl:2s,id:\"minecraft:sharpness\"}]},Count:1b},{id:\"minecraft:torch\",Count:8b}],CustomNameVisible:0b}";
 
-			try {
-                Class<?> parserClass = BukkitReflect.getMinecraftClass("MojangsonParser");
-                parserMethod = parserClass.getMethod("parse", String.class);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("Error while preparing MojangsonParser.", e);
-            }
-
-			final NBTTagCompound compound;
-			try {
-				compound = (NBTTagCompound) NBTBase.wrap(parserMethod.invoke(null, nbtString));
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-				throw new RuntimeException(e);
-			}
+			final NBTTagCompound compound = NBTTagCompound.fromString(nbtString);
 
 			_inventory.addItem((new BookOfSouls(EntityNBT.fromEntityData(compound))).getBook());
 		}
