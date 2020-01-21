@@ -11,7 +11,14 @@ public class LibraryOfSouls extends JavaPlugin {
 	public void onEnable() {
 		INSTANCE = this;
 
-		getCommand("los").setExecutor(new LibraryOfSoulsCommand());
+		try {
+			new SoulsDatabase(this);
+
+			getCommand("los").setExecutor(new LibraryOfSoulsCommand());
+		} catch (Exception e) {
+			getLogger().severe("Failed to load souls database! This plugin will not function");
+			e.printStackTrace();
+		}
 	}
 
 	@Override
