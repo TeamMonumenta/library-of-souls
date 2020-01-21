@@ -3,3 +3,8 @@ main: com.playmonumenta.libraryofsouls.LibraryOfSouls
 depend: [NBTEditor]
 version: 0.0.1
 api-version: 1.13
+commands:
+  los:
+    permission: libraryofsouls
+    description: Stuff
+    usage: Stuff
