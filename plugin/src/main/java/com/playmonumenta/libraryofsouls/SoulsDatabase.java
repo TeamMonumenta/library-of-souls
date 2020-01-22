@@ -8,13 +8,14 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.ItemStackNBTWrapper;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -25,8 +26,8 @@ import net.md_5.bungee.api.ChatColor;
 
 public class SoulsDatabase {
 	public static class SoulSlot {
-		private final ItemStack mPlaceholder;
-		private final ItemStack mBoS;
+		private ItemStack mPlaceholder;
+		private ItemStack mBoS;
 
 		private SoulSlot(NBTTagCompound nbt) {
 			EntityNBT entityNBT = EntityNBT.fromEntityData(nbt);
@@ -108,32 +109,38 @@ public class SoulsDatabase {
 					break;
 			}
 
-			ItemMeta placeholderMeta = mPlaceholder.getItemMeta();
-			ItemMeta bosMeta = mBoS.getItemMeta();
+			mPlaceholder = mPlaceholder.ensureServerConversions();
+			mBoS = mBoS.ensureServerConversions();
 
-			List<String> lore = new ArrayList<String>();
+			ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
+			ItemStackNBTWrapper bosWrap = new ItemStackNBTWrapper(mBoS);
 
-			/* TODO: Fix this custom name being JSON ugly */
+			/* Set the item's display name (force json name if source mob has json name) */
 			String name = nbt.getString("CustomName");
 			if (name != null) {
-				placeholderMeta.setDisplayName(name);
-				bosMeta.setDisplayName(name);
+				placeholderWrap.getVariable("Name").set(name, null);
+				bosWrap.getVariable("Name").set(name, null);
 			}
 
+			/* Set hide flags to hide the BoS author info */
+			placeholderWrap.getVariable("HideFlags").set("32", null);
+			bosWrap.getVariable("HideFlags").set("32", null);
+
 			if (nbt.hasKey("Health")) {
-				lore.add(ChatColor.WHITE + "Health: " + Double.toString(nbt.getDouble("Health")));
+				String healthStr = ChatColor.WHITE + "Health: " + Double.toString(nbt.getDouble("Health"));
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(healthStr, null);
+				((ListVariable)bosWrap.getVariable("Lore")).add(healthStr, null);
 			}
 
 			NBTTagList tags = nbt.getList("Tags");
 			if (tags != null && tags.size() > 0) {
-				lore.add(ChatColor.WHITE + "Tags: " + tags.toString());
+				String tagStr = ChatColor.WHITE + "Tags: " + tags.toString();
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(tagStr, null);
+				((ListVariable)bosWrap.getVariable("Lore")).add(tagStr, null);
 			}
 
-			placeholderMeta.setLore(lore);
-			bosMeta.setLore(lore);
-
-			mPlaceholder.setItemMeta(placeholderMeta);
-			mBoS.setItemMeta(bosMeta);
+			placeholderWrap.save();
+			bosWrap.save();
 		}
 
 		public ItemStack getPlaceholder() {
