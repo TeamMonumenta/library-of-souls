@@ -2,6 +2,7 @@ package com.playmonumenta.libraryofsouls;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.goncalomb.bukkit.mylib.command.MyCommandManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
@@ -14,7 +15,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		try {
 			new SoulsDatabase(this);
 
-			getCommand("los").setExecutor(new LibraryOfSoulsCommand());
+			MyCommandManager.register(new LibraryOfSoulsCommand(), this);
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
 			e.printStackTrace();
