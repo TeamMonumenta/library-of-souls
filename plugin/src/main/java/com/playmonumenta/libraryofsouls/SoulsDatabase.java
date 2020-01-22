@@ -3,8 +3,11 @@ package com.playmonumenta.libraryofsouls;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeMap;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -153,7 +156,13 @@ public class SoulsDatabase {
 	}
 	private static SoulsDatabase INSTANCE = null;
 
-	private List<NBTTagCompound> mSouls = new ArrayList<NBTTagCompound>();
+	private static final Comparator<String> COMPARATOR = new Comparator<String>() {
+		@Override
+		public int compare(String e1, String e2) {
+			return e1.toLowerCase().compareTo(e2.toLowerCase());
+		}
+	};
+	private TreeMap<String, NBTTagCompound> mSouls = new TreeMap<String, NBTTagCompound>(COMPARATOR);
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		reload(plugin);
@@ -179,12 +188,21 @@ public class SoulsDatabase {
 			return null;
 		}
 
-		return new SoulSlot(mSouls.get(index));
+		return new SoulSlot((NBTTagCompound)mSouls.values().toArray()[index]);
+	}
+
+	public ItemStack getBoS(String name) {
+		NBTTagCompound nbt = mSouls.get(name);
+		if (nbt != null) {
+			return (new SoulSlot(nbt)).getBoS();
+		}
+		return null;
 	}
 
 	/* TODO: File watcher */
 	public void reload(Plugin plugin) throws Exception {
-		mSouls = new ArrayList<NBTTagCompound>();
+		plugin.getLogger().info("Parsing souls library...");
+		mSouls = new TreeMap<String, NBTTagCompound>(COMPARATOR);
 
 		File directory = plugin.getDataFolder();
 		if (!directory.exists()) {
@@ -210,13 +228,74 @@ public class SoulsDatabase {
 			JsonObject obj = entry.getAsJsonObject();
 			JsonElement elem = obj.get("mojangson");
 
-			mSouls.add(NBTTagCompound.fromString(elem.getAsString()));
+			NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());
+
+			String name = nbt.getString("CustomName");
+			try {
+				name = stripColorsAndJSON(gson, name);
+			} catch (Exception e) {
+				plugin.getLogger().severe("Failed to parse Library of Souls mob name '" + name + "'");
+				continue;
+			}
+			if (name == null || name.isEmpty()) {
+				plugin.getLogger().severe("Refused to load Library of Souls mob with no name!");
+				continue;
+			}
+
+			name = name.replaceAll(" ", "");
+
+			if (mSouls.get(name) != null) {
+				plugin.getLogger().severe("Refused to load Library of Souls duplicate mob '" + name + "'");
+				continue;
+			}
+
+			plugin.getLogger().info("  " + name);
+
+			mSouls.put(name, nbt);
 			count++;
 		}
+		plugin.getLogger().info("Finished parsing souls library");
 		plugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
 	}
 
 	public static SoulsDatabase getInstance() {
 		return INSTANCE;
+	}
+
+	/*
+	 * Valid examples:
+	 *   §6Master Scavenger
+	 *   "§6Master Scavenger"
+	 *   "{\"text\":\"§6Master Scavenger\"}"
+	 */
+	public static String stripColorsAndJSON(Gson gson, String str) {
+		if (str == null || str.isEmpty()) {
+			return str;
+		}
+
+		JsonElement element = gson.fromJson(str, JsonElement.class);
+		return stripColorsAndJSON(element);
+	}
+
+	public static String stripColorsAndJSON(JsonElement element) {
+		String str = "";
+		if (element.isJsonObject()) {
+			JsonElement textElement = element.getAsJsonObject().get("text");
+			if (textElement != null) {
+				str = textElement.getAsString();
+			}
+		} else if (element.isJsonArray()) {
+			str = "";
+			for (JsonElement arrayElement : element.getAsJsonArray()) {
+				str += stripColorsAndJSON(arrayElement);
+			}
+		} else {
+			str = element.getAsString();
+		}
+		return ChatColor.stripColor(str);
+	}
+
+	public Set<String> listMobNames() {
+		return mSouls.keySet();
 	}
 }
