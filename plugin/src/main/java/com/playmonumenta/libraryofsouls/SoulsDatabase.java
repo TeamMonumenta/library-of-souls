@@ -4,8 +4,11 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -28,7 +31,15 @@ public class SoulsDatabase {
 			return e1.toLowerCase().compareTo(e2.toLowerCase());
 		}
 	};
-	private TreeMap<String, SoulEntry> mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
+
+	/* This is the primary database. One name, one SoulEntry per mob */
+	private Map<String, SoulEntry> mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
+
+	/*
+	 * This is an index based on locations.
+	 * A SoulEntry may appear here many times, or not at all
+	 */
+	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<String, List<SoulEntry>>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		reload(plugin);
@@ -36,16 +47,13 @@ public class SoulsDatabase {
 		INSTANCE = this;
 	}
 
-	public List<SoulEntry> getSouls(int offset, int count) {
-		List<SoulEntry> souls = new ArrayList<SoulEntry>(count);
+	public List<SoulEntry> getSoulsByLocation(String location) {
+		return mLocsIndex.get(location);
+	}
 
-		for (int i = offset; i < offset + count; i++) {
-			SoulEntry bos = getSoul(i);
-			if (bos != null) {
-				souls.add(bos);
-			}
-		}
-
+	public List<SoulEntry> getSouls() {
+		List<SoulEntry> souls = new ArrayList<SoulEntry>(mSouls.size());
+		souls.addAll(mSouls.values());
 		return souls;
 	}
 
@@ -104,6 +112,15 @@ public class SoulsDatabase {
 			plugin.getLogger().info("  " + label);
 
 			mSouls.put(label, soul);
+
+			for (String tag : soul.getLocationNames()) {
+				List<SoulEntry> lst = mLocsIndex.get(tag);
+				if (lst == null) {
+					lst = new LinkedList<SoulEntry>();
+					mLocsIndex.put(tag, lst);
+				}
+				lst.add(soul);
+			}
 			count++;
 		}
 		plugin.getLogger().info("Finished parsing souls library");
@@ -149,5 +166,9 @@ public class SoulsDatabase {
 
 	public Set<String> listMobNames() {
 		return mSouls.keySet();
+	}
+
+	public Set<String> listMobLocations() {
+		return mLocsIndex.keySet();
 	}
 }

@@ -14,21 +14,21 @@ import com.goncalomb.bukkit.mylib.utils.UtilsMc;
 public class SoulsInventory extends CustomInventory {
 	private List<SoulEntry> mCurrentSlots;
 
-	private final SoulsDatabase mDB;
+	private final List<SoulEntry> mSouls;
 	private int mOffset;
 	private boolean mHasPrevPage;
 	private boolean mHasNextPage;
 
-	public SoulsInventory(Player owner) {
+	public SoulsInventory(Player owner, List<SoulEntry> souls) {
 		super(owner, 54, "Library of Souls");
 
-		mDB = SoulsDatabase.getInstance();
+		mSouls = souls;
 		mOffset = 0;
 		loadWindow();
 	}
 
 	private void loadWindow() {
-		mCurrentSlots = mDB.getSouls(mOffset, 36);
+		mCurrentSlots = mSouls.subList(mOffset, Math.min(mSouls.size(), mOffset + 36));
 
 		for (int i = 0; i < 36; i++) {
 			if (i < mCurrentSlots.size()) {
