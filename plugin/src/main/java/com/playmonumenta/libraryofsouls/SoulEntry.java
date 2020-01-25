@@ -2,6 +2,8 @@ package com.playmonumenta.libraryofsouls;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.ChatColor;
@@ -22,7 +24,7 @@ import com.google.gson.JsonObject;
 public class SoulEntry {
 	private static Gson gson = null;
 
-	private final Set<String> mTags;
+	private final Set<String> mLocs;
 	private final NBTTagCompound mNBT;
 	private final String mName;
 	private final String mLabel;
@@ -48,21 +50,21 @@ public class SoulEntry {
 			throw new Exception("Refused to load Library of Souls mob with no name!");
 		}
 
-		mTags = new HashSet<String>();
-		elem = obj.get("tags");
+		mLocs = new HashSet<String>();
+		elem = obj.get("location_names");
 		if (elem != null) {
 			JsonArray array = elem.getAsJsonArray();
 			if (array == null) {
-				throw new Exception("Failed to parse tags as JSON array");
+				throw new Exception("Failed to parse location_names as JSON array");
 			}
 
 			Iterator<JsonElement> iter = array.iterator();
 			while (iter.hasNext()) {
 				JsonElement tagElement = iter.next();
 				if (!tagElement.isJsonPrimitive()) {
-					throw new Exception("tags entry for '" + mName + "' is not a string!");
+					throw new Exception("location_names entry for '" + mName + "' is not a string!");
 				}
-				mTags.add(tagElement.getAsString());
+				mLocs.add(tagElement.getAsString());
 			}
 		}
 	}
@@ -161,6 +163,15 @@ public class SoulEntry {
 		placeholderWrap.getVariable("HideFlags").set("32", null);
 		bosWrap.getVariable("HideFlags").set("32", null);
 
+		String idStr = ChatColor.WHITE + "Type: ";
+		if (mNBT.getString("id").startsWith("minecraft:")) {
+			idStr += mNBT.getString("id").substring(10);
+		} else {
+			idStr += mNBT.getString("id");
+		}
+		((ListVariable)placeholderWrap.getVariable("Lore")).add(idStr, null);
+		((ListVariable)bosWrap.getVariable("Lore")).add(idStr, null);
+
 		if (mNBT.hasKey("Health")) {
 			String healthStr = ChatColor.WHITE + "Health: " + Double.toString(mNBT.getDouble("Health"));
 			((ListVariable)placeholderWrap.getVariable("Lore")).add(healthStr, null);
@@ -169,13 +180,88 @@ public class SoulEntry {
 
 		NBTTagList tags = mNBT.getList("Tags");
 		if (tags != null && tags.size() > 0) {
-			String tagStr = ChatColor.WHITE + "Tags: " + tags.toString();
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(tagStr, null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(tagStr, null);
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
+
+			for (String str : stringifyWrapList("  ", 50, tags.getAsArray())) {
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(str, null);
+				((ListVariable)bosWrap.getVariable("Lore")).add(str, null);
+			}
+		}
+
+		if (mLocs != null && mLocs.size() > 0) {
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Locations:", null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Locations:", null);
+
+			for (String str : stringifyWrapList("  ", 45, mLocs.toArray())) {
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(str, null);
+				((ListVariable)bosWrap.getVariable("Lore")).add(str, null);
+			}
 		}
 
 		placeholderWrap.save();
 		bosWrap.save();
+	}
+
+	private List<String> stringifyWrapList(String prefix, int maxLen, Object[] elements) {
+		List<String> ret = new LinkedList<String>();
+
+		String cur = "" + prefix;
+		boolean first = true;
+		for (Object element : elements) {
+			String entry = (String)element;
+
+			String temp;
+			if (first) {
+				temp = cur + hashColor(entry);
+			} else {
+				temp = cur + " " + hashColor(entry);
+			}
+			first = false;
+
+			if (ChatColor.stripColor(temp).length() <= maxLen) {
+				cur = temp;
+			} else {
+				ret.add(cur);
+				cur = prefix + hashColor(entry);
+			}
+		}
+
+		ret.add(cur);
+
+		return ret;
+	}
+
+	private String hashColor(String in) {
+		int val = in.hashCode() % 13;
+		switch (val) {
+			case 0:
+				return ChatColor.DARK_GREEN + in;
+			case 1:
+				return ChatColor.DARK_AQUA + in;
+			case 2:
+				return ChatColor.DARK_RED + in;
+			case 3:
+				return ChatColor.DARK_PURPLE + in;
+			case 4:
+				return ChatColor.GOLD + in;
+			case 5:
+				return ChatColor.GRAY + in;
+			case 6:
+				return ChatColor.DARK_GRAY + in;
+			case 7:
+				return ChatColor.BLUE + in;
+			case 8:
+				return ChatColor.GREEN + in;
+			case 9:
+				return ChatColor.AQUA + in;
+			case 10:
+				return ChatColor.RED + in;
+			case 11:
+				return ChatColor.LIGHT_PURPLE + in;
+			default:
+				return ChatColor.YELLOW + in;
+		}
 	}
 
 	public ItemStack getPlaceholder() {
@@ -202,8 +288,8 @@ public class SoulEntry {
 		return mLabel;
 	}
 
-	public Set<String> getTags() {
-		return mTags;
+	public Set<String> getLocationNames() {
+		return mLocs;
 	}
 
 	public NBTTagCompound getNBT() {
