@@ -135,7 +135,7 @@ public class SoulEntry {
 			case WITCH:
 				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
 				break;
-			case WITHER:
+			case WITHER_SKELETON:
 				mPlaceholder = new ItemStack(Material.WITHER_SKELETON_SKULL);
 				break;
 			case WOLF:
