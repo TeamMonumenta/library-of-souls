@@ -10,10 +10,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.mylib.utils.UtilsMc;
-import com.playmonumenta.libraryofsouls.SoulsDatabase.SoulSlot;
 
 public class SoulsInventory extends CustomInventory {
-	private List<SoulSlot> mCurrentSlots;
+	private List<SoulEntry> mCurrentSlots;
 
 	private final SoulsDatabase mDB;
 	private int mOffset;
