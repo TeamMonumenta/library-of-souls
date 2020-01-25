@@ -34,7 +34,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 			return false;
 		}
 
-		ItemStack bos = SoulsDatabase.getInstance().getBoS(args[0]);
+		ItemStack bos = SoulsDatabase.getInstance().getSoul(args[0]).getBoS();
 		if (bos != null) {
 			CommandUtils.giveItem(player, bos);
 		}

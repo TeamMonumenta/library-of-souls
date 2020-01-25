@@ -191,10 +191,10 @@ public class SoulsDatabase {
 		return new SoulSlot((NBTTagCompound)mSouls.values().toArray()[index]);
 	}
 
-	public ItemStack getBoS(String name) {
+	public SoulSlot getSoul(String name) {
 		NBTTagCompound nbt = mSouls.get(name);
 		if (nbt != null) {
-			return (new SoulSlot(nbt)).getBoS();
+			return new SoulSlot(nbt);
 		}
 		return null;
 	}
