@@ -215,8 +215,7 @@ public class SoulsDatabase {
 		}
 	}
 
-	// TODO: Private
-	public void save() {
+	private void save() {
 		JsonArray array = new JsonArray();
 		for (SoulEntry soul : mSouls.values()) {
 			array.add(soul.toJson());

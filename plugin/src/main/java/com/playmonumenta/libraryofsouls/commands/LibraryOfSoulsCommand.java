@@ -33,17 +33,6 @@ public class LibraryOfSoulsCommand extends MyCommand {
 		return true;
 	}
 
-	// TODO: This should be removed once real adding support is present
-	@Command(args = "save", type = CommandType.PLAYER_ONLY)
-	public boolean saveCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 0) {
-			return false;
-		}
-
-		SoulsDatabase.getInstance().save();
-		return true;
-	}
-
 	@Command(args = "get", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<name>")
 	public boolean getCommand(CommandSender sender, String[] args) throws MyCommandException {
 		Player player = (Player)sender;
