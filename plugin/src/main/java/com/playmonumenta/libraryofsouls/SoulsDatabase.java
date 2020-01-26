@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
 import com.google.gson.Gson;
@@ -33,6 +35,8 @@ public class SoulsDatabase {
 		}
 	};
 
+	private final Plugin mPlugin;
+
 	/* This is the primary database. One name, one SoulEntry per mob */
 	private Map<String, SoulEntry> mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
 
@@ -43,7 +47,8 @@ public class SoulsDatabase {
 	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<String, List<SoulEntry>>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
-		reload(plugin);
+		mPlugin = plugin;
+		reload();
 
 		INSTANCE = this;
 	}
@@ -74,17 +79,29 @@ public class SoulsDatabase {
 		return null;
 	}
 
+	public boolean del(CommandSender sender, String name) {
+		if (mSouls.containsKey(name)) {
+			mSouls.remove(name);
+			sender.sendMessage(ChatColor.GREEN + "Removed " + name);
+			save();
+			return true;
+		}
+
+		sender.sendMessage(ChatColor.RED + "Mob '" + name + "' does not exist!");
+		return false;
+	}
+
 	/* TODO: File watcher */
-	public void reload(Plugin plugin) throws Exception {
-		plugin.getLogger().info("Parsing souls library...");
+	public void reload() throws Exception {
+		mPlugin.getLogger().info("Parsing souls library...");
 		mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
 
-		File directory = plugin.getDataFolder();
+		File directory = mPlugin.getDataFolder();
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
 
-		String content = FileUtils.readFile(Paths.get(plugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString());
+		String content = FileUtils.readFile(Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString());
 		if (content == null || content.isEmpty()) {
 			throw new Exception("Failed to parse file as JSON object");
 		}
@@ -106,11 +123,11 @@ public class SoulsDatabase {
 			String label = soul.getLabel();
 
 			if (mSouls.get(label) != null) {
-				plugin.getLogger().severe("Refused to load Library of Souls duplicate mob '" + label + "'");
+				mPlugin.getLogger().severe("Refused to load Library of Souls duplicate mob '" + label + "'");
 				continue;
 			}
 
-			plugin.getLogger().info("  " + label);
+			mPlugin.getLogger().info("  " + label);
 
 			mSouls.put(label, soul);
 
@@ -124,24 +141,24 @@ public class SoulsDatabase {
 			}
 			count++;
 		}
-		plugin.getLogger().info("Finished parsing souls library");
-		plugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
+		mPlugin.getLogger().info("Finished parsing souls library");
+		mPlugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
 	}
 
 	// TODO: Private
-	public void save(Plugin plugin) {
+	public void save() {
 		JsonArray array = new JsonArray();
 		for (SoulEntry soul : mSouls.values()) {
 			array.add(soul.serialize());
 		}
 
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String path = Paths.get(plugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString();
+		String path = Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString();
 
 		try {
 			FileUtils.writeFile(path, gson.toJson(array));
 		} catch (Exception ex) {
-			plugin.getLogger().severe("Failed to save souls database to '" + path + "': " + ex.getMessage());
+			mPlugin.getLogger().severe("Failed to save souls database to '" + path + "': " + ex.getMessage());
 		}
 	}
 

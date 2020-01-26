@@ -30,7 +30,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 	// TODO: This should be removed once real adding support is present
 	@Command(args = "save", type = CommandType.PLAYER_ONLY)
 	public boolean saveCommand(CommandSender sender, String[] args) throws MyCommandException {
-		SoulsDatabase.getInstance().save(LibraryOfSouls.getInstance());
+		SoulsDatabase.getInstance().save();
 		return true;
 	}
 
@@ -51,7 +51,21 @@ public class LibraryOfSoulsCommand extends MyCommand {
 	}
 
 	@TabComplete(args = "get")
-	public List<String> openTabComplete(CommandSender sender, String[] args) {
+	public List<String> getTabComplete(CommandSender sender, String[] args) {
+		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
+	}
+
+	@Command(args = "del", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<name>")
+	public boolean delCommand(CommandSender sender, String[] args) throws MyCommandException {
+		if (args.length != 1) {
+			return false;
+		}
+
+		return SoulsDatabase.getInstance().del(sender, args[0]);
+	}
+
+	@TabComplete(args = "del")
+	public List<String> delTabComplete(CommandSender sender, String[] args) {
 		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
 	}
 
