@@ -23,7 +23,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 	public boolean openCommand(CommandSender sender, String[] args) throws MyCommandException {
 		Player player = (Player)sender;
 
-		(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls())).openInventory(player, LibraryOfSouls.getInstance());
+		(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), "")).openInventory(player, LibraryOfSouls.getInstance());
 		return true;
 	}
 
@@ -61,7 +61,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 			return false;
 		}
 
-		(new SoulsInventory(player, souls)).openInventory(player, LibraryOfSouls.getInstance());
+		(new SoulsInventory(player, souls, args[0])).openInventory(player, LibraryOfSouls.getInstance());
 		return true;
 	}
 

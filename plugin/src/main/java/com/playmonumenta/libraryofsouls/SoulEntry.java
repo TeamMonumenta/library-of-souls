@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulEntry {
 	private static Gson gson = null;
@@ -42,7 +43,7 @@ public class SoulEntry {
 
 		mName = mNBT.getString("CustomName");
 		try {
-			mLabel = SoulsDatabase.stripColorsAndJSON(gson, mName).replaceAll(" ", "");
+			mLabel = Utils.stripColorsAndJSON(gson, mName).replaceAll(" ", "");
 		} catch (Exception e) {
 			throw new Exception("Failed to parse Library of Souls mob name '" + mName + "'");
 		}
@@ -213,9 +214,9 @@ public class SoulEntry {
 
 			String temp;
 			if (first) {
-				temp = cur + hashColor(entry);
+				temp = cur + Utils.hashColor(entry);
 			} else {
-				temp = cur + " " + hashColor(entry);
+				temp = cur + " " + Utils.hashColor(entry);
 			}
 			first = false;
 
@@ -223,45 +224,13 @@ public class SoulEntry {
 				cur = temp;
 			} else {
 				ret.add(cur);
-				cur = prefix + hashColor(entry);
+				cur = prefix + Utils.hashColor(entry);
 			}
 		}
 
 		ret.add(cur);
 
 		return ret;
-	}
-
-	private String hashColor(String in) {
-		int val = in.hashCode() % 13;
-		switch (val) {
-			case 0:
-				return ChatColor.DARK_GREEN + in;
-			case 1:
-				return ChatColor.DARK_AQUA + in;
-			case 2:
-				return ChatColor.DARK_RED + in;
-			case 3:
-				return ChatColor.DARK_PURPLE + in;
-			case 4:
-				return ChatColor.GOLD + in;
-			case 5:
-				return ChatColor.GRAY + in;
-			case 6:
-				return ChatColor.DARK_GRAY + in;
-			case 7:
-				return ChatColor.BLUE + in;
-			case 8:
-				return ChatColor.GREEN + in;
-			case 9:
-				return ChatColor.AQUA + in;
-			case 10:
-				return ChatColor.RED + in;
-			case 11:
-				return ChatColor.LIGHT_PURPLE + in;
-			default:
-				return ChatColor.YELLOW + in;
-		}
 	}
 
 	public ItemStack getPlaceholder() {

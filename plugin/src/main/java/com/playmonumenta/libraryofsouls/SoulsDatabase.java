@@ -20,8 +20,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 
-import net.md_5.bungee.api.ChatColor;
-
 public class SoulsDatabase {
 	private static SoulsDatabase INSTANCE = null;
 
@@ -129,39 +127,6 @@ public class SoulsDatabase {
 
 	public static SoulsDatabase getInstance() {
 		return INSTANCE;
-	}
-
-	/*
-	 * Valid examples:
-	 *   §6Master Scavenger
-	 *   "§6Master Scavenger"
-	 *   "{\"text\":\"§6Master Scavenger\"}"
-	 */
-	public static String stripColorsAndJSON(Gson gson, String str) {
-		if (str == null || str.isEmpty()) {
-			return str;
-		}
-
-		JsonElement element = gson.fromJson(str, JsonElement.class);
-		return stripColorsAndJSON(element);
-	}
-
-	public static String stripColorsAndJSON(JsonElement element) {
-		String str = "";
-		if (element.isJsonObject()) {
-			JsonElement textElement = element.getAsJsonObject().get("text");
-			if (textElement != null) {
-				str = textElement.getAsString();
-			}
-		} else if (element.isJsonArray()) {
-			str = "";
-			for (JsonElement arrayElement : element.getAsJsonArray()) {
-				str += stripColorsAndJSON(arrayElement);
-			}
-		} else {
-			str = element.getAsString();
-		}
-		return ChatColor.stripColor(str);
 	}
 
 	public Set<String> listMobNames() {

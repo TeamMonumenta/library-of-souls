@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.mylib.utils.UtilsMc;
+import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulsInventory extends CustomInventory {
 	private List<SoulEntry> mCurrentSlots;
@@ -19,8 +20,8 @@ public class SoulsInventory extends CustomInventory {
 	private boolean mHasPrevPage;
 	private boolean mHasNextPage;
 
-	public SoulsInventory(Player owner, List<SoulEntry> souls) {
-		super(owner, 54, "Library of Souls");
+	public SoulsInventory(Player owner, List<SoulEntry> souls, String titleModifier) {
+		super(owner, 54, "Souls Library" + (titleModifier.isEmpty() ? "" : " " + Utils.hashColor(titleModifier)));
 
 		mSouls = souls;
 		mOffset = 0;
