@@ -3,7 +3,10 @@ package com.playmonumenta.libraryofsouls.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
 public class FileUtils {
@@ -42,4 +45,25 @@ public class FileUtils {
 
 		return content.toString();
 	}
+
+	public static void writeFile(String fileName, String contents) throws IOException {
+		// Do not attempt to catch exceptions here - let them propagate to the caller
+		File file = new File(fileName);
+
+		if (!file.exists()) {
+			file.getParentFile().mkdirs();
+			file.createNewFile();
+		}
+
+		OutputStreamWriter writer = null;
+		try {
+			writer = new OutputStreamWriter(new FileOutputStream(fileName), StandardCharsets.UTF_8);
+			writer.write(contents);
+		} finally {
+			if (writer != null) {
+				writer.close();
+			}
+		}
+	}
+
 }

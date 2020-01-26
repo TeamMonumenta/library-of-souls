@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulEntry {
@@ -266,8 +267,18 @@ public class SoulEntry {
 	}
 
 	public JsonObject serialize() {
-		// TODO
-		return null;
+		JsonObject obj = new JsonObject();
+
+		obj.add("mojangson", new JsonPrimitive(mNBT.toString()));
+
+		JsonArray array = new JsonArray();
+		for (String location : mLocs) {
+			array.add(location);
+		}
+
+		obj.add("location_names", array);
+
+		return obj;
 	}
 }
 

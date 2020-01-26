@@ -15,12 +15,15 @@ import java.util.TreeMap;
 import org.bukkit.plugin.Plugin;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 
 public class SoulsDatabase {
+	private static final String SOULS_DATABASE_FILE = "souls_database.json";
+
 	private static SoulsDatabase INSTANCE = null;
 
 	private static final Comparator<String> COMPARATOR = new Comparator<String>() {
@@ -81,7 +84,7 @@ public class SoulsDatabase {
 			directory.mkdirs();
 		}
 
-		String content = FileUtils.readFile(Paths.get(plugin.getDataFolder().getPath(), "souls_database.json").toString());
+		String content = FileUtils.readFile(Paths.get(plugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString());
 		if (content == null || content.isEmpty()) {
 			throw new Exception("Failed to parse file as JSON object");
 		}
@@ -123,6 +126,23 @@ public class SoulsDatabase {
 		}
 		plugin.getLogger().info("Finished parsing souls library");
 		plugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
+	}
+
+	// TODO: Private
+	public void save(Plugin plugin) {
+		JsonArray array = new JsonArray();
+		for (SoulEntry soul : mSouls.values()) {
+			array.add(soul.serialize());
+		}
+
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String path = Paths.get(plugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString();
+
+		try {
+			FileUtils.writeFile(path, gson.toJson(array));
+		} catch (Exception ex) {
+			plugin.getLogger().severe("Failed to save souls database to '" + path + "': " + ex.getMessage());
+		}
 	}
 
 	public static SoulsDatabase getInstance() {
