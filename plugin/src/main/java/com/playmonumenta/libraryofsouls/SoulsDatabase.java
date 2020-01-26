@@ -46,7 +46,7 @@ public class SoulsDatabase {
 	 * This is an index based on locations.
 	 * A SoulEntry may appear here many times, or not at all
 	 */
-	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<String, List<SoulEntry>>();
+	private Map<String, List<SoulEntry>> mLocsIndex = null;
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;
@@ -81,6 +81,10 @@ public class SoulsDatabase {
 		return null;
 	}
 
+	/*################################################################################
+	 * Functions that change the database state
+	 */
+
 	public void add(CommandSender sender, BookOfSouls bos) {
 		SoulEntry soul;
 
@@ -102,18 +106,46 @@ public class SoulsDatabase {
 
 		mSouls.put(soul.getLabel(), soul);
 		sender.sendMessage(ChatColor.GREEN + "Added " + soul.getLabel());
+		updateIndex();
+		save();
+	}
+
+	public void update(CommandSender sender, BookOfSouls bos) {
+		SoulEntry soul;
+
+		try {
+			NBTTagCompound nbt = bos.getEntityNBT().getData();
+			String name = nbt.getString("CustomName");
+			String label = SoulEntry.getLabelFromName(name);
+
+			SoulEntry existing = mSouls.get(label);
+			if (existing == null) {
+				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' does not exist!");
+				return;
+			}
+
+			/* Create a new SoulEntry but with the existing entry's locations */
+			soul = new SoulEntry(nbt, existing.getLocationNames());
+		} catch (Exception ex) {
+			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
+			return;
+		}
+
+		mSouls.put(soul.getLabel(), soul);
+		sender.sendMessage(ChatColor.GREEN + "Updated " + soul.getLabel());
+		updateIndex();
 		save();
 	}
 
 	public void del(CommandSender sender, String name) {
-		if (mSouls.containsKey(name)) {
+		if (!mSouls.containsKey(name)) {
+			sender.sendMessage(ChatColor.RED + "Mob '" + name + "' does not exist!");
+		} else {
 			mSouls.remove(name);
 			sender.sendMessage(ChatColor.GREEN + "Removed " + name);
+			updateIndex();
 			save();
-			return;
 		}
-
-		sender.sendMessage(ChatColor.RED + "Mob '" + name + "' does not exist!");
 	}
 
 	/* TODO: File watcher */
@@ -156,6 +188,22 @@ public class SoulsDatabase {
 
 			mSouls.put(label, soul);
 
+			count++;
+		}
+
+		updateIndex();
+
+		mPlugin.getLogger().info("Finished parsing souls library");
+		mPlugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
+	}
+
+	/*
+	 * Functions that change the database state
+	 *################################################################################*/
+
+	private void updateIndex() {
+		mLocsIndex = new HashMap<String, List<SoulEntry>>();
+		for (SoulEntry soul : mSouls.values()) {
 			for (String tag : soul.getLocationNames()) {
 				List<SoulEntry> lst = mLocsIndex.get(tag);
 				if (lst == null) {
@@ -164,10 +212,7 @@ public class SoulsDatabase {
 				}
 				lst.add(soul);
 			}
-			count++;
 		}
-		mPlugin.getLogger().info("Finished parsing souls library");
-		mPlugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
 	}
 
 	// TODO: Private

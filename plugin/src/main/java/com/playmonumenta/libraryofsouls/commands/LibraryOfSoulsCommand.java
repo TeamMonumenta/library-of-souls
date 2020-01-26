@@ -96,6 +96,22 @@ public class LibraryOfSoulsCommand extends MyCommand {
 		return true;
 	}
 
+	@Command(args = "update", type = CommandType.PLAYER_ONLY)
+	public boolean updateCommand(CommandSender sender, String[] args) throws MyCommandException {
+		if (args.length != 0) {
+			return false;
+		}
+
+		BookOfSouls bos = com.playmonumenta.libraryofsouls.utils.Utils.getBos((Player) sender, true);
+		if (bos == null) {
+			sender.sendMessage(ChatColor.RED + "You must be holding a Book of Souls");
+			return true;
+		}
+
+		SoulsDatabase.getInstance().update(sender, bos);
+		return true;
+	}
+
 	@Command(args = "search", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<location>")
 	public boolean searchCommand(CommandSender sender, String[] args) throws MyCommandException {
 		Player player = (Player)sender;
