@@ -1,7 +1,11 @@
 package com.playmonumenta.libraryofsouls.utils;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
+import com.goncalomb.bukkit.mylib.command.MyCommandException;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -69,5 +73,23 @@ public class Utils {
 			default:
 				return ChatColor.YELLOW + in;
 		}
+	}
+
+	public static BookOfSouls getBos(Player player) throws MyCommandException {
+		return getBos(player, false);
+	}
+
+	public static BookOfSouls getBos(Player player, boolean nullIfMissing) throws MyCommandException {
+		ItemStack item = player.getInventory().getItemInMainHand();
+		if (BookOfSouls.isValidBook(item)) {
+			BookOfSouls bos = BookOfSouls.getFromBook(item);
+			if (bos != null) {
+				return bos;
+			}
+			throw new MyCommandException("§cThat Book of Souls is corrupted!");
+		} else if (!nullIfMissing) {
+			throw new MyCommandException("§cYou must be holding a Book of Souls!");
+		}
+		return null;
 	}
 }

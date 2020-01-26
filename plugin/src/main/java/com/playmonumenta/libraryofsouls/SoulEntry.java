@@ -33,41 +33,19 @@ public class SoulEntry {
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
-	public SoulEntry(JsonObject obj) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
+	public SoulEntry(NBTTagCompound nbt, Set<String> locationNames) throws Exception {
+		mNBT = nbt;
+
+		if (locationNames == null) {
+			mLocs = new HashSet<String>();
+		} else {
+			mLocs = locationNames;
 		}
 
-		JsonElement elem = obj.get("mojangson");
-
-		mNBT = NBTTagCompound.fromString(elem.getAsString());
-
-		mName = mNBT.getString("CustomName");
-		try {
-			mLabel = Utils.stripColorsAndJSON(gson, mName).replaceAll(" ", "");
-		} catch (Exception e) {
-			throw new Exception("Failed to parse Library of Souls mob name '" + mName + "'");
-		}
+		mName = nbt.getString("CustomName");
+		mLabel = getLabelFromName(mName);
 		if (mLabel == null || mLabel.isEmpty()) {
 			throw new Exception("Refused to load Library of Souls mob with no name!");
-		}
-
-		mLocs = new HashSet<String>();
-		elem = obj.get("location_names");
-		if (elem != null) {
-			JsonArray array = elem.getAsJsonArray();
-			if (array == null) {
-				throw new Exception("Failed to parse location_names as JSON array");
-			}
-
-			Iterator<JsonElement> iter = array.iterator();
-			while (iter.hasNext()) {
-				JsonElement tagElement = iter.next();
-				if (!tagElement.isJsonPrimitive()) {
-					throw new Exception("location_names entry for '" + mName + "' is not a string!");
-				}
-				mLocs.add(tagElement.getAsString());
-			}
 		}
 	}
 
@@ -266,7 +244,37 @@ public class SoulEntry {
 		return mNBT;
 	}
 
-	public JsonObject serialize() {
+	public static SoulEntry fromJson(JsonObject obj) throws Exception {
+		if (gson == null) {
+			gson = new Gson();
+		}
+
+		JsonElement elem = obj.get("mojangson");
+
+		NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());
+
+		Set<String> locs = new HashSet<String>();
+		elem = obj.get("location_names");
+		if (elem != null) {
+			JsonArray array = elem.getAsJsonArray();
+			if (array == null) {
+				throw new Exception("Failed to parse location_names as JSON array");
+			}
+
+			Iterator<JsonElement> iter = array.iterator();
+			while (iter.hasNext()) {
+				JsonElement tagElement = iter.next();
+				if (!tagElement.isJsonPrimitive()) {
+					throw new Exception("location_names entry for '" + elem.toString() + "' is not a string!");
+				}
+				locs.add(tagElement.getAsString());
+			}
+		}
+
+		return new SoulEntry(nbt, locs);
+	}
+
+	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 
 		obj.add("mojangson", new JsonPrimitive(mNBT.toString()));
@@ -279,6 +287,20 @@ public class SoulEntry {
 		obj.add("location_names", array);
 
 		return obj;
+	}
+
+	public static String getLabelFromName(String name) throws Exception {
+		if (name == null) {
+			return null;
+		}
+
+		String label = null;
+		try {
+			label = Utils.stripColorsAndJSON(gson, name).replaceAll(" ", "");
+		} catch (Exception e) {
+			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
+		}
+		return label;
 	}
 }
 

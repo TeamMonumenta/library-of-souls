@@ -16,6 +16,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -79,16 +81,39 @@ public class SoulsDatabase {
 		return null;
 	}
 
-	public boolean del(CommandSender sender, String name) {
+	public void add(CommandSender sender, BookOfSouls bos) {
+		SoulEntry soul;
+
+		try {
+			NBTTagCompound nbt = bos.getEntityNBT().getData();
+			String name = nbt.getString("CustomName");
+			String label = SoulEntry.getLabelFromName(name);
+
+			if (mSouls.containsKey(label)) {
+				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' already exists!");
+				return;
+			}
+
+			soul = new SoulEntry(nbt, null);
+		} catch (Exception ex) {
+			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
+			return;
+		}
+
+		mSouls.put(soul.getLabel(), soul);
+		sender.sendMessage(ChatColor.GREEN + "Added " + soul.getLabel());
+		save();
+	}
+
+	public void del(CommandSender sender, String name) {
 		if (mSouls.containsKey(name)) {
 			mSouls.remove(name);
 			sender.sendMessage(ChatColor.GREEN + "Removed " + name);
 			save();
-			return true;
+			return;
 		}
 
 		sender.sendMessage(ChatColor.RED + "Mob '" + name + "' does not exist!");
-		return false;
 	}
 
 	/* TODO: File watcher */
@@ -119,7 +144,7 @@ public class SoulsDatabase {
 
 			JsonObject obj = entry.getAsJsonObject();
 
-			SoulEntry soul = new SoulEntry(obj);
+			SoulEntry soul = SoulEntry.fromJson(obj);
 			String label = soul.getLabel();
 
 			if (mSouls.get(label) != null) {
@@ -149,7 +174,7 @@ public class SoulsDatabase {
 	public void save() {
 		JsonArray array = new JsonArray();
 		for (SoulEntry soul : mSouls.values()) {
-			array.add(soul.serialize());
+			array.add(soul.toJson());
 		}
 
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
