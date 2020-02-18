@@ -13,14 +13,14 @@ import com.goncalomb.bukkit.mylib.utils.UtilsMc;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulsInventory extends CustomInventory {
-	private List<SoulEntry> mCurrentSlots;
+	private List<? extends Soul> mCurrentSlots;
 
-	private final List<SoulEntry> mSouls;
+	private final List<? extends Soul> mSouls;
 	private int mOffset;
 	private boolean mHasPrevPage;
 	private boolean mHasNextPage;
 
-	public SoulsInventory(Player owner, List<SoulEntry> souls, String titleModifier) {
+	public SoulsInventory(Player owner, List<? extends Soul> souls, String titleModifier) {
 		super(owner, 54, "Souls Library" + (titleModifier.isEmpty() ? "" : " " + Utils.hashColor(titleModifier)));
 
 		mSouls = souls;

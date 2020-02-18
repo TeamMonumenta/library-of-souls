@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 public class Utils {
+	private static Gson gson = new Gson();
+
 	/*
 	 * Valid examples:
 	 *   §6Master Scavenger
@@ -91,5 +93,20 @@ public class Utils {
 			throw new MyCommandException("§cYou must be holding a Book of Souls!");
 		}
 		return null;
+	}
+
+	public static String getLabelFromName(String name) throws Exception {
+		if (name == null) {
+			return null;
+		}
+
+		String label = null;
+		try {
+			label = Utils.stripColorsAndJSON(gson, name).replaceAll(" ", "");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
+		}
+		return label;
 	}
 }

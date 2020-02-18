@@ -71,7 +71,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 
 	@Command(args = "add", type = CommandType.PLAYER_ONLY)
 	public boolean addCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 0) {
+		if (args.length != 0 || !(sender instanceof Player)) {
 			return false;
 		}
 
@@ -81,13 +81,13 @@ public class LibraryOfSoulsCommand extends MyCommand {
 			return true;
 		}
 
-		SoulsDatabase.getInstance().add(sender, bos);
+		SoulsDatabase.getInstance().add((Player)sender, bos);
 		return true;
 	}
 
 	@Command(args = "update", type = CommandType.PLAYER_ONLY)
 	public boolean updateCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 0) {
+		if (args.length != 0 || !(sender instanceof Player)) {
 			return false;
 		}
 
@@ -97,7 +97,7 @@ public class LibraryOfSoulsCommand extends MyCommand {
 			return true;
 		}
 
-		SoulsDatabase.getInstance().update(sender, bos);
+		SoulsDatabase.getInstance().update((Player)sender, bos);
 		return true;
 	}
 

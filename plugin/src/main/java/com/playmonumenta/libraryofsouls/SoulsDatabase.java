@@ -14,6 +14,7 @@ import java.util.TreeMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
@@ -24,6 +25,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
+import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -85,20 +87,20 @@ public class SoulsDatabase {
 	 * Functions that change the database state
 	 */
 
-	public void add(CommandSender sender, BookOfSouls bos) {
+	public void add(Player sender, BookOfSouls bos) {
 		SoulEntry soul;
 
 		try {
 			NBTTagCompound nbt = bos.getEntityNBT().getData();
 			String name = nbt.getString("CustomName");
-			String label = SoulEntry.getLabelFromName(name);
+			String label = Utils.getLabelFromName(name);
 
 			if (mSouls.containsKey(label)) {
 				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' already exists!");
 				return;
 			}
 
-			soul = new SoulEntry(nbt, null);
+			soul = new SoulEntry(sender, nbt);
 		} catch (Exception ex) {
 			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
 			return;
@@ -110,28 +112,26 @@ public class SoulsDatabase {
 		save();
 	}
 
-	public void update(CommandSender sender, BookOfSouls bos) {
+	public void update(Player sender, BookOfSouls bos) {
 		SoulEntry soul;
 
 		try {
 			NBTTagCompound nbt = bos.getEntityNBT().getData();
 			String name = nbt.getString("CustomName");
-			String label = SoulEntry.getLabelFromName(name);
+			String label = Utils.getLabelFromName(name);
 
-			SoulEntry existing = mSouls.get(label);
-			if (existing == null) {
+			soul = mSouls.get(label);
+			if (soul == null) {
 				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' does not exist!");
 				return;
 			}
 
-			/* Create a new SoulEntry but with the existing entry's locations */
-			soul = new SoulEntry(nbt, existing.getLocationNames());
+			soul.update(sender, nbt);
 		} catch (Exception ex) {
 			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
 			return;
 		}
 
-		mSouls.put(soul.getLabel(), soul);
 		sender.sendMessage(ChatColor.GREEN + "Updated " + soul.getLabel());
 		updateIndex();
 		save();
