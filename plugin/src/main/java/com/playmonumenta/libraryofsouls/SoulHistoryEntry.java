@@ -1,6 +1,9 @@
 package com.playmonumenta.libraryofsouls;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -256,9 +259,53 @@ public class SoulHistoryEntry implements Soul {
 			}
 		}
 
+		/* If the item has been modified, list when */
+		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
+			/* Relative time on the placeholder item */
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.AQUA + "Modified " + getTimeDeltaStr() + " by " + mModifiedBy, null);
+
+			/* Actual time on the picked-up item */
+			LocalDateTime modTime = LocalDateTime.ofEpochSecond(mModifiedOn, 0, ZoneOffset.UTC);
+			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.AQUA + "Modified " + modTime.format(fmt) + " by " + mModifiedBy, null);
+		}
+
 		placeholderWrap.save();
 		bosWrap.save();
 	}
+
+	private String getTimeDeltaStr() {
+		long deltaSeconds = Instant.now().getEpochSecond() - mModifiedOn;
+
+		if (deltaSeconds > 60 * 24 * 60 * 60) {
+			/* More than 2 months - just print months */
+			return Long.toString(deltaSeconds / (60 * 24 * 60 * 60)) + " months ago";
+		} else {
+			String retStr = "";
+
+			long days = deltaSeconds / (24 * 60 * 60);
+			if (days >= 1) {
+				retStr += Long.toString(days) + "d ";
+			}
+
+			if (days < 7) {
+				long hours = (deltaSeconds % (24 * 60 * 60)) / (60 * 60);
+				if (hours >= 1) {
+					retStr += Long.toString(hours) + "h ";
+				}
+
+				if (days == 0) {
+					long minutes = (deltaSeconds % (60 * 60)) / 60;
+					if (minutes >= 1) {
+						retStr += Long.toString(minutes) + "m ";
+					}
+				}
+			}
+
+			return retStr + "ago";
+		}
+	}
+
 
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();

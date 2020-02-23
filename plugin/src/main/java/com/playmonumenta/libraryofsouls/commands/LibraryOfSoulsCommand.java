@@ -5,7 +5,6 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import com.goncalomb.bukkit.mylib.command.MyCommand;
 import com.goncalomb.bukkit.mylib.command.MyCommandException;
@@ -41,10 +40,12 @@ public class LibraryOfSoulsCommand extends MyCommand {
 			return false;
 		}
 
-		ItemStack bos = SoulsDatabase.getInstance().getSoul(args[0]).getBoS();
-		if (bos != null) {
-			CommandUtils.giveItem(player, bos);
+		SoulEntry soul = SoulsDatabase.getInstance().getSoul(args[0]);
+		if (soul == null) {
+			return false;
 		}
+
+		CommandUtils.giveItem(player, soul.getBoS());
 
 		return true;
 	}
@@ -121,5 +122,27 @@ public class LibraryOfSoulsCommand extends MyCommand {
 	@TabComplete(args = "search")
 	public List<String> searchTabComplete(CommandSender sender, String[] args) {
 		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobLocations(), args.length >= 1 ? args[0] : null);
+	}
+
+	@Command(args = "history", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<location>")
+	public boolean historyCommand(CommandSender sender, String[] args) throws MyCommandException {
+		Player player = (Player)sender;
+
+		if (args.length != 1) {
+			return false;
+		}
+
+		SoulEntry soul = SoulsDatabase.getInstance().getSoul(args[0]);
+		if (soul == null) {
+			return false;
+		}
+
+		(new SoulsInventory(player, soul.getHistory(), "History")).openInventory(player, LibraryOfSouls.getInstance());
+		return true;
+	}
+
+	@TabComplete(args = "history")
+	public List<String> historyTabComplete(CommandSender sender, String[] args) {
+		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
 	}
 }

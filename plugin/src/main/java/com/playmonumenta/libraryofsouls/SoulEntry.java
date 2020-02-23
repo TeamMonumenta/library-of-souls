@@ -91,6 +91,10 @@ public class SoulEntry implements Soul {
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
 
+	public List<Soul> getHistory() {
+		return new ArrayList<Soul>(mHistory);
+	}
+
 	public Set<String> getLocationNames() {
 		return mLocs;
 	}
