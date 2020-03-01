@@ -35,7 +35,7 @@ public class SoulEntry implements Soul {
 		String refName = history.get(0).getName();
 
 		for (SoulHistoryEntry entry : history) {
-			if (!entry.getLabel().equals(refLabel) || !entry.getName().equals(refName)) {
+			if (!entry.getLabel().equals(refLabel)) {
 				throw new Exception("Soul history has mismatching names! '" + refName + "' != '" + entry.getName());
 			}
 		}
