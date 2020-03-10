@@ -2,11 +2,20 @@ package com.playmonumenta.libraryofsouls;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.goncalomb.bukkit.mylib.command.MyCommandManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
 	private static LibraryOfSouls INSTANCE = null;
+
+	@Override
+	public void onLoad() {
+		/*
+		 * CommandAPI commands which register directly and are usable in functions
+		 *
+		 * These need to register immediately on load to prevent function loading errors
+		 */
+		LibraryOfSoulsCommand.register();
+	}
 
 	@Override
 	public void onEnable() {
@@ -14,8 +23,6 @@ public class LibraryOfSouls extends JavaPlugin {
 
 		try {
 			new SoulsDatabase(this);
-
-			MyCommandManager.register(new LibraryOfSoulsCommand(), this);
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
 			e.printStackTrace();

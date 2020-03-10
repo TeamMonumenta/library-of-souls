@@ -1,148 +1,159 @@
 package com.playmonumenta.libraryofsouls.commands;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ProxiedCommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
-import com.goncalomb.bukkit.mylib.command.MyCommand;
-import com.goncalomb.bukkit.mylib.command.MyCommandException;
-import com.goncalomb.bukkit.mylib.utils.Utils;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 
-public class LibraryOfSoulsCommand extends MyCommand {
-	public LibraryOfSoulsCommand() {
-		super("libraryofsouls", "los");
+import io.github.jorelali.commandapi.api.CommandAPI;
+import io.github.jorelali.commandapi.api.CommandPermission;
+import io.github.jorelali.commandapi.api.arguments.Argument;
+import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgument;
+import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgument.DynamicSuggestions;
+import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
+import io.github.jorelali.commandapi.api.arguments.LocationArgument;
+
+public class LibraryOfSoulsCommand {
+	public static void register() {
+		LinkedHashMap<String, Argument> arguments;
+		final CommandAPI api = CommandAPI.getInstance();
+
+		/* Several sub commands have this same tab completion */
+		final DynamicSuggestions listMobs = () -> SoulsDatabase.getInstance().listMobNames().toArray(new String[0]);
+
+		/* los open */
+		arguments = new LinkedHashMap<>();
+		arguments.put("open", new LiteralArgument("open"));
+		api.register("los", CommandPermission.fromString("los.open"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), ""))
+				.openInventory(player, LibraryOfSouls.getInstance());
+		});
+
+		/* los add */
+		arguments = new LinkedHashMap<>();
+		arguments.put("add", new LiteralArgument("add"));
+		api.register("los", CommandPermission.fromString("los.add"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			BookOfSouls bos = getBos(player);
+			if (bos == null) {
+				CommandAPI.fail("You must be holding a Book of Souls");
+			}
+
+			SoulsDatabase.getInstance().add(player, bos);
+		});
+
+		/* los update */
+		arguments = new LinkedHashMap<>();
+		arguments.put("update", new LiteralArgument("update"));
+		api.register("los", CommandPermission.fromString("los.update"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			BookOfSouls bos = getBos(player);
+			if (bos == null) {
+				CommandAPI.fail("You must be holding a Book of Souls");
+			}
+
+			SoulsDatabase.getInstance().update(player, bos);
+		});
+
+		/* los get <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("get", new LiteralArgument("get"));
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.get"), arguments, (sender, args) -> {
+			PlayerInventory inv = getPlayer(sender).getInventory();
+			if (inv.firstEmpty() == -1) {
+				CommandAPI.fail("Your inventory is full!");
+			}
+			inv.addItem(getSoul((String)args[0]).getBoS());
+		});
+
+		/* los history <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("history", new LiteralArgument("history"));
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.history"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			(new SoulsInventory(player, getSoul((String)args[0]).getHistory(), "History"))
+				.openInventory(player, LibraryOfSouls.getInstance());
+		});
+
+		/* los del <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("del", new LiteralArgument("del"));
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.del"), arguments, (sender, args) -> {
+			SoulsDatabase.getInstance().del(sender, (String)args[0]);
+		});
+
+		/* los summon <location> <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("summon", new LiteralArgument("summon"));
+		arguments.put("location", new LocationArgument());
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.summon"), arguments, (sender, args) -> {
+			getSoul((String)args[1]).summon((Location)args[0]);
+		});
+
+		/* los search <area> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("search", new LiteralArgument("search"));
+		arguments.put("area", new DynamicSuggestedStringArgument(() -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[0])));
+		api.register("los", CommandPermission.fromString("los.search"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			String area = (String)args[0];
+			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
+			if (souls == null) {
+				CommandAPI.fail("Area '" + area + "' not found");
+			}
+			(new SoulsInventory(player, souls, area))
+				.openInventory(player, LibraryOfSouls.getInstance());
+		});
 	}
 
-	@Command(args = "open", type = CommandType.PLAYER_ONLY)
-	public boolean openCommand(CommandSender sender, String[] args) throws MyCommandException {
-		Player player = (Player)sender;
-
-		if (args.length != 0) {
-			return false;
+	private static SoulEntry getSoul(String name) throws CommandSyntaxException {
+		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+		if (soul != null) {
+			return soul;
 		}
 
-		(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), "")).openInventory(player, LibraryOfSouls.getInstance());
-		return true;
+		CommandAPI.fail("Soul '" + name + "' not found");
+		return null;
 	}
 
-	@Command(args = "get", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<name>")
-	public boolean getCommand(CommandSender sender, String[] args) throws MyCommandException {
-		Player player = (Player)sender;
-
-		if (args.length != 1) {
-			return false;
+	private static Player getPlayer(CommandSender sender) throws CommandSyntaxException {
+		if (sender instanceof Player) {
+			return (Player) sender;
+		} else if ((sender instanceof ProxiedCommandSender) && (((ProxiedCommandSender)sender).getCallee() instanceof Player)) {
+			return (Player) ((ProxiedCommandSender)sender).getCallee();
 		}
 
-		SoulEntry soul = SoulsDatabase.getInstance().getSoul(args[0]);
-		if (soul == null) {
-			return false;
-		}
-
-		CommandUtils.giveItem(player, soul.getBoS());
-
-		return true;
+		CommandAPI.fail("This command must be run by / as a player");
+		return null;
 	}
 
-	@TabComplete(args = "get")
-	public List<String> getTabComplete(CommandSender sender, String[] args) {
-		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
-	}
-
-	@Command(args = "del", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<name>")
-	public boolean delCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 1) {
-			return false;
+	private static BookOfSouls getBos(Player player) throws CommandSyntaxException {
+		ItemStack item = player.getInventory().getItemInMainHand();
+		if (BookOfSouls.isValidBook(item)) {
+			BookOfSouls bos = BookOfSouls.getFromBook(item);
+			if (bos != null) {
+				return bos;
+			}
+			CommandAPI.fail("That Book of Souls is corrupted!");
 		}
-
-		SoulsDatabase.getInstance().del(sender, args[0]);
-		return true;
-	}
-
-	@TabComplete(args = "del")
-	public List<String> delTabComplete(CommandSender sender, String[] args) {
-		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
-	}
-
-	@Command(args = "add", type = CommandType.PLAYER_ONLY)
-	public boolean addCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 0 || !(sender instanceof Player)) {
-			return false;
-		}
-
-		BookOfSouls bos = com.playmonumenta.libraryofsouls.utils.Utils.getBos((Player) sender, true);
-		if (bos == null) {
-			sender.sendMessage(ChatColor.RED + "You must be holding a Book of Souls");
-			return true;
-		}
-
-		SoulsDatabase.getInstance().add((Player)sender, bos);
-		return true;
-	}
-
-	@Command(args = "update", type = CommandType.PLAYER_ONLY)
-	public boolean updateCommand(CommandSender sender, String[] args) throws MyCommandException {
-		if (args.length != 0 || !(sender instanceof Player)) {
-			return false;
-		}
-
-		BookOfSouls bos = com.playmonumenta.libraryofsouls.utils.Utils.getBos((Player) sender, true);
-		if (bos == null) {
-			sender.sendMessage(ChatColor.RED + "You must be holding a Book of Souls");
-			return true;
-		}
-
-		SoulsDatabase.getInstance().update((Player)sender, bos);
-		return true;
-	}
-
-	@Command(args = "search", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<location>")
-	public boolean searchCommand(CommandSender sender, String[] args) throws MyCommandException {
-		Player player = (Player)sender;
-
-		if (args.length != 1) {
-			return false;
-		}
-
-		List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(args[0]);
-		if (souls == null) {
-			return false;
-		}
-
-		(new SoulsInventory(player, souls, args[0])).openInventory(player, LibraryOfSouls.getInstance());
-		return true;
-	}
-
-	@TabComplete(args = "search")
-	public List<String> searchTabComplete(CommandSender sender, String[] args) {
-		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobLocations(), args.length >= 1 ? args[0] : null);
-	}
-
-	@Command(args = "history", type = CommandType.PLAYER_ONLY, minargs = 1, usage = "<location>")
-	public boolean historyCommand(CommandSender sender, String[] args) throws MyCommandException {
-		Player player = (Player)sender;
-
-		if (args.length != 1) {
-			return false;
-		}
-
-		SoulEntry soul = SoulsDatabase.getInstance().getSoul(args[0]);
-		if (soul == null) {
-			return false;
-		}
-
-		(new SoulsInventory(player, soul.getHistory(), "History")).openInventory(player, LibraryOfSouls.getInstance());
-		return true;
-	}
-
-	@TabComplete(args = "history")
-	public List<String> historyTabComplete(CommandSender sender, String[] args) {
-		return Utils.getElementsWithPrefix(SoulsDatabase.getInstance().listMobNames(), args.length >= 1 ? args[0] : null);
+		CommandAPI.fail("You must be holding a Book of Souls!");
+		return null;
 	}
 }

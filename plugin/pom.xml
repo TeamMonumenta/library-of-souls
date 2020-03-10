@@ -30,6 +30,10 @@
             <id>papermc</id>
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>jorelali</id>
+            <url>https://raw.githubusercontent.com/JorelAli/1.13-Command-API/mvn-repo/1.13CommandAPI/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -50,6 +54,13 @@
             <groupId>com.goncalomb.bukkit</groupId>
             <artifactId>nbteditor</artifactId>
             <version>3.2-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.jorelali</groupId>
+            <artifactId>commandapi</artifactId>
+            <version>1.8.1</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 

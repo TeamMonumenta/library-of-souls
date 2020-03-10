@@ -1,5 +1,6 @@
 package com.playmonumenta.libraryofsouls;
 
+import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
@@ -20,4 +21,6 @@ public interface Soul {
 
 	/* This is the label-ified name, with colors and spaces stripped */
 	public String getLabel();
+
+	public void summon(Location loc);
 }
