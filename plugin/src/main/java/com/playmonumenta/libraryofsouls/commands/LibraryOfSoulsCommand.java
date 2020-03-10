@@ -13,6 +13,7 @@ import org.bukkit.inventory.PlayerInventory;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls.Config;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
@@ -46,6 +47,7 @@ public class LibraryOfSoulsCommand {
 		arguments = new LinkedHashMap<>();
 		arguments.put("add", new LiteralArgument("add"));
 		api.register("los", CommandPermission.fromString("los.add"), arguments, (sender, args) -> {
+			checkNotReadOnly();
 			Player player = getPlayer(sender);
 			BookOfSouls bos = getBos(player);
 			if (bos == null) {
@@ -59,6 +61,7 @@ public class LibraryOfSoulsCommand {
 		arguments = new LinkedHashMap<>();
 		arguments.put("update", new LiteralArgument("update"));
 		api.register("los", CommandPermission.fromString("los.update"), arguments, (sender, args) -> {
+			checkNotReadOnly();
 			Player player = getPlayer(sender);
 			BookOfSouls bos = getBos(player);
 			if (bos == null) {
@@ -95,6 +98,7 @@ public class LibraryOfSoulsCommand {
 		arguments.put("del", new LiteralArgument("del"));
 		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
 		api.register("los", CommandPermission.fromString("los.del"), arguments, (sender, args) -> {
+			checkNotReadOnly();
 			SoulsDatabase.getInstance().del(sender, (String)args[0]);
 		});
 
@@ -121,6 +125,12 @@ public class LibraryOfSoulsCommand {
 			(new SoulsInventory(player, souls, area))
 				.openInventory(player, LibraryOfSouls.getInstance());
 		});
+	}
+
+	private static void checkNotReadOnly() throws CommandSyntaxException {
+		if (Config.isReadOnly()) {
+			CommandAPI.fail("Library of Souls is read only!");
+		}
 	}
 
 	private static SoulEntry getSoul(String name) throws CommandSyntaxException {
