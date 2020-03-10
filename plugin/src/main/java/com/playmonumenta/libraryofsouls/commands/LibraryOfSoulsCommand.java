@@ -13,7 +13,6 @@ import org.bukkit.inventory.PlayerInventory;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls.Config;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
@@ -27,12 +26,12 @@ import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
 import io.github.jorelali.commandapi.api.arguments.LocationArgument;
 
 public class LibraryOfSoulsCommand {
+	/* Several sub commands have this same tab completion */
+	private static final DynamicSuggestions listMobs = () -> SoulsDatabase.getInstance().listMobNames().toArray(new String[0]);
+
 	public static void register() {
 		LinkedHashMap<String, Argument> arguments;
 		final CommandAPI api = CommandAPI.getInstance();
-
-		/* Several sub commands have this same tab completion */
-		final DynamicSuggestions listMobs = () -> SoulsDatabase.getInstance().listMobNames().toArray(new String[0]);
 
 		/* los open */
 		arguments = new LinkedHashMap<>();
@@ -41,34 +40,6 @@ public class LibraryOfSoulsCommand {
 			Player player = getPlayer(sender);
 			(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), ""))
 				.openInventory(player, LibraryOfSouls.getInstance());
-		});
-
-		/* los add */
-		arguments = new LinkedHashMap<>();
-		arguments.put("add", new LiteralArgument("add"));
-		api.register("los", CommandPermission.fromString("los.add"), arguments, (sender, args) -> {
-			checkNotReadOnly();
-			Player player = getPlayer(sender);
-			BookOfSouls bos = getBos(player);
-			if (bos == null) {
-				CommandAPI.fail("You must be holding a Book of Souls");
-			}
-
-			SoulsDatabase.getInstance().add(player, bos);
-		});
-
-		/* los update */
-		arguments = new LinkedHashMap<>();
-		arguments.put("update", new LiteralArgument("update"));
-		api.register("los", CommandPermission.fromString("los.update"), arguments, (sender, args) -> {
-			checkNotReadOnly();
-			Player player = getPlayer(sender);
-			BookOfSouls bos = getBos(player);
-			if (bos == null) {
-				CommandAPI.fail("You must be holding a Book of Souls");
-			}
-
-			SoulsDatabase.getInstance().update(player, bos);
 		});
 
 		/* los get <name> */
@@ -91,15 +62,6 @@ public class LibraryOfSoulsCommand {
 			Player player = getPlayer(sender);
 			(new SoulsInventory(player, getSoul((String)args[0]).getHistory(), "History"))
 				.openInventory(player, LibraryOfSouls.getInstance());
-		});
-
-		/* los del <name> */
-		arguments = new LinkedHashMap<>();
-		arguments.put("del", new LiteralArgument("del"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
-		api.register("los", CommandPermission.fromString("los.del"), arguments, (sender, args) -> {
-			checkNotReadOnly();
-			SoulsDatabase.getInstance().del(sender, (String)args[0]);
 		});
 
 		/* los summon <location> <name> */
@@ -127,10 +89,43 @@ public class LibraryOfSoulsCommand {
 		});
 	}
 
-	private static void checkNotReadOnly() throws CommandSyntaxException {
-		if (Config.isReadOnly()) {
-			CommandAPI.fail("Library of Souls is read only!");
-		}
+	public static void registerWriteAccessCommands() {
+		LinkedHashMap<String, Argument> arguments;
+		final CommandAPI api = CommandAPI.getInstance();
+
+		/* los add */
+		arguments = new LinkedHashMap<>();
+		arguments.put("add", new LiteralArgument("add"));
+		api.register("los", CommandPermission.fromString("los.add"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			BookOfSouls bos = getBos(player);
+			if (bos == null) {
+				CommandAPI.fail("You must be holding a Book of Souls");
+			}
+
+			SoulsDatabase.getInstance().add(player, bos);
+		});
+
+		/* los update */
+		arguments = new LinkedHashMap<>();
+		arguments.put("update", new LiteralArgument("update"));
+		api.register("los", CommandPermission.fromString("los.update"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			BookOfSouls bos = getBos(player);
+			if (bos == null) {
+				CommandAPI.fail("You must be holding a Book of Souls");
+			}
+
+			SoulsDatabase.getInstance().update(player, bos);
+		});
+
+		/* los del <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("del", new LiteralArgument("del"));
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.del"), arguments, (sender, args) -> {
+			SoulsDatabase.getInstance().del(sender, (String)args[0]);
+		});
 	}
 
 	private static SoulEntry getSoul(String name) throws CommandSyntaxException {

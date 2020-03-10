@@ -59,6 +59,12 @@ public class LibraryOfSouls extends JavaPlugin {
 		try {
 			Config.load(getLogger(), getDataFolder());
 
+			getLogger().info("Library of Souls read only: " + Boolean.toString(Config.isReadOnly()));
+
+			if (!Config.isReadOnly()) {
+				LibraryOfSoulsCommand.registerWriteAccessCommands();
+			}
+
 			new SoulsDatabase(this);
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
