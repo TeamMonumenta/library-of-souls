@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
@@ -24,6 +23,7 @@ import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgumen
 import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgument.DynamicSuggestions;
 import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
 import io.github.jorelali.commandapi.api.arguments.LocationArgument;
+import io.github.jorelali.commandapi.api.exceptions.WrapperCommandSyntaxException;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
@@ -128,7 +128,7 @@ public class LibraryOfSoulsCommand {
 		});
 	}
 
-	private static SoulEntry getSoul(String name) throws CommandSyntaxException {
+	private static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
 		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
 		if (soul != null) {
 			return soul;
@@ -138,7 +138,7 @@ public class LibraryOfSoulsCommand {
 		return null;
 	}
 
-	private static Player getPlayer(CommandSender sender) throws CommandSyntaxException {
+	private static Player getPlayer(CommandSender sender) throws WrapperCommandSyntaxException {
 		if (sender instanceof Player) {
 			return (Player) sender;
 		} else if ((sender instanceof ProxiedCommandSender) && (((ProxiedCommandSender)sender).getCallee() instanceof Player)) {
@@ -149,7 +149,7 @@ public class LibraryOfSoulsCommand {
 		return null;
 	}
 
-	private static BookOfSouls getBos(Player player) throws CommandSyntaxException {
+	private static BookOfSouls getBos(Player player) throws WrapperCommandSyntaxException {
 		ItemStack item = player.getInventory().getItemInMainHand();
 		if (BookOfSouls.isValidBook(item)) {
 			BookOfSouls bos = BookOfSouls.getFromBook(item);
