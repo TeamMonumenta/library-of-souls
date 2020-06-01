@@ -184,7 +184,7 @@ public class SoulsDatabase {
 				continue;
 			}
 
-			mPlugin.getLogger().info("  " + label);
+			mPlugin.getLogger().fine("  " + label);
 
 			mSouls.put(label, soul);
 
