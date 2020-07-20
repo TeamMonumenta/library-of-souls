@@ -1,6 +1,7 @@
 package com.playmonumenta.libraryofsouls;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -40,6 +42,9 @@ public class SoulsDatabase {
 	};
 
 	private final Plugin mPlugin;
+	private final Path mSoulsDatabasePath;
+	private long mPreviousReloadMs = 0;
+	private boolean mIgnoreNextChange = false;
 
 	/* This is the primary database. One name, one SoulEntry per mob */
 	private Map<String, SoulEntry> mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
@@ -52,7 +57,28 @@ public class SoulsDatabase {
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;
-		reload();
+		mSoulsDatabasePath = Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE);
+
+		/* Periodically check the file to see if it has changed */
+		Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+			try {
+				mPlugin.getLogger().fine("Polling souls database file...");
+				long lastModMs = Files.getLastModifiedTime(mSoulsDatabasePath).toMillis();
+				if (lastModMs > mPreviousReloadMs) {
+					/* File has changed since we read it */
+					if (!mIgnoreNextChange) {
+						/* This change wasn't expected - reload the database */
+						reloadAsync();
+					}
+
+					mPreviousReloadMs = lastModMs;
+					mIgnoreNextChange = false;
+				}
+			} catch (Exception e) {
+				mPlugin.getLogger().warning("Caught exception while polling database file: " + e.getMessage());
+				e.printStackTrace();
+			}
+		}, 200, 200);
 
 		INSTANCE = this;
 	}
@@ -148,17 +174,11 @@ public class SoulsDatabase {
 		}
 	}
 
-	/* TODO: File watcher */
-	public void reload() throws Exception {
-		mPlugin.getLogger().info("Parsing souls library...");
-		mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
+	public void reloadAsync() throws Exception {
+		mPlugin.getLogger().info("Reloading souls library...");
+		Map<String, SoulEntry> newSouls = new TreeMap<>(COMPARATOR);
 
-		File directory = mPlugin.getDataFolder();
-		if (!directory.exists()) {
-			directory.mkdirs();
-		}
-
-		String content = FileUtils.readFile(Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString());
+		String content = FileUtils.readFile(mSoulsDatabasePath.toString());
 		if (content == null || content.isEmpty()) {
 			throw new Exception("Failed to parse file as JSON object");
 		}
@@ -179,22 +199,26 @@ public class SoulsDatabase {
 			SoulEntry soul = SoulEntry.fromJson(obj);
 			String label = soul.getLabel();
 
-			if (mSouls.get(label) != null) {
+			if (newSouls.get(label) != null) {
 				mPlugin.getLogger().severe("Refused to load Library of Souls duplicate mob '" + label + "'");
 				continue;
 			}
 
 			mPlugin.getLogger().fine("  " + label);
 
-			mSouls.put(label, soul);
+			newSouls.put(label, soul);
 
 			count++;
 		}
 
-		updateIndex();
+		final int finalCount = count;
+		Bukkit.getScheduler().runTask(mPlugin, () -> {
+			mSouls = newSouls;
+			updateIndex();
 
-		mPlugin.getLogger().info("Finished parsing souls library");
-		mPlugin.getLogger().info("Loaded " + Integer.toString(count) + " mob souls");
+			mPlugin.getLogger().info("Finished parsing souls library");
+			mPlugin.getLogger().info("Loaded " + Integer.toString(finalCount) + " mob souls");
+		});
 	}
 
 	/*
@@ -202,7 +226,7 @@ public class SoulsDatabase {
 	 *################################################################################*/
 
 	private void updateIndex() {
-		mLocsIndex = new HashMap<String, List<SoulEntry>>();
+		mLocsIndex = new HashMap<>();
 		for (SoulEntry soul : mSouls.values()) {
 			for (String tag : soul.getLocationNames()) {
 				List<SoulEntry> lst = mLocsIndex.get(tag);
@@ -221,6 +245,8 @@ public class SoulsDatabase {
 			array.add(soul.toJson());
 		}
 
+		/* Mark the next change as expected so the watcher doesn't reload it */
+		mIgnoreNextChange = true;
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String path = Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE).toString();
 

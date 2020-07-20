@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -56,6 +57,11 @@ public class LibraryOfSouls extends JavaPlugin {
 	public void onEnable() {
 		INSTANCE = this;
 
+		File directory = getDataFolder();
+		if (!directory.exists()) {
+			directory.mkdirs();
+		}
+
 		try {
 			Config.load(getLogger(), getDataFolder());
 
@@ -75,6 +81,7 @@ public class LibraryOfSouls extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		INSTANCE = null;
+		Bukkit.getScheduler().cancelTasks(this);
 	}
 
 	public static LibraryOfSouls getInstance() {
