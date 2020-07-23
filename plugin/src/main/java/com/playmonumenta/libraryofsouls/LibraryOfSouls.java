@@ -8,7 +8,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import com.playmonumenta.libraryofsouls.bestiary.GetBestiary;
+import com.playmonumenta.libraryofsouls.bestiary.GetBestiaryCommand;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
@@ -51,6 +54,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		 * These need to register immediately on load to prevent function loading errors
 		 */
 		LibraryOfSoulsCommand.register();
+		GetBestiaryCommand.register();
 	}
 
 	@Override
@@ -72,6 +76,12 @@ public class LibraryOfSouls extends JavaPlugin {
 			}
 
 			new SoulsDatabase(this);
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					GetBestiary.generateBook();
+				}
+			}.runTaskLater(this, 300);
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
 			e.printStackTrace();
