@@ -26,6 +26,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.bestiary.GetBestiary;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
@@ -53,7 +54,7 @@ public class SoulsDatabase {
 	 * This is an index based on locations.
 	 * A SoulEntry may appear here many times, or not at all
 	 */
-	private Map<String, List<SoulEntry>> mLocsIndex = null;
+	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;
@@ -237,6 +238,8 @@ public class SoulsDatabase {
 				lst.add(soul);
 			}
 		}
+
+		GetBestiary.regenerateBook();
 	}
 
 	private void save() {

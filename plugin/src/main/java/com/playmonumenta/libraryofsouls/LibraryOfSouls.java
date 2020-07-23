@@ -76,12 +76,6 @@ public class LibraryOfSouls extends JavaPlugin {
 			}
 
 			new SoulsDatabase(this);
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					GetBestiary.generateBook();
-				}
-			}.runTaskLater(this, 300);
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
 			e.printStackTrace();

@@ -12,15 +12,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BookMeta.Generation;
 
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import net.md_5.bungee.api.ChatColor;
 
 public class GetBestiary {
 	private static Set<String> mLocs;
-	private static BookMeta mBestiary;
+	private static BookMeta mBestiary = null;
 
-	public static void generateBook() {
+	public static void regenerateBook() {
 		mLocs = SoulsDatabase.getInstance().listMobLocations();
 		int count = 0;
 		int pageNum = 1;
@@ -42,6 +43,11 @@ public class GetBestiary {
 	}
 
 	public static void getBook(Player player) {
+		if (mBestiary == null) {
+			LibraryOfSouls.getInstance().getLogger().warning("Requested book for player " + player.getName() + " but bestiary has not been generated yet");
+			return;
+		}
+
 		World world = player.getWorld();
 		ItemStack bestiary = new ItemStack(Material.WRITTEN_BOOK);
 		bestiary.setItemMeta(mBestiary);
