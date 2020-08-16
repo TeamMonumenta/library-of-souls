@@ -8,9 +8,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import com.playmonumenta.libraryofsouls.bestiary.GetBestiary;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.GetBestiaryCommand;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
@@ -55,6 +54,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		 */
 		LibraryOfSoulsCommand.register();
 		GetBestiaryCommand.register();
+		BestiaryCommand.register();
 	}
 
 	@Override

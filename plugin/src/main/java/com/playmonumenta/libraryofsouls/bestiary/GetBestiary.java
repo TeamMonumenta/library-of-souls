@@ -1,100 +1,97 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Item;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.inventory.meta.BookMeta.Generation;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
-import net.md_5.bungee.api.ChatColor;
 
 public class GetBestiary {
-	private static Set<String> mLocs;
-	private static BookMeta mBestiary = null;
-
+	private static String mPage = "'";
 	public static void regenerateBook() {
-		mLocs = SoulsDatabase.getInstance().listMobLocations();
+		//Dont trust any of this
 		int count = 0;
-		int pageNum = 1;
-		String page = "pages:[\"[\"\",";
-		for (String location : mLocs) {
-			page += "{\"text\":\""+ location + "\",\"color\":\"" + generateColor(location) + "\",\"insertion\":\"" + location + "\",\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/beastiary " + location + "\"}},{\"text\":\"\\n\"},";
+		JsonArray page = new JsonArray();
+		JsonObject text = new JsonObject();
+		text.addProperty("text", "");
+		JsonObject newLine = new JsonObject();
+		newLine.addProperty("text", "\\n");
+		for (String location : BestiaryUtils.mBookMap) {
+			JsonArray extra = new JsonArray();
+			JsonObject ultraEntry = new JsonObject();
+			JsonObject entry = new JsonObject();
+
+			entry.addProperty("text", BestiaryUtils.formatWell(location));
+			entry.addProperty("color", generateColor(location));
+
+			JsonObject clickEvent = new JsonObject();
+			clickEvent.addProperty("action", "run_command");
+			clickEvent.addProperty("value", "/bestiary " + location);
+
+			entry.add("clickEvent", clickEvent);
+			page.add(entry);
+			page.add(newLine);
+			page.add(newLine);
 			count++;
-			if (count == 5) {
-				count = 0;
-				page = page.substring(0, page.length() - 2);
-				mBestiary.setPage(pageNum, "Hat");
-				pageNum++;
-				page = "";
+			if (count % 6 == 0 || count == BestiaryUtils.mBookMap.size()) {
+			page.add(text);
+			extra.add(page);
+			page = new JsonArray();
+			ultraEntry.add("extra", extra);
+			mPage += count != BestiaryUtils.mBookMap.size() ? ultraEntry.toString().substring(0, ultraEntry.toString().length() - 2) + "],\"text\":\"\"}','" : ultraEntry.toString();
 			}
 		}
-		mBestiary.setTitle("Bestiary");
-		mBestiary.setGeneration(Generation.ORIGINAL);
-		mBestiary.setAuthor("Fred");
 	}
 
 	public static void getBook(Player player) {
-		if (mBestiary == null) {
+		if (mPage == null) {
 			LibraryOfSouls.getInstance().getLogger().warning("Requested book for player " + player.getName() + " but bestiary has not been generated yet");
 			return;
 		}
-
-		World world = player.getWorld();
-		ItemStack bestiary = new ItemStack(Material.WRITTEN_BOOK);
-		bestiary.setItemMeta(mBestiary);
-		List<String> lore = new ArrayList<>();
-		lore.add(ChatColor.GRAY + "Bestiary");
-		bestiary.getItemMeta().setLore(lore);
-		Item item = world.dropItem(player.getLocation(), bestiary);
-		item.setPickupDelay(0);
+		String commandString = mPage;
+		Bukkit.broadcastMessage("give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + ",\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",resolved:1b}");
+		Bukkit.getConsoleSender().getServer().dispatchCommand(player, "give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + "],\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",resolved:1b}");
 	}
-
 	private static String generateColor(String in) {
-		switch (in) {
-		case "white":
-			return "white";
+		switch(in) {
+		case "labs":
+			return "black";
+		case "willows":
+			return "green";
+		case "roguelike":
+			return "red";
+		case "reverie":
+			return "red";
+		case "shiftingcity":
+			return "aqua";
+		case "region1":
+			return "black";
+		case "region2":
+			return "black";
+		case "lightblue":
+			return "blue";
+		case "lightgray":
+			return "gray";
+		case "gray":
+			return "dark_gray";
 		case "orange":
-			return "orange";
+			return "gold";
 		case "magenta":
 			return "light_purple";
-		case "light_blue":
-			return "blue";
 		case "yellow":
 			return "yellow";
 		case "lime":
-			return "green";
+			return "light_green";
 		case "pink":
 			return "red";
-		case "gray":
-			return "dark_gray";
-		case "light_gray":
-			return "gray";
 		case "cyan":
 			return "dark_aqua";
 		case "purple":
 			return "dark_purple";
-		case "blue":
-			return "dark_blue";
-		case "brown":
-			return "aqua";
-		case "green":
-			return "dark_green";
-		case "red":
-			return "dark_red";
-		case "black":
+		default:
 			return "black";
-		case "shiftingcity":
-			return "aqua";
 		}
-		return "black";
 	}
 }

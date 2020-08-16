@@ -63,18 +63,22 @@ public class SoulHistoryEntry implements Soul {
 	 * Soul Interface
 	 */
 
+	@Override
 	public NBTTagCompound getNBT() {
 		return mNBT;
 	}
 
+	@Override
 	public long getModifiedOn() {
 		return mModifiedOn;
 	}
 
+	@Override
 	public String getModifiedBy() {
 		return mModifiedBy;
 	}
 
+	@Override
 	public ItemStack getPlaceholder() {
 		if (mPlaceholder == null) {
 			regenerateItems();
@@ -82,6 +86,7 @@ public class SoulHistoryEntry implements Soul {
 		return mPlaceholder;
 	}
 
+	@Override
 	public ItemStack getBoS() {
 		if (mBoS == null) {
 			regenerateItems();
@@ -89,14 +94,17 @@ public class SoulHistoryEntry implements Soul {
 		return mBoS;
 	}
 
+	@Override
 	public String getName() {
 		return mName;
 	}
 
+	@Override
 	public String getLabel() {
 		return mLabel;
 	}
 
+	@Override
 	public void summon(Location loc) {
 		EntityNBT.fromEntityData(mNBT).spawn(loc);
 	}
@@ -155,17 +163,29 @@ public class SoulHistoryEntry implements Soul {
 			case CREEPER:
 				mPlaceholder = new ItemStack(Material.CREEPER_HEAD);
 				break;
+			case DOLPHIN:
+				mPlaceholder = new ItemStack(Material.COD);
+				break;
 			case DROWNED:
 				mPlaceholder = new ItemStack(Material.TRIDENT);
 				break;
+			case ELDER_GUARDIAN:
+				mPlaceholder = new ItemStack(Material.SPONGE);
+				break;
 			case ENDERMAN:
 				mPlaceholder = new ItemStack(Material.ENDER_PEARL);
+				break;
+			case EVOKER:
+				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
 			case GHAST:
 				mPlaceholder = new ItemStack(Material.GHAST_TEAR);
 				break;
 			case GUARDIAN:
 				mPlaceholder = new ItemStack(Material.PUFFERFISH);
+				break;
+			case HUSK:
+				mPlaceholder = new ItemStack(Material.ROTTEN_FLESH);
 				break;
 			case ILLUSIONER:
 				mPlaceholder = new ItemStack(Material.BOW);
@@ -176,11 +196,20 @@ public class SoulHistoryEntry implements Soul {
 			case MAGMA_CUBE:
 				mPlaceholder = new ItemStack(Material.MAGMA_CREAM);
 				break;
+			case OCELOT:
+				mPlaceholder = new ItemStack(Material.CHICKEN);
+				break;
 			case PHANTOM:
 				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
 				break;
+			case PIG_ZOMBIE:
+				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
+				break;
 			case SHULKER:
 				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
+				break;
+			case SILVERFISH:
+				mPlaceholder = new ItemStack(Material.MOSSY_STONE_BRICKS);
 				break;
 			case SKELETON:
 				mPlaceholder = new ItemStack(Material.SKELETON_SKULL);
@@ -194,11 +223,23 @@ public class SoulHistoryEntry implements Soul {
 			case SPIDER:
 				mPlaceholder = new ItemStack(Material.SPIDER_EYE);
 				break;
+			case STRAY:
+				mPlaceholder = new ItemStack(Material.BOW);
+				break;
+			case SQUID:
+				mPlaceholder = new ItemStack(Material.INK_SAC);
+				break;
+			case VEX:
+				mPlaceholder = new ItemStack(Material.IRON_SWORD);
+				break;
 			case VINDICATOR:
 				mPlaceholder = new ItemStack(Material.STONE_AXE);
 				break;
 			case WITCH:
 				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
+				break;
+			case WITHER:
+				mPlaceholder = new ItemStack(Material.NETHER_STAR);
 				break;
 			case WITHER_SKELETON:
 				mPlaceholder = new ItemStack(Material.WITHER_SKELETON_SKULL);
@@ -208,6 +249,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case ZOMBIE:
 				mPlaceholder = new ItemStack(Material.ZOMBIE_HEAD);
+				break;
+			case ZOMBIE_VILLAGER:
+				mPlaceholder = new ItemStack(Material.BELL);
 				break;
 			default:
 				mPlaceholder = mBoS.clone();

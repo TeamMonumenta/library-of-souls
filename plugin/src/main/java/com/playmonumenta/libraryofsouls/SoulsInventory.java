@@ -10,8 +10,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.mylib.utils.UtilsMc;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariableContainer;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
 public class SoulsInventory extends CustomInventory {
@@ -73,22 +71,6 @@ public class SoulsInventory extends CustomInventory {
 			} else {
 				if (event.getCursor().getType() == Material.AIR) {
 					event.getView().setCursor(mCurrentSlots.get(slot).getBoS());
-					Soul soul = mCurrentSlots.get(slot);
-					NBTVariableContainer[] vars = BookOfSouls.getFromBook(soul.getBoS()).getEntityNBT().getAllVariables();
-
-					boolean offset = vars.length > 3 ? true : false;
-					NBTVariableContainer healthContainer;
-					NBTVariableContainer equipmentContainer;
-					if (offset) {
-						healthContainer = vars[1];
-						equipmentContainer = vars[2];
-					} else {
-						healthContainer = vars[0];
-						equipmentContainer = vars[1];
-					}
-
-					Bukkit.broadcastMessage(healthContainer.getVariable("Health").toString());
-					Bukkit.broadcastMessage(equipmentContainer.getVariable("ArmorItems").toString());
 				}
 				event.setCancelled(true);
 			}
