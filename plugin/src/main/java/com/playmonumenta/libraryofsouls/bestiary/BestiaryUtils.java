@@ -5,15 +5,12 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 
+import com.playmonumenta.libraryofsouls.Soul;
+
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import com.playmonumenta.libraryofsouls.Soul;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
-import net.md_5.bungee.api.ChatColor;
 
 public class BestiaryUtils {
 	//This class should just be called Bestiary maps
@@ -301,27 +298,4 @@ public class BestiaryUtils {
 			return ChatColor.BLACK + "";
 		}
 	}
-
-	 /* All 'label' text refers to the son_of_the_forest squashed labels used as keys for the LoS database */
-
-	  /** Returns the number of times the player has killed the specific mob */
-	  static int numKilled(Player player, String mobNameLabel) {
-	    return 1;
-	  }
-
-	  /** Records when a player has killed the given mob */
-	  static void recordKill(Player player, String mobNameLabel) {
-	    /* Do nothing for now */
-	  }
-
-	  /** Given the set of all available mobNameLabels, get a map of how many of each have been killed by the player */
-	  static HashMap<SoulEntry, Integer> getAllKilledMobs(Player player, List<SoulEntry> allAvailableMobNameLabels) {
-	    int i = 0;
-	    HashMap<SoulEntry, Integer> map = new HashMap<>();
-	    for (SoulEntry soul : allAvailableMobNameLabels) {
-	      map.put(soul, i);
-	      i++;
-	    }
-	    return map;
-	  }
 }

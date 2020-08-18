@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
+import com.playmonumenta.libraryofsouls.bestiary.GetBestiaryCommand;
+import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
+
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
-import com.playmonumenta.libraryofsouls.bestiary.GetBestiaryCommand;
-import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
 	private static LibraryOfSouls INSTANCE = null;
@@ -60,6 +61,8 @@ public class LibraryOfSouls extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		INSTANCE = this;
+
+		getServer().getPluginManager().registerEvents(new BestiaryManager(getLogger()), this);
 
 		File directory = getDataFolder();
 		if (!directory.exists()) {

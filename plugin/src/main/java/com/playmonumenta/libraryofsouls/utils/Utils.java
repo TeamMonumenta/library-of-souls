@@ -3,10 +3,11 @@ package com.playmonumenta.libraryofsouls.utils;
 import org.bukkit.ChatColor;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
 public class Utils {
-	private static Gson gson = new Gson();
+	private static Gson gson = new GsonBuilder().setLenient().create();
 
 	/*
 	 * Valid examples:
@@ -19,8 +20,13 @@ public class Utils {
 			return str;
 		}
 
-		JsonElement element = gson.fromJson(str, JsonElement.class);
-		return stripColorsAndJSON(element);
+		try {
+			JsonElement element = gson.fromJson(str, JsonElement.class);
+			return stripColorsAndJSON(element);
+		} catch (Exception ex) {
+			// Not JSON...
+			return ChatColor.stripColor(str);
+		}
 	}
 
 	public static String stripColorsAndJSON(JsonElement element) {

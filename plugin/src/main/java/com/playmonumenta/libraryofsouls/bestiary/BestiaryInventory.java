@@ -1,8 +1,8 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -31,7 +31,7 @@ public class BestiaryInventory extends CustomInventory {
 	private boolean mHasNextPage;
 	private Region[] mCurrentPoi;
 	private static ItemStack mNotFound = new ItemStack(Material.BARRIER);
-	private HashMap<SoulEntry, Integer> mAvailableMobs;
+	private Map<SoulEntry, Integer> mAvailableMobs;
 
 	static {
 		ItemMeta meta = mNotFound.getItemMeta();
@@ -46,19 +46,10 @@ public class BestiaryInventory extends CustomInventory {
 	}
 
 	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title) {
-		super(owner, 36, "Bestiary: " + BestiaryUtils.hashColor(title) + BestiaryUtils.formatWell(title));
-		mSouls = souls;
-		mTitle = title;
-		List<SoulEntry> allAvailableMobNameLabels = SoulsDatabase.getInstance().getSoulsByLocation(title);
-		mAvailableMobs = BestiaryUtils.getAllKilledMobs(owner, allAvailableMobNameLabels);
-		if (BestiaryUtils.formatWell(mTitle).equals("Region 1") || BestiaryUtils.formatWell(mTitle).equals("Region 2")) {
-			loadRegionWindow(BestiaryUtils.formatWell(mTitle));
-		} else {
-			loadWindow();
-		}
+		this(owner, souls, title, BestiaryManager.getAllKilledMobs(owner, SoulsDatabase.getInstance().getSoulsByLocation(title)));
 	}
 
-	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, HashMap<SoulEntry, Integer> availableMobs) {
+	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, Map<SoulEntry, Integer> availableMobs) {
 		super(owner, 36, "Bestiary: " + BestiaryUtils.hashColor(title) + BestiaryUtils.formatWell(title));
 		mSouls = souls;
 		mTitle = title;

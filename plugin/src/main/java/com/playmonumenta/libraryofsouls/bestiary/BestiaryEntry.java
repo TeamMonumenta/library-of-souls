@@ -1,9 +1,9 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -37,11 +37,12 @@ import net.md_5.bungee.api.ChatColor;
 public class BestiaryEntry extends CustomInventory {
 	private static final AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_NUMBER;
 	private static final AttributeModifier.Operation SCALAR = AttributeModifier.Operation.ADD_SCALAR;
-	private HashMap<SoulEntry, Integer> mAvailableMobs;
+	private Map<SoulEntry, Integer> mAvailableMobs;
 	private List<SoulEntry> mSouls;
 	private int mCurrentSoul;
 	private String mTitle;
-	public BestiaryEntry (Soul soul, Player player, boolean lessInfo, String title, int currentSoul, HashMap<SoulEntry, Integer> availableMobs) {
+
+	public BestiaryEntry (Soul soul, Player player, boolean lessInfo, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs) {
 		super(player, 27, BestiaryUtils.hashColor(title) + soul.getPlaceholder().getItemMeta().getDisplayName());
 		mSouls = SoulsDatabase.getInstance().getSoulsByLocation(title);
 		mAvailableMobs = availableMobs;
@@ -208,22 +209,22 @@ public class BestiaryEntry extends CustomInventory {
 				Soul soul = mSouls.get(i);
 				if (mAvailableMobs.containsKey(soul)) {
 					if (mAvailableMobs.get(soul) >= 2 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					} else if (mAvailableMobs.get(soul) >= 1 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					} else if (mAvailableMobs.get(soul) >= 3 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					} else if (mAvailableMobs.get(soul) >= 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					} else if (mAvailableMobs.get(soul) >= 10) {
-						new BestiaryEntry(soul, player, false, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					} else if (mAvailableMobs.get(soul) >= 5) {
-						new BestiaryEntry(soul, player, true, mTitle, i).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 						break;
 					}
 				}
