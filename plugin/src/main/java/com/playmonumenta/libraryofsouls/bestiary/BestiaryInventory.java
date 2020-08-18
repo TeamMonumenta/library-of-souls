@@ -58,6 +58,18 @@ public class BestiaryInventory extends CustomInventory {
 		}
 	}
 
+	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, HashMap<SoulEntry, Integer> availableMobs) {
+		super(owner, 36, "Bestiary: " + BestiaryUtils.hashColor(title) + BestiaryUtils.formatWell(title));
+		mSouls = souls;
+		mTitle = title;
+		mAvailableMobs = availableMobs;
+		if (BestiaryUtils.formatWell(mTitle).equals("Region 1") || BestiaryUtils.formatWell(mTitle).equals("Region 2")) {
+			loadRegionWindow(BestiaryUtils.formatWell(mTitle));
+		} else {
+			loadWindow();
+		}
+	}
+
 	public void loadWindow() {
 		mCurrentSlots = mSouls.subList(mOffset, Math.min(mSouls.size(), mOffset + 27));
 		for (int i = 0; i < 26; i++) {
@@ -180,16 +192,16 @@ public class BestiaryInventory extends CustomInventory {
 						event.getWhoClicked().sendMessage(ChatColor.DARK_RED + "You have not gained enough knowledge of this mob!");
 						event.setCancelled(true);
 					} else if (mAvailableMobs.get(soul) < 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, slot + mOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, true, mTitle, slot + mOffset, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (mAvailableMobs.get(soul) >= 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, slot + mOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, false, mTitle, slot + mOffset, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (mAvailableMobs.get(soul) < 5) {
 						event.getWhoClicked().sendMessage(ChatColor.DARK_RED + "You have not gained enough knowledge of this mob!");
 						event.setCancelled(true);
 					} else if (mAvailableMobs.get(soul) < 10) {
-						new BestiaryEntry(soul, player, true, mTitle, slot + mOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, true, mTitle, slot + mOffset, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 					} else {
-						new BestiaryEntry(soul, player, false, mTitle, slot + mOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, false, mTitle, slot + mOffset, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
 					}
 				}
 			} else if (event.getClick().equals(ClickType.LEFT) && mCurrentPoi != null) {
