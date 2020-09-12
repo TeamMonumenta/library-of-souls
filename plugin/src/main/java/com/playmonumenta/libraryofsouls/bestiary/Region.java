@@ -1,17 +1,20 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import org.bukkit.Material;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.inventory.ItemStack;
 
 public class Region {
 	private int mRegionNumber;
 	private String mRegionArea;
 	private String mPoiName;
+	private Advancement mAdvancement;
 
-	public Region(String poiName, int regionNumber, String regionArea) {
+	public Region(String poiName, int regionNumber, String regionArea, Advancement advancement) {
 		mPoiName = poiName;
 		mRegionNumber = regionNumber;
 		mRegionArea = regionArea;
+		mAdvancement = advancement;
 	}
 
 	public int getRegionNumber() {
@@ -26,53 +29,59 @@ public class Region {
 		return this.mPoiName;
 	}
 
+	public Advancement getAdvancement() {
+		return this.mAdvancement;
+	}
+
 	public int getAreaNumber() {
 		switch (mRegionArea) {
-		case "Northern Swamplands":
+		case "swampnorth":
 			return 1;
-		case "Southern Swamplands":
+		case "swampsouth":
 			return 2;
-		case "Eastern Swamplands":
+		case "swampeast":
 			return 3;
-		case "Northeastern Jungle":
+		case "sea":
 			return 4;
-		case "Southeastern Jungle":
+		case "junglenortheast":
 			return 5;
-		case "Southwestern Jungle":
+		case "junglesoutheast":
 			return 6;
-		case "Northwestern Jungle":
+		case "junglesouthwest":
 			return 7;
-		case "Central Plateau":
+		case "junglenorthwest":
 			return 8;
-		case "Northern Mountains":
+		case "junglecenter":
 			return 9;
-		case "Highlands":
+		case "junglemountains":
 			return 10;
-		case "Azacor's Grove":
+		case "highlands":
 			return 11;
-		case "Forest":
+		case "azacor_grove":
+			return 12;
+		case "chillwindforest":
 			return 20;
-		case "Mountains":
+		case "chillwindmountains":
 			return 21;
-		case "Permafrost":
+		case "chillwindpermafrost":
 			return 22;
-		case "Crystalshroom Valley":
+		case "chillwindcrystalshroom_valley":
 			return 23;
-		case "Icelands":
+		case "chillwindtundra":
 			return 24;
-		case "Mistport Outlands":
+		case "oceanmistport":
 			return 25;
-		case "Viridian Archipelago":
+		case "oceanearly":
 			return 26;
-		case "Ocean's Reach":
+		case "oceanmid-late":
 			return 27;
-		case "Trade Route":
+		case "deserttrade_route":
 			return 28;
-		case "Mesa":
+		case "desertmesa":
 			return 29;
-		case "Oasis":
+		case "desertoasis":
 			return 30;
-		case "Canyonlands":
+		case "desertcanyonlands":
 			return 31;
 		default:
 			return 0;
@@ -81,54 +90,61 @@ public class Region {
 
 	public ItemStack getRegionItem() {
 		switch (mRegionArea) {
-		case "Northern Swamplands":
+		case "swampnorth":
 			return new ItemStack(Material.VINE);
-		case "Southern Swamplands":
+		case "swampsouth":
 			return new ItemStack(Material.BROWN_MUSHROOM);
-		case "Eastern Swamplands":
+		case "swampeast":
 			return new ItemStack(Material.PODZOL);
-		case "Northeastern Jungle":
+		case "sea":
+			return new ItemStack(Material.TUBE_CORAL_BLOCK);
+		case "junglenortheast":
 			return new ItemStack(Material.JUNGLE_WOOD);
-		case "Southeastern Jungle":
+		case "junglesoutheast":
 			return new ItemStack(Material.JUNGLE_LEAVES);
-		case "Southwestern Jungle":
+		case "junglesouthwest":
 			return new ItemStack(Material.COCOA_BEANS);
-		case "Northwestern Jungle":
+		case "junglenorthwest":
 			return new ItemStack(Material.JUNGLE_SAPLING);
-		case "Central Plateau":
+		case "junglecenter":
 			return new ItemStack(Material.ORANGE_TERRACOTTA);
-		case "Northern Mountains":
+		case "junglemountains":
 			return new ItemStack(Material.SPRUCE_WOOD);
-		case "Highlands":
+		case "highlands":
 			return new ItemStack(Material.SPRUCE_LEAVES);
-		case "Azacor's Grove":
+		case "azacor_grove":
 			return new ItemStack(Material.FIRE_CORAL_BLOCK);
-		case "Forest":
+		case "chillwindforest":
 			return new ItemStack(Material.SPRUCE_LOG);
-		case "Mountains":
+		case "chillwindmountains":
 			return new ItemStack(Material.GRAY_TERRACOTTA);
-		case "Permafrost":
+		case "chillwindpermafrost":
 			return new ItemStack(Material.SNOW_BLOCK);
-		case "Crystalshroom Valley":
+		case "chillwindcrystalshroom_valley":
 			return new ItemStack(Material.MUSHROOM_STEM);
-		case "Icelands":
+		case "chillwindtundra":
 			return new ItemStack(Material.ICE);
-		case "Mistport Outlands":
+		case "oceanmistport":
 			return new ItemStack(Material.BRICK);
-		case "Viridian Archipelago":
+		case "oceanearly":
 			return new ItemStack(Material.PRISMARINE);
-		case "Ocean's Reach":
+		case "oceanmid-late":
 			return new ItemStack(Material.SPONGE);
-		case "Trade Route":
+		case "deserttrade_route":
 			return new ItemStack(Material.END_STONE);
-		case "Mesa":
+		case "desertmesa":
 			return new ItemStack(Material.CHISELED_RED_SANDSTONE);
-		case "Oasis":
+		case "desertoasis":
 			return new ItemStack(Material.ACACIA_LOG);
-		case "Canyonlands":
+		case "desertcanyonlands":
 			return new ItemStack(Material.MAGMA_BLOCK);
 		default:
-			return new ItemStack(Material.GRASS);
+			return new ItemStack(Material.GRASS_BLOCK);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return mPoiName + " " + mRegionArea + " " + mRegionNumber;
 	}
 }

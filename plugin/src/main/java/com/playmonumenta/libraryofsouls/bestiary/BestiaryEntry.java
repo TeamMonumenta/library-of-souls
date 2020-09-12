@@ -41,17 +41,26 @@ public class BestiaryEntry extends CustomInventory {
 	private List<SoulEntry> mSouls;
 	private int mCurrentSoul;
 	private String mTitle;
+	private Region[] mCurrentPois;
+	private String mRegionTitle;
+	private int mOldOffset;
 
-	public BestiaryEntry (Soul soul, Player player, boolean lessInfo, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs) {
-		super(player, 27, BestiaryUtils.hashColor(title) + soul.getPlaceholder().getItemMeta().getDisplayName());
+	public BestiaryEntry (Soul soul, Player player, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs) {
+		this(soul, player, title, currentSoul, availableMobs, null, "", 0);
+	}
+
+	public BestiaryEntry (Soul soul, Player player, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs, Region[] pois, String regionTitle, int offset) {
+		super(player, 36, BestiaryUtils.hashColor(title) + soul.getPlaceholder().getItemMeta().getDisplayName());
 		mSouls = SoulsDatabase.getInstance().getSoulsByLocation(title);
 		mAvailableMobs = availableMobs;
 		mCurrentSoul = currentSoul;
 		mTitle = title;
-		generateBestiaryEntry(soul, player, lessInfo);
+		mCurrentPois = pois;
+		mRegionTitle = regionTitle;
+		generateBestiaryEntry(soul, player);
 	}
 
-	private void generateBestiaryEntry(Soul soul, Player player, boolean lessInfo) {
+	private void generateBestiaryEntry(Soul soul, Player player) {
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
 
@@ -108,6 +117,14 @@ public class BestiaryEntry extends CustomInventory {
 						trident = true;
 					}
 
+					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD) == 0 && BestiaryUtils.mDefaultItemDamage.containsKey(item.getType())) {
+						damage += BestiaryUtils.mDefaultItemDamage.get(item.getType());
+					}
+
+					if (handItems[0] == item && item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+						damage += ((0.0 + item.getEnchantmentLevel(Enchantment.DAMAGE_ALL)) / 2) + 0.5;
+					}
+
 					armor += getAttributeNumber(item, Attribute.GENERIC_ARMOR, ADD);
 					armorToughness += getAttributeNumber(item, Attribute.GENERIC_ARMOR_TOUGHNESS, ADD);
 					health += getAttributeNumber(item, Attribute.GENERIC_MAX_HEALTH, ADD);
@@ -125,6 +142,10 @@ public class BestiaryEntry extends CustomInventory {
 			damage += BestiaryUtils.mDefaultDamage.get(entityNBT.getEntityType());
 		}
 
+		if (entityNBT.getEntityType() == EntityType.ZOMBIE || entityNBT.getEntityType() == EntityType.ZOMBIE_VILLAGER) {
+			armor += 2;
+		}
+
 		ItemStack armorItem = getArmorItem(armor, armorToughness);
 
 		ItemStack healthItem = getHealthItem(health);
@@ -140,19 +161,22 @@ public class BestiaryEntry extends CustomInventory {
 		meta = nextPageItem.getItemMeta();
 		meta.setDisplayName(ChatColor.BLUE + "Next Page");
 		nextPageItem.setItemMeta(meta);
-//		for (int i = 0; i <= 100; i++) {
-//			Bukkit.broadcastMessage(i + ": " + getBowDamage(i));
-//		}
 
-		if (lessInfo) {
-			for (int i = 0; i < 27; i++) {
+		ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+		meta = goBackItem.getItemMeta();
+		meta.setDisplayName(ChatColor.RED + "Go Back");
+		goBackItem.setItemMeta(meta);
+
+		if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
+			for (int i = 0; i < 36; i++) {
 				_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
 			}
 			_inventory.setItem(11, healthItem);
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
-			_inventory.setItem(18, prevPageItem);
-			_inventory.setItem(26, nextPageItem);
+			_inventory.setItem(27, prevPageItem);
+			_inventory.setItem(31, goBackItem);
+			_inventory.setItem(35, nextPageItem);
 			return;
 		}
 
@@ -162,7 +186,7 @@ public class BestiaryEntry extends CustomInventory {
 
 		ItemStack tagItem = getTagItem(tagString);
 
-		for (int i = 0; i < 27; i++) {
+		for (int i = 0; i < 36; i++) {
 			_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
 		}
 		_inventory.setItem(2, healthItem);
@@ -171,64 +195,33 @@ public class BestiaryEntry extends CustomInventory {
 		_inventory.setItem(20, speedItem);
 		_inventory.setItem(22, effectItem);
 		_inventory.setItem(24, tagItem);
-		_inventory.setItem(18, prevPageItem);
-		_inventory.setItem(26, nextPageItem);
+		_inventory.setItem(27, prevPageItem);
+		_inventory.setItem(31, goBackItem);
+		_inventory.setItem(35, nextPageItem);
 	}
 
 	@Override
 	protected void inventoryClick(final InventoryClickEvent event) {
 		int slot = event.getRawSlot();
 		Player player = (Player)event.getWhoClicked();
-		if (mSouls != null && mAvailableMobs != null && slot == 18 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
+		if (mSouls != null && mAvailableMobs != null && slot == 27 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
 			for (int i = mCurrentSoul - 1; i >= 0; i--) {
 				Soul soul = mSouls.get(i);
-				if (mAvailableMobs.containsKey(soul)) {
-					if (mAvailableMobs.get(soul) >= 2 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 1 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 3 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 10) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 5) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					}
+				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2) {
+					new BestiaryEntry(soul, player, mTitle, i, mAvailableMobs, mCurrentPois, mRegionTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+					break;
 				}
 			}
-		} else if (mSouls != null && mAvailableMobs != null && slot == 26 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
+		} else if (mSouls != null && mAvailableMobs != null && slot == 35 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
 			for (int i = mCurrentSoul + 1; i < mSouls.size(); i++) {
 				Soul soul = mSouls.get(i);
-				if (mAvailableMobs.containsKey(soul)) {
-					if (mAvailableMobs.get(soul) >= 2 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 1 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 3 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 10) {
-						new BestiaryEntry(soul, player, false, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					} else if (mAvailableMobs.get(soul) >= 5) {
-						new BestiaryEntry(soul, player, true, mTitle, i, mAvailableMobs).openInventory(player, LibraryOfSouls.getInstance());
-						break;
-					}
+				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2) {
+					new BestiaryEntry(soul, player, mTitle, i, mAvailableMobs, mCurrentPois, mRegionTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+					break;
 				}
 			}
+		} else if (mSouls != null && mAvailableMobs != null && slot == 31 && event.getCurrentItem().getType().equals(Material.RED_STAINED_GLASS_PANE)) {
+			new BestiaryInventory(player, mSouls, mAvailableMobs, mTitle, mCurrentPois, mOldOffset, mRegionTitle).openInventory(player, LibraryOfSouls.getInstance());
 		}
 		event.setCancelled(true);
 	}

@@ -3,24 +3,32 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.playmonumenta.libraryofsouls.Soul;
-
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.EntityType;
-import org.bukkit.inventory.ItemStack;
+
+import com.playmonumenta.libraryofsouls.Soul;
+import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 public class BestiaryUtils {
 	//This class should just be called Bestiary maps
 	public static EnumMap<Material, Double> mDefaultArmor = new EnumMap<>(Material.class);
 	public static EnumMap<EntityType, Double> mDefaultDamage = new EnumMap<>(EntityType.class);
 	public static EnumMap<EntityType, Double> mDefaultSpeed = new EnumMap<>(EntityType.class);
-	public static HashMap<ItemStack, Double> mDefaultItemDamage = new HashMap<>();
+	public static EnumMap<Material, Double> mDefaultItemDamage = new EnumMap<>(Material.class);
 	public static List<String> mBookMap = new ArrayList<>();
 	public static List<Region> mPoiMap = new ArrayList<>();
 	public static List<String> mDungeons;
+	public static Set<String> mLocs;
+	public static Map<String, String> mLocsCompressed = new HashMap<>();
 
 	private static final String NSWAMP = "Northern Swamplands";
 	private static final String SSWAMP = "Southern Swamplands";
@@ -108,11 +116,11 @@ public class BestiaryUtils {
 		mDefaultDamage.put(EntityType.ZOMBIE, 3.0);
 		mDefaultDamage.put(EntityType.ZOMBIE_VILLAGER, 3.0);
 		//I'll just assume it works the same for each mob-it should really only be on select zombies anyway
-		mDefaultItemDamage.put(new ItemStack(Material.WOODEN_SWORD), 4.0);
-		mDefaultItemDamage.put(new ItemStack(Material.GOLDEN_SWORD), 4.0);
-		mDefaultItemDamage.put(new ItemStack(Material.STONE_SWORD), 5.0);
-		mDefaultItemDamage.put(new ItemStack(Material.IRON_SWORD), 6.0);
-		mDefaultItemDamage.put(new ItemStack(Material.DIAMOND_SWORD), 7.0);
+		mDefaultItemDamage.put(Material.WOODEN_SWORD, 4.0);
+		mDefaultItemDamage.put(Material.GOLDEN_SWORD, 4.0);
+		mDefaultItemDamage.put(Material.STONE_SWORD, 5.0);
+		mDefaultItemDamage.put(Material.IRON_SWORD, 6.0);
+		mDefaultItemDamage.put(Material.DIAMOND_SWORD, 7.0);
 
 		mDefaultSpeed.put(EntityType.SNOWMAN, 0.2);
 		mDefaultSpeed.put(EntityType.BLAZE, 0.23);
@@ -165,25 +173,12 @@ public class BestiaryUtils {
 		mBookMap.add("purple");
 		mBookMap.add("labs");
 		mBookMap.add("willows");
+		mBookMap.add("sanctum");
 		mBookMap.add("roguelike");
 		mBookMap.add("reverie");
-		mBookMap.add("shifting_city");
+		mBookMap.add("shiftingcity");
 		mBookMap.add("region_1");
 		mBookMap.add("region_2");
-
-		mPoiMap.add(new Region("eastern_bandit_camp", 1, NSWAMP));
-		mPoiMap.add(new Region("bandit_fortress", 1, NSWAMP));
-		mPoiMap.add(new Region("cliffside_bandits", 1, NSWAMP));
-		mPoiMap.add(new Region("northwestern_mine", 1, NSWAMP));
-		mPoiMap.add(new Region("eastern_mine", 1, ESWAMP));
-		mPoiMap.add(new Region("southeastern_mine", 1, SSWAMP));
-		mPoiMap.add(new Region("water_shrine", 1, ESWAMP));
-		mPoiMap.add(new Region("fire_shrine", 1, ESWAMP));
-		mPoiMap.add(new Region("earth_shrine", 1, SWJUNGLE));
-		mPoiMap.add(new Region("air_shrine", 1, CPLATEAU));
-		mPoiMap.add(new Region("feyrune_forest", 2, MIST));
-		mPoiMap.add(new Region("barracks_at_sea", 2, VIRIDIAN));
-		mPoiMap.add(new Region("city_of_bones", 2, OCEAN));
 	}
 
 	public static String formatWell(String in) {
@@ -217,6 +212,8 @@ public class BestiaryUtils {
 			return "Region 1";
 		} else if (in.equals("region_2")) {
 			return "Region 2";
+		} else if (in.equals("shiftingcity")) {
+			return "Shifting City";
 		}
 		in = in.replaceAll("\"", "");
 		String sub = "";
@@ -239,16 +236,47 @@ public class BestiaryUtils {
 		return sub;
 	}
 
-	public static String toNiceName(Soul soul) {
-//		if (!soul.getName().substring(1, 1).equals("\"")) {
-//			return ChatColor.WHITE + soul.getName().substring(9, soul.getName().length() - 2);
-//		} else
-		if (soul.getName().substring(1, 1).equals("\"")) {
-			return ChatColor.WHITE + soul.getName().substring(1, soul.getName().length() - 1);
-		} else if (soul.getName().startsWith("[")) {
-			return ChatColor.WHITE + soul.getName().substring(1, soul.getName().length() - 1);
-		} else {
-			return ChatColor.WHITE + soul.getName().substring(1, soul.getName().length() - 1);
+	public static void registerPoiLocs() {
+		mLocs = SoulsDatabase.getInstance().listMobLocations();
+		for (String loc : mLocs) {
+			mLocsCompressed.put(removeUnderscore(loc), loc);
+		}
+
+		Iterator<Advancement> advancements = Bukkit.advancementIterator();
+		while (advancements.hasNext()) {
+			Advancement adv = advancements.next();
+			String advancement = adv.getKey().getKey();
+			if (!isPoiAdvancement(advancement)) {
+				continue;
+			}
+
+			String[] roots = advancement.split("/");
+
+			if (roots[1].equals("r1")) {
+				String area = roots[2];
+				String loc = roots[3];
+				if (roots.length == 5) {
+					area = roots[2] + roots[3];
+					loc = roots[4];
+				}
+
+				if (mLocsCompressed.containsKey(loc)) {
+					loc = mLocsCompressed.get(loc);
+				} else {
+					Bukkit.broadcastMessage(advancement);
+					continue;
+				}
+
+				mPoiMap.add(new Region(loc, 1, area, adv));
+			} else if (roots[1].equals("r2")) {
+				String area = roots[2] + roots[3];
+				String loc = roots[4];
+				if (!mLocs.contains(loc)) {
+					Bukkit.broadcastMessage(advancement);
+					continue;
+				}
+				mPoiMap.add(new Region(loc, 2, area, adv));
+			}
 		}
 	}
 
@@ -294,8 +322,43 @@ public class BestiaryUtils {
 			return ChatColor.DARK_RED + "";
 		case "roguelike":
 			return ChatColor.DARK_RED + "";
+		case "sanctum":
+			return ChatColor.GREEN + "";
 		default:
 			return ChatColor.BLACK + "";
 		}
+	}
+
+	public static int getInfoTier(Soul soul, Map<SoulEntry, Integer> availableMobs) {
+		if (availableMobs.containsKey(soul)) {
+			if (availableMobs.get(soul) >= 2 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
+				return 3;
+			} else if (availableMobs.get(soul) >= 1 && soul.getNBT().getString("Tags").contains("\"Boss\"")) {
+				return 2;
+			} else if (availableMobs.get(soul) >= 5 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
+				return 2;
+			} else if (availableMobs.get(soul) >= 3 && soul.getNBT().getString("Tags").contains("\"Elite\"")) {
+				return 1;
+			} else if (availableMobs.get(soul) >= 10) {
+				return 3;
+			} else if (availableMobs.get(soul) >= 5) {
+				return 2;
+			} else if (availableMobs.get(soul) >= 1) {
+				return 1;
+			}
+		}
+		return 0;
+	}
+
+	public static String nameToHex(String name) {
+		return Integer.toHexString(name.hashCode());
+	}
+
+	private static boolean isPoiAdvancement(String in) {
+		return in.startsWith("pois") && !in.endsWith("root") && !in.endsWith("trigger");
+	}
+
+	private static String removeUnderscore(String in) {
+		return in.replaceAll("_", "");
 	}
 }

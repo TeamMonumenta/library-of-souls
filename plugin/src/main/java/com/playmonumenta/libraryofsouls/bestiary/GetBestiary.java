@@ -43,6 +43,7 @@ public class GetBestiary {
 			mPage += count != BestiaryUtils.mBookMap.size() ? ultraEntry.toString().substring(0, ultraEntry.toString().length() - 2) + "],\"text\":\"\"}','" : ultraEntry.toString();
 			}
 		}
+		BestiaryUtils.registerPoiLocs();
 	}
 
 	public static void getBook(Player player) {
@@ -51,8 +52,8 @@ public class GetBestiary {
 			return;
 		}
 		String commandString = mPage;
-		Bukkit.broadcastMessage("give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + ",\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",resolved:1b}");
-		Bukkit.getConsoleSender().getServer().dispatchCommand(player, "give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + "],\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",resolved:1b}");
+//		Bukkit.broadcastMessage("give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + ",\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",resolved:1b}");
+		Bukkit.getConsoleSender().getServer().dispatchCommand(player, "give @s minecraft:written_book{pages:[" + commandString.substring(0, commandString.length() - 2) + "],\"text\":\"\"}'],\"title\":\"Bestiary\",\"author\":\"Fred\",display:{Name:'{\"text\":\"Bestiary\"}'},resolved:1b}");
 	}
 	private static String generateColor(String in) {
 		switch(in) {
@@ -83,7 +84,7 @@ public class GetBestiary {
 		case "yellow":
 			return "yellow";
 		case "lime":
-			return "light_green";
+			return "green";
 		case "pink":
 			return "red";
 		case "cyan":
