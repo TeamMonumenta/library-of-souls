@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -88,8 +89,8 @@ public class SoulEntry implements Soul {
 		return mHistory.get(0).getLabel();
 	}
 
-	public void summon(Location loc) {
-		mHistory.get(0).summon(loc);
+	public Entity summon(Location loc) {
+		return mHistory.get(0).summon(loc);
 	}
 
 	/*
