@@ -13,6 +13,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -108,6 +109,7 @@ public class BestiaryEntry extends CustomInventory {
 		if (handItems != null) {
 			for (ItemStack item : handItems) {
 				if (item != null && item.hasItemMeta()) {
+					EquipmentSlot slot = handItems[0] != null && handItems[0].equals(item) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 					if (item.getType().equals(Material.BOW)) {
 						ranged = true;
 						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
@@ -117,11 +119,11 @@ public class BestiaryEntry extends CustomInventory {
 						trident = true;
 					}
 
-					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD) == 0 && BestiaryUtils.mDefaultItemDamage.containsKey(item.getType())) {
+					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot) == 0 && BestiaryUtils.mDefaultItemDamage.containsKey(item.getType())) {
 						damage += BestiaryUtils.mDefaultItemDamage.get(item.getType());
 					}
 
-					if (handItems[0] == item && item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
+					if (handItems[0] != null && handItems[0].equals(item) && item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
 						damage += ((0.0 + item.getEnchantmentLevel(Enchantment.DAMAGE_ALL)) / 2) + 0.5;
 					}
 
@@ -150,7 +152,7 @@ public class BestiaryEntry extends CustomInventory {
 
 		ItemStack healthItem = getHealthItem(health);
 
-		ItemStack damageItem = getDamageItem(damage, bowDamage, explodePower, ranged, trident, explode);
+		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, ranged, trident, explode);
 
 		ItemStack prevPageItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
 		ItemMeta meta = prevPageItem.getItemMeta();
@@ -225,8 +227,12 @@ public class BestiaryEntry extends CustomInventory {
 		}
 		event.setCancelled(true);
 	}
-
+	// Use this one if you dont care about the slot
 	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation) {
+		return getAttributeNumber(item, attribute, operation, null);
+	}
+	// Use this one if you do care about the slot
+	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation, EquipmentSlot slot) {
 		ItemMeta meta = item.getItemMeta();
 		double attributeNum = 0;
 		if (meta.getAttributeModifiers(attribute) != null) {
@@ -234,7 +240,11 @@ public class BestiaryEntry extends CustomInventory {
 			while (iterator.hasNext()) {
 				AttributeModifier mod = iterator.next();
 				if (mod.getOperation().equals(operation)) {
-					attributeNum += mod.getAmount();
+					if (slot == null) {
+						attributeNum += mod.getAmount();
+					} else if (mod.getSlot() == slot) {
+						attributeNum += mod.getAmount();
+					}
 				}
 			}
 		}
@@ -277,18 +287,20 @@ public class BestiaryEntry extends CustomInventory {
 		return armorItem;
 	}
 
-	private static ItemStack getDamageItem(double damage, double bowDamage, double explodePower, boolean ranged, boolean trident, boolean explode) {
-		ItemStack damageItem;
-
-		if (ranged) {
-			damageItem = new ItemStack(Material.BOW);
-		} else if (trident) {
-			damageItem = new ItemStack(Material.TRIDENT);
-		} else if (explode) {
-			damageItem = new ItemStack(Material.GUNPOWDER);
-		} else {
-			damageItem = new ItemStack(Material.IRON_SWORD);
+	private static ItemStack getDamageItem(ItemStack item, double damage, double bowDamage, double explodePower, boolean ranged, boolean trident, boolean explode) {
+		ItemStack damageItem = item;
+		if (damageItem == null) {
+			if (ranged) {
+				damageItem = new ItemStack(Material.BOW);
+			} else if (trident) {
+				damageItem = new ItemStack(Material.TRIDENT);
+			} else if (explode) {
+				damageItem = new ItemStack(Material.GUNPOWDER);
+			} else {
+				damageItem = new ItemStack(Material.IRON_SWORD);
+			}
 		}
+
 
 		ItemMeta damageMeta = damageItem.getItemMeta();
 		damageMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
