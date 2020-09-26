@@ -12,6 +12,7 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -97,8 +98,8 @@ public class SoulHistoryEntry implements Soul {
 		return mLabel;
 	}
 
-	public void summon(Location loc) {
-		EntityNBT.fromEntityData(mNBT).spawn(loc);
+	public Entity summon(Location loc) {
+		return EntityNBT.fromEntityData(mNBT).spawn(loc);
 	}
 
 	/*
