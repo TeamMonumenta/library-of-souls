@@ -47,7 +47,7 @@ public class SpawnerNBTCommand {
 		}
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		CreatureSpawner spawner = (CreatureSpawner)meta.getBlockState();
-		switch(method) {
+		switch (method) {
 		case "MaxSpawnDelay":
 			if (argument < spawner.getMinSpawnDelay()) {
 				CommandAPI.fail("Maximum Spawn Delay cannot be smaller than Minimum Spawn Delay!");
@@ -70,6 +70,8 @@ public class SpawnerNBTCommand {
 			break;
 		case "SpawnRange":
 			spawner.setSpawnRange(argument);
+			break;
+		default:
 			break;
 		}
 

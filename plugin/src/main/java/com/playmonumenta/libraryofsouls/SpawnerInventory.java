@@ -28,10 +28,10 @@ public class SpawnerInventory extends CustomInventory {
 		super(owner, 9, soul.getDisplayName());
 
 		mGoBackInventory = previous;
-		loadWindow(spawner, owner);
+		loadWindow(spawner);
 	}
 
-	private void loadWindow(ItemStack spawnerItem, Player owner) {
+	private void loadWindow(ItemStack spawnerItem) {
 		spawnerItem = changeActivationRange(spawnerItem, 10);
 		_inventory.setItem(2, spawnerItem);
 
@@ -69,6 +69,7 @@ public class SpawnerInventory extends CustomInventory {
 	protected void inventoryClick(InventoryClickEvent event) {
 		if (event.getClickedInventory() == null) {
 			// Player clicked off the screen
+			return;
 		} else if (event.getClickedInventory().equals(getInventory()) && event.getSlot() == 0 && mGoBackInventory != null) {
 			event.setCancelled(true);
 			Player player = (Player)event.getWhoClicked();
