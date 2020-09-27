@@ -238,9 +238,9 @@ public class SoulHistoryEntry implements Soul {
 		ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
 		ItemStackNBTWrapper bosWrap = new ItemStackNBTWrapper(mBoS);
 
-		/* Set the item's display name (force json name if source mob has json name) */
-		placeholderWrap.getVariable("Name").set(mName, null);
-		bosWrap.getVariable("Name").set(mName, null);
+		/* Set the item's display name (recolored, does not exactly match actual mob name) */
+		placeholderWrap.getVariable("Name").set(getDisplayName(), null);
+		bosWrap.getVariable("Name").set(getDisplayName(), null);
 
 		/* Set hide flags to hide the BoS author info */
 		placeholderWrap.getVariable("HideFlags").set("32", null);
