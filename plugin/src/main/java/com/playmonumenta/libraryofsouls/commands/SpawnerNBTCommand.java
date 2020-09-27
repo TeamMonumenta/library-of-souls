@@ -1,7 +1,8 @@
 package com.playmonumenta.libraryofsouls.commands;
 
 import java.util.LinkedHashMap;
-import java.util.List;
+
+import com.playmonumenta.libraryofsouls.SpawnerInventory;
 
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
@@ -24,7 +25,7 @@ public class SpawnerNBTCommand {
 		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
 
 		arguments.put(method, new LiteralArgument(method));
-		arguments.put("integer", new IntegerArgument());
+		arguments.put("value", new IntegerArgument());
 
 		CommandAPI.getInstance().register("nbtheldspawner", perms, arguments, (sender, args) -> {
 			changeSpawnerNBT(method, (Integer)args[0], (Player)sender);
@@ -32,11 +33,11 @@ public class SpawnerNBTCommand {
 	}
 
 	public static void register() {
-		registerType("maxspawndelay");
-		registerType("minspawndelay");
-		registerType("activationrange");
-		registerType("spawncount");
-		registerType("spawnrange");
+		registerType("MaxSpawnDelay");
+		registerType("MinSpawnDelay");
+		registerType("RequiredPlayerRange");
+		registerType("SpawnCount");
+		registerType("SpawnRange");
 	}
 
 	private static void changeSpawnerNBT(String method, int argument, Player player) throws WrapperCommandSyntaxException {
@@ -46,36 +47,37 @@ public class SpawnerNBTCommand {
 		}
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		CreatureSpawner spawner = (CreatureSpawner)meta.getBlockState();
-		List<String> lore = item.getLore();
 		switch(method) {
-		case "maxspawndelay":
+		case "MaxSpawnDelay":
 			if (argument < spawner.getMinSpawnDelay()) {
 				CommandAPI.fail("Maximum Spawn Delay cannot be smaller than Minimum Spawn Delay!");
 				return;
 			}
-			lore.set(lore.indexOf(ChatColor.WHITE + "Max Spawn Delay: " + spawner.getMaxSpawnDelay()), ChatColor.WHITE + "Max Spawn Delay: " + argument);
 			spawner.setMaxSpawnDelay(argument);
-		case "minspawndelay":
+			break;
+		case "MinSpawnDelay":
 			if (argument > spawner.getMaxSpawnDelay()) {
 				CommandAPI.fail("Minimum Spawn Delay cannot be larger than Maximum Spawn Delay!");
 				return;
 			}
-			lore.set(lore.indexOf(ChatColor.WHITE + "Min Spawn Delay: " + spawner.getMinSpawnDelay()), ChatColor.WHITE + "Min Spawn Delay: " + argument);
 			spawner.setMinSpawnDelay(argument);
-		case "activationrange":
-			String name = item.getItemMeta().getDisplayName();
-			name.replaceAll(" r=" + spawner.getRequiredPlayerRange(), " r=" + argument);
+			break;
+		case "RequiredPlayerRange":
 			spawner.setRequiredPlayerRange(argument);
-		case "spawncount":
-			lore.set(lore.indexOf(ChatColor.WHITE + "Spawn Count: " + spawner.getSpawnCount()), ChatColor.WHITE + "Spawn Count: " + argument);
+			break;
+		case "SpawnCount":
 			spawner.setSpawnCount(argument);
-		case "spawnrange":
-			lore.set(lore.indexOf(ChatColor.WHITE + "Spawn Range: " + spawner.getSpawnRange()), ChatColor.WHITE + "Spawn Range: " + argument);
+			break;
+		case "SpawnRange":
 			spawner.setSpawnRange(argument);
+			break;
 		}
 
 		meta.setBlockState(spawner);
 		item.setItemMeta(meta);
-		item.setLore(lore);
+
+		SpawnerInventory.updateSpawnerItemDisplay(item, spawner);
+
+		player.sendMessage(ChatColor.GREEN + method + " set to " + Integer.toString(argument));
 	}
 }

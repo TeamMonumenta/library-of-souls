@@ -1,16 +1,29 @@
 package com.playmonumenta.libraryofsouls;
 
-import org.bukkit.block.BlockState;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
+import com.playmonumenta.libraryofsouls.utils.Utils;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.playmonumenta.libraryofsouls.utils.Utils;
-
-public class SpawnerInventory extends CustomInventory{
+public class SpawnerInventory extends CustomInventory {
 
 	public SpawnerInventory(Player owner, String mobName, ItemStack spawner) {
 		super(owner, 27, Utils.hashColor(mobName));
@@ -19,12 +32,6 @@ public class SpawnerInventory extends CustomInventory{
 	}
 
 	private void loadWindow(ItemStack spawnerItem, Player owner, String mobName) {
-		BlockStateMeta meta = (BlockStateMeta)spawnerItem.getItemMeta();
-		BlockState state = meta.getBlockState();
-		if (!(state instanceof CreatureSpawner)) {
-			owner.sendMessage("This item is not a spawner... somehow");
-			return;
-		}
 		spawnerItem = changeActivationRange(spawnerItem, 10, mobName);
 		_inventory.setItem(11, spawnerItem);
 
@@ -37,17 +44,145 @@ public class SpawnerInventory extends CustomInventory{
 
 	private ItemStack changeActivationRange(ItemStack spawnerItem, int range, String mobName) {
 		BlockStateMeta spawnerMeta = (BlockStateMeta)spawnerItem.getItemMeta();
-		BlockState state = spawnerMeta.getBlockState();
-		CreatureSpawner spawner = (CreatureSpawner)state;
+		CreatureSpawner spawner = (CreatureSpawner)spawnerMeta.getBlockState();
+
+		// Change the range
 		spawner.setRequiredPlayerRange(range);
-		spawnerMeta.setDisplayName(mobName + " r=" + range);
+
+		// Update the item to pick up the range change
 		spawnerMeta.setBlockState(spawner);
 		spawnerItem.setItemMeta(spawnerMeta);
+
+		// Update the item's display info
+		updateSpawnerItemDisplay(spawnerItem, spawner);
+
 		return spawnerItem;
 	}
 
 	@Override
 	protected void inventoryClick(InventoryClickEvent event) {
+		if ((event.getCursor().getType() != Material.AIR && event.getClickedInventory().equals(getInventory()))
+			|| (event.isShiftClick() && !event.getClickedInventory().equals(getInventory()))) {
+			// Can't place things in the new inventory
+			event.setCancelled(true);
+		}
+	}
 
+	public static void openSpawnerInventory(Soul soul, Player player) {
+		BookOfSouls book = BookOfSouls.getFromBook(soul.getBoS());
+		EntityNBT nbt = book.getEntityNBT();
+
+		Block block = findSafeAirBlock(player.getLocation());
+		if (block == null) {
+			player.sendMessage(ChatColor.RED + "There is no nearby air block to construct the spawner");
+			player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_HURT, 1, 1);
+			return;
+		}
+
+		// Temporarily set the found safe air block to a spawner to manipulate
+		block.setType(Material.SPAWNER);
+		block.setBlockData(Material.SPAWNER.createBlockData());
+
+		// Attach NBTEditor to the spawner
+		SpawnerNBTWrapper spawner = new SpawnerNBTWrapper(block);
+		SpawnerNBTWrapper.SpawnerEntity entity = new SpawnerNBTWrapper.SpawnerEntity(nbt, 1 /* weight */);
+
+		// Add the mob to the spawner
+		spawner.clearEntities();
+		spawner.addEntity(entity);
+		spawner.save();
+
+		// Get the new state from the spawner block
+		CreatureSpawner spawnerBlock = (CreatureSpawner)block.getState();
+
+		// Set the block back to AIR
+		block.setType(Material.AIR);
+
+		// Loop through the mob's tags to see if it's an Elite
+		boolean isElite = false;
+		if (entity.entityNBT.getData().getList("Tags") != null) {
+			for (Object obj : entity.entityNBT.getData().getList("Tags").getAsArray()) {
+				if (obj.equals("Elite")) {
+					isElite = true;
+				}
+			}
+		}
+
+		// Default spawner stats
+		if (isElite) {
+			spawnerBlock.setMaxSpawnDelay(1800);
+			spawnerBlock.setMinSpawnDelay(1800);
+			spawnerBlock.setSpawnCount(1);
+		} else {
+			spawnerBlock.setMinSpawnDelay(400);
+			spawnerBlock.setMaxSpawnDelay(600);
+			spawnerBlock.setSpawnCount(4);
+		}
+		spawnerBlock.setRequiredPlayerRange(12);
+		spawnerBlock.setDelay(0);
+
+		// Get this spawner state back into an item
+		ItemStack item = new ItemStack(Material.SPAWNER);
+		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
+		meta.setBlockState(spawnerBlock);
+		meta.setDisplayName((isElite ? ChatColor.GOLD : ChatColor.WHITE) + "" + ChatColor.BOLD + Utils.stripColorsAndJSON(soul.getName()) + ChatColor.RESET + " " + ChatColor.YELLOW + nbt.getEntityType().toString().toLowerCase());
+		item.setItemMeta(meta);
+
+		// Update the item's lore/name
+		updateSpawnerItemDisplay(item, spawnerBlock);
+
+		// Open a new inventory with some default range options
+		new SpawnerInventory(player, soul.getName(), item).openInventory(player, LibraryOfSouls.getInstance());
+	}
+
+	public static void updateSpawnerItemDisplay(ItemStack item, CreatureSpawner spawner) {
+		List<String> loreString = new ArrayList<>();
+
+		loreString.add(ChatColor.WHITE + "MinSpawnDelay: " + spawner.getMinSpawnDelay());
+		loreString.add(ChatColor.WHITE + "MaxSpawnDelay: " + spawner.getMaxSpawnDelay());
+		loreString.add(ChatColor.WHITE + "Spawn Count: " + spawner.getSpawnCount());
+		loreString.add(ChatColor.WHITE + "Spawn Range: " + spawner.getSpawnRange());
+
+		ItemMeta meta = item.getItemMeta();
+
+		// Append the radius to the item name
+		String name = meta.getDisplayName();
+		int idx = name.lastIndexOf(ChatColor.GREEN + " r=");
+		if (idx > 0) {
+			name = name.substring(0, idx);
+		}
+		name += ChatColor.GREEN + " r=" + Integer.toString(spawner.getRequiredPlayerRange());
+
+		meta.setDisplayName(name);
+		meta.setLore(loreString);
+		item.setItemMeta(meta);
+	}
+
+	private static boolean isSafe(Block block) {
+		return block.getType().isAir() &&
+			block.getRelative(BlockFace.UP).getType().isAir() &&
+			block.getRelative(BlockFace.DOWN).getType().isAir() &&
+			block.getRelative(BlockFace.NORTH).getType().isAir() &&
+			block.getRelative(BlockFace.EAST).getType().isAir() &&
+			block.getRelative(BlockFace.SOUTH).getType().isAir() &&
+			block.getRelative(BlockFace.WEST).getType().isAir() &&
+			block.getLocation().getNearbyEntities(1, 1, 1).isEmpty();
+	}
+
+	private static Block findSafeAirBlock(Location startSearch) {
+		for (int x = 5; x >= -5; x--) {
+			for (int z = 5; z >= -5; z--) {
+				for (int y = 5; y >= -5; y--) {
+					Location loc = startSearch.clone().add(x, y, z);
+					if (loc.getBlockY() >= 0 && loc.getBlockY() <= 255) {
+						Block block = loc.getBlock();
+						if (isSafe(block)) {
+							return block;
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 }
