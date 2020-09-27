@@ -7,9 +7,7 @@ import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
-import com.playmonumenta.libraryofsouls.utils.Utils;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -24,25 +22,33 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class SpawnerInventory extends CustomInventory {
+	private final SoulsInventory mGoBackInventory;
 
-	public SpawnerInventory(Player owner, String mobName, ItemStack spawner) {
-		super(owner, 27, Utils.hashColor(mobName));
+	public SpawnerInventory(Player owner, Soul soul, ItemStack spawner, SoulsInventory previous) {
+		super(owner, 9, soul.getDisplayName());
 
-		loadWindow(spawner, owner, mobName);
+		mGoBackInventory = previous;
+		loadWindow(spawner, owner);
 	}
 
-	private void loadWindow(ItemStack spawnerItem, Player owner, String mobName) {
-		spawnerItem = changeActivationRange(spawnerItem, 10, mobName);
-		_inventory.setItem(11, spawnerItem);
+	private void loadWindow(ItemStack spawnerItem, Player owner) {
+		spawnerItem = changeActivationRange(spawnerItem, 10);
+		_inventory.setItem(2, spawnerItem);
 
-		spawnerItem = changeActivationRange(spawnerItem, 12, mobName);
-		_inventory.setItem(13, spawnerItem);
+		spawnerItem = changeActivationRange(spawnerItem, 12);
+		_inventory.setItem(4, spawnerItem);
 
-		spawnerItem = changeActivationRange(spawnerItem, 16, mobName);
-		_inventory.setItem(15, spawnerItem);
+		spawnerItem = changeActivationRange(spawnerItem, 16);
+		_inventory.setItem(6, spawnerItem);
+
+		ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+		ItemMeta meta = goBackItem.getItemMeta();
+		meta.setDisplayName(ChatColor.RED + "Go Back");
+		goBackItem.setItemMeta(meta);
+		_inventory.setItem(0, goBackItem);
 	}
 
-	private ItemStack changeActivationRange(ItemStack spawnerItem, int range, String mobName) {
+	private ItemStack changeActivationRange(ItemStack spawnerItem, int range) {
 		BlockStateMeta spawnerMeta = (BlockStateMeta)spawnerItem.getItemMeta();
 		CreatureSpawner spawner = (CreatureSpawner)spawnerMeta.getBlockState();
 
@@ -61,14 +67,20 @@ public class SpawnerInventory extends CustomInventory {
 
 	@Override
 	protected void inventoryClick(InventoryClickEvent event) {
-		if ((event.getCursor().getType() != Material.AIR && event.getClickedInventory().equals(getInventory()))
-			|| (event.isShiftClick() && !event.getClickedInventory().equals(getInventory()))) {
+		if (event.getClickedInventory() == null) {
+			// Player clicked off the screen
+		} else if (event.getClickedInventory().equals(getInventory()) && event.getSlot() == 0 && mGoBackInventory != null) {
+			event.setCancelled(true);
+			Player player = (Player)event.getWhoClicked();
+			new SoulsInventory(mGoBackInventory, player).openInventory(player, LibraryOfSouls.getInstance());
+		} else if ((event.getCursor().getType() != Material.AIR && event.getClickedInventory().equals(getInventory()))
+		           || (event.isShiftClick() && !event.getClickedInventory().equals(getInventory()))) {
 			// Can't place things in the new inventory
 			event.setCancelled(true);
 		}
 	}
 
-	public static void openSpawnerInventory(Soul soul, Player player) {
+	public static void openSpawnerInventory(Soul soul, Player player, SoulsInventory previous) {
 		BookOfSouls book = BookOfSouls.getFromBook(soul.getBoS());
 		EntityNBT nbt = book.getEntityNBT();
 
@@ -98,18 +110,8 @@ public class SpawnerInventory extends CustomInventory {
 		// Set the block back to AIR
 		block.setType(Material.AIR);
 
-		// Loop through the mob's tags to see if it's an Elite
-		boolean isElite = false;
-		if (entity.entityNBT.getData().getList("Tags") != null) {
-			for (Object obj : entity.entityNBT.getData().getList("Tags").getAsArray()) {
-				if (obj.equals("Elite")) {
-					isElite = true;
-				}
-			}
-		}
-
 		// Default spawner stats
-		if (isElite) {
+		if (soul.isElite()) {
 			spawnerBlock.setMaxSpawnDelay(1800);
 			spawnerBlock.setMinSpawnDelay(1800);
 			spawnerBlock.setSpawnCount(1);
@@ -125,14 +127,14 @@ public class SpawnerInventory extends CustomInventory {
 		ItemStack item = new ItemStack(Material.SPAWNER);
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		meta.setBlockState(spawnerBlock);
-		meta.setDisplayName((isElite ? ChatColor.GOLD : ChatColor.WHITE) + "" + ChatColor.BOLD + Utils.stripColorsAndJSON(soul.getName()) + ChatColor.RESET + " " + ChatColor.YELLOW + nbt.getEntityType().toString().toLowerCase());
+		meta.setDisplayName(soul.getDisplayName() + ChatColor.RESET + " " + ChatColor.YELLOW + nbt.getEntityType().toString().toLowerCase());
 		item.setItemMeta(meta);
 
 		// Update the item's lore/name
 		updateSpawnerItemDisplay(item, spawnerBlock);
 
 		// Open a new inventory with some default range options
-		new SpawnerInventory(player, soul.getName(), item).openInventory(player, LibraryOfSouls.getInstance());
+		new SpawnerInventory(player, soul, item, previous).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
 	public static void updateSpawnerItemDisplay(ItemStack item, CreatureSpawner spawner) {

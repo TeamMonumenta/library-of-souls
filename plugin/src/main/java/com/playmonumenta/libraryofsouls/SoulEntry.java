@@ -85,6 +85,14 @@ public class SoulEntry implements Soul {
 		return mHistory.get(0).getName();
 	}
 
+	public String getDisplayName() {
+		return mHistory.get(0).getDisplayName();
+	}
+
+	public boolean isElite() {
+		return mHistory.get(0).isElite();
+	}
+
 	public String getLabel() {
 		return mHistory.get(0).getLabel();
 	}
