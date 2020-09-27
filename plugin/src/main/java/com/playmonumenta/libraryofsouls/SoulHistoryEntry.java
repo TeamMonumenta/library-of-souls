@@ -94,6 +94,23 @@ public class SoulHistoryEntry implements Soul {
 		return mName;
 	}
 
+	public String getDisplayName() {
+		return (isElite() ? ChatColor.GOLD : ChatColor.WHITE) + "" + ChatColor.BOLD + Utils.stripColorsAndJSON(mName);
+	}
+
+	public boolean isElite() {
+		boolean isElite = false;
+		NBTTagList tags = mNBT.getList("Tags");
+		if (tags != null && tags.size() > 0) {
+			for (Object obj : tags.getAsArray()) {
+				if (obj.equals("Elite")) {
+					isElite = true;
+				}
+			}
+		}
+		return isElite;
+	}
+
 	public String getLabel() {
 		return mLabel;
 	}

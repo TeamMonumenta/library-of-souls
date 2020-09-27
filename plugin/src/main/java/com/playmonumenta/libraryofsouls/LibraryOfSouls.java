@@ -10,6 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
+import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
 	private static LibraryOfSouls INSTANCE = null;
@@ -51,6 +52,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		 * These need to register immediately on load to prevent function loading errors
 		 */
 		LibraryOfSoulsCommand.register();
+		SpawnerNBTCommand.register();
 	}
 
 	@Override
