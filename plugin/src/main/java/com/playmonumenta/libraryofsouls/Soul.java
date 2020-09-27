@@ -7,27 +7,27 @@ import org.bukkit.inventory.ItemStack;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 
 public interface Soul {
-	public NBTTagCompound getNBT();
+	NBTTagCompound getNBT();
 
-	public long getModifiedOn();
+	long getModifiedOn();
 
-	public String getModifiedBy();
+	String getModifiedBy();
 
-	public ItemStack getPlaceholder();
+	ItemStack getPlaceholder();
 
-	public ItemStack getBoS();
+	ItemStack getBoS();
 
 	/* This is the full raw mob name, with colors, spaces, and possibly JSON */
-	public String getName();
+	String getName();
 
 	/* This is a color-adjusted LoS name with spaces and no JSON, colored white=normal gold if the Elite tag is present */
-	public String getDisplayName();
+	String getDisplayName();
 
 	/* Whether the mob has the tag "Elite" or not */
-	public boolean isElite();
+	boolean isElite();
 
 	/* This is the label-ified name, with colors and spaces stripped */
-	public String getLabel();
+	String getLabel();
 
-	public Entity summon(Location loc);
+	Entity summon(Location loc);
 }
