@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -69,10 +70,10 @@ public class BestiaryInventory extends CustomInventory {
 		mTitle = title;
 		mCurrentPois = pois;
 		mAvailableMobs = availableMobs;
-		loadWindow();
+		loadWindow(owner);
 	}
 
-	public void loadWindow() {
+	public void loadWindow(Player player) {
 		mCurrentSlots = mSouls.subList(mOffset, Math.min(mSouls.size(), mOffset + 27));
 
 		for (int i = 0; i < 36; i++) {
@@ -85,7 +86,7 @@ public class BestiaryInventory extends CustomInventory {
 					ItemStack justNameItem = bestiaryPlaceholder(mCurrentSlots.get(i));
 					justNameItem.setType(Material.BARRIER);
 					_inventory.setItem(i, justNameItem);
-				} else if (BestiaryUtils.getInfoTier(mCurrentSlots.get(i), mAvailableMobs) > 1) {
+				} else if (BestiaryUtils.getInfoTier(mCurrentSlots.get(i), mAvailableMobs) > 1 || player.getGameMode() == GameMode.CREATIVE) {
 					_inventory.setItem(i, bestiaryPlaceholder(mCurrentSlots.get(i)));
 				} else {
 					_inventory.setItem(i, mNotFound);
@@ -117,7 +118,7 @@ public class BestiaryInventory extends CustomInventory {
 		if (slot >= 0 && slot < 27) {
 			if (event.getClick().equals(ClickType.LEFT) && mCurrentSlots != null && slot < mCurrentSlots.size()) {
 					Soul soul = mCurrentSlots.get(slot);
-					if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 3) {
+					if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 3 || player.getGameMode() == GameMode.CREATIVE) {
 						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, mCurrentPois, mPrevTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
 						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, mCurrentPois, mPrevTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
@@ -130,7 +131,7 @@ public class BestiaryInventory extends CustomInventory {
 			event.setCancelled(true);
 		} else if (slot == 27 && mHasPrevPage) {
 			mOffset -= 27;
-			loadWindow();
+			loadWindow(player);
 			event.setCancelled(true);
 		} else if (slot == 31) {
 			if (mCurrentPois != null) {
@@ -141,7 +142,7 @@ public class BestiaryInventory extends CustomInventory {
 			event.setCancelled(true);
 		} else if (slot == 35 && mHasNextPage) {
 			mOffset += 27;
-			loadWindow();
+			loadWindow(player);
 			event.setCancelled(true);
 		} else {
 			event.setCancelled(true);

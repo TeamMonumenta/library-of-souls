@@ -152,7 +152,7 @@ public class BestiaryRegionInventory extends CustomInventory {
 		if (slot >= 0 && slot < 27 && slot < mCurrentPois.length + mOffset) {
 			if (event.getClick().equals(ClickType.LEFT) && mCurrentPois != null && slot < mCurrentPois.length) {
 				new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName()),
-						BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName()))mCurrentPois[slot + mOffset].getPoiName())), mCurrentPois, mOffset, mTitle)
+						BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName())), mCurrentPois[slot + mOffset].getPoiName(), mCurrentPois, mOffset, mTitle)
 						.openInventory(player, LibraryOfSouls.getInstance());
 			}
 			event.setCancelled(true);
