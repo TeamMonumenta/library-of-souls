@@ -3,11 +3,6 @@ package com.playmonumenta.libraryofsouls;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,6 +15,11 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
 
 public class SpawnerInventory extends CustomInventory {
 	private final SoulsInventory mGoBackInventory;
@@ -41,11 +41,14 @@ public class SpawnerInventory extends CustomInventory {
 		spawnerItem = changeActivationRange(spawnerItem, 16);
 		_inventory.setItem(6, spawnerItem);
 
-		ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
-		ItemMeta meta = goBackItem.getItemMeta();
-		meta.setDisplayName(ChatColor.RED + "Go Back");
-		goBackItem.setItemMeta(meta);
-		_inventory.setItem(0, goBackItem);
+		if (mGoBackInventory != null) {
+			ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+			ItemMeta meta = goBackItem.getItemMeta();
+			meta.setDisplayName(ChatColor.RED + "Go Back");
+			goBackItem.setItemMeta(meta);
+			_inventory.setItem(0, goBackItem);
+		}
+
 	}
 
 	private ItemStack changeActivationRange(ItemStack spawnerItem, int range) {
