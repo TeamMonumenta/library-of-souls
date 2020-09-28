@@ -64,7 +64,7 @@ public class BestiaryManager implements Listener {
 		return INSTANCE.mStorage.getKillsForMob(player, soul);
 	}
 
-	public static boolean setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception {
+	public static int setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception {
 		if (INSTANCE == null) {
 			throw new IllegalStateException("BestiaryManager not initialized!");
 		}
@@ -72,7 +72,7 @@ public class BestiaryManager implements Listener {
 		return INSTANCE.mStorage.setKillsForMob(player, soul, amount);
 	}
 
-	public static boolean addKillsToMob(Player player, SoulEntry soul, int amount) throws Exception {
+	public static int addKillsToMob(Player player, SoulEntry soul, int amount) throws Exception {
 		if (INSTANCE == null) {
 			throw new IllegalStateException("BestiaryManager not initialized!");
 		}

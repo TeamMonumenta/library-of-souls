@@ -202,7 +202,7 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 	}
 
 	@Override
-	public boolean setKillsForMob(final Player player, final SoulEntry soul, final int amount) throws Exception {
+	public int setKillsForMob(final Player player, final SoulEntry soul, final int amount) throws Exception {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
 			throw new Exception("Bestiary data hasn't finished loading yet!");
@@ -210,19 +210,20 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 
 		playerKills.put(soul, amount);
 		mPlayerKills.put(player.getUniqueId(), playerKills);
-		return true;
+		return amount;
 	}
 
 	@Override
-	public boolean addKillsForMob(final Player player, final SoulEntry soul, final int amount) throws Exception {
+	public int addKillsForMob(final Player player, final SoulEntry soul, int amount) throws Exception {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
 			throw new Exception("Bestiary data hasn't finished loading yet!");
 		}
 
-		playerKills.put(soul, playerKills.get(soul) + amount);
+		amount = playerKills.get(soul) + amount;
+		playerKills.put(soul, amount);
 		mPlayerKills.put(player.getUniqueId(), playerKills);
-		return true;
+		return amount;
 	}
 
 	@Override

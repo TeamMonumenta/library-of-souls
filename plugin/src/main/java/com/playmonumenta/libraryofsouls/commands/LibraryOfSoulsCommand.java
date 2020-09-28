@@ -140,7 +140,7 @@ public class LibraryOfSoulsCommand {
 		});
 	}
 
-	private static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
+	public static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
 		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
 		if (soul != null) {
 			return soul;

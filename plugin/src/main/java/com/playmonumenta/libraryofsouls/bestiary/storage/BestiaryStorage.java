@@ -23,10 +23,10 @@ public interface BestiaryStorage {
 	public int getKillsForMob(Player player, SoulEntry soul) throws Exception;
 
 	/** Sets the number of times a player has killed the given mob */
-	public boolean setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception;
+	public int setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception;
 
 	/** Adds to the number of times a player has killed the given mob */
-	public boolean addKillsForMob(Player player, SoulEntry soul, int amount) throws Exception;
+	public int addKillsForMob(Player player, SoulEntry soul, int amount) throws Exception;
 
 	/** Given a set of Souls, get a map of how many of each have been killed by the player */
 	Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) throws Exception;
