@@ -1,26 +1,33 @@
 package com.playmonumenta.libraryofsouls;
 
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 
 public interface Soul {
-	public NBTTagCompound getNBT();
+	NBTTagCompound getNBT();
 
-	public long getModifiedOn();
+	long getModifiedOn();
 
-	public String getModifiedBy();
+	String getModifiedBy();
 
-	public ItemStack getPlaceholder();
+	ItemStack getPlaceholder();
 
-	public ItemStack getBoS();
+	ItemStack getBoS();
 
-	/* This is the full name, with colors, spaces, and possibly JSON */
-	public String getName();
+	/* This is the full raw mob name, with colors, spaces, and possibly JSON */
+	String getName();
+
+	/* This is a color-adjusted LoS name with spaces and no JSON, colored white=normal gold if the Elite tag is present */
+	String getDisplayName();
+
+	/* Whether the mob has the tag "Elite" or not */
+	boolean isElite();
 
 	/* This is the label-ified name, with colors and spaces stripped */
-	public String getLabel();
+	String getLabel();
 
-	public void summon(Location loc);
+	Entity summon(Location loc);
 }

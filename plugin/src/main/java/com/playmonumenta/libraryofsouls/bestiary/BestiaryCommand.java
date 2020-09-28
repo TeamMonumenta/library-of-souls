@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
+import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 import io.github.jorelali.commandapi.api.CommandAPI;
 import io.github.jorelali.commandapi.api.CommandPermission;
@@ -18,7 +19,6 @@ import io.github.jorelali.commandapi.api.arguments.EntitySelectorArgument;
 import io.github.jorelali.commandapi.api.arguments.EntitySelectorArgument.EntitySelector;
 import io.github.jorelali.commandapi.api.arguments.IntegerArgument;
 import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
-import io.github.jorelali.commandapi.api.arguments.StringArgument;
 import net.md_5.bungee.api.ChatColor;
 
 public class BestiaryCommand {
@@ -31,50 +31,24 @@ public class BestiaryCommand {
 		arguments.put("get", new LiteralArgument("get"));
 		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
 		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			if (sender instanceof Player) {
-				Player player = (Player)sender;
-				player.sendMessage(ChatColor.GREEN + "Kills for player " + ChatColor.BLUE + ((Player)args[0]).getDisplayName() + ChatColor.GREEN +  " for mob " + ChatColor.BLUE + (String)args[1] +
-					ChatColor.GREEN + ": " + ChatColor.BLUE + BestiaryManager.getKillsForMob((Player)args[0], (String)args[1]));
+		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
+			int kills = 0;
+			try {
+				kills = BestiaryManager.getKillsForMob((Player)args[0], LibraryOfSoulsCommand.getSoul((String)args[1]));
+			} catch (Exception ex) {
+				CommandAPI.fail(ex.getMessage());
 			}
-			return BestiaryManager.getKillsForMob((Player)args[0], (String)args[1]);
-		});
-		arguments.clear();
-		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
-		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		arguments.put("objective", new StringArgument());
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			return BestiaryManager.bindKillsToEntry((Player)args[0], (String)args[1], (String)args[2]);
-		});
-
-		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
-		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		arguments.put("objective", new StringArgument());
-		arguments.put("entry", new StringArgument());
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			return BestiaryManager.bindKillsToEntry((Player)args[0], (String)args[1], (String)args[2], (String)args[3]);
-		});
-		arguments.clear();
-
-		arguments.clear();
-		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
-		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		arguments.put("temp", new LiteralArgument("temp"));
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			return BestiaryManager.bindKillsToEntry((Player)args[0], (String)args[1], "temp");
-		});
-
-		arguments.clear();
-		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
-		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		arguments.put("temp", new LiteralArgument("temp"));
-		arguments.put("entry", new StringArgument());
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			return BestiaryManager.bindKillsToEntry((Player)args[0], (String)args[1], "temp", (String)args[2]);
+			if (sender instanceof Player) {
+				sender.sendMessage(String.format("{}{} {}kills for mob {}{}{}: {}",
+				                                 ChatColor.GREEN,
+				                                 ChatColor.BLUE, ((Player)args[0]).getDisplayName(),
+				                                 ChatColor.GREEN,
+				                                 ChatColor.BLUE, (String)args[1],
+				                                 ChatColor.GREEN,
+				                                 ChatColor.BLUE,
+				                                 kills));
+			}
+			return kills;
 		});
 
 		arguments.clear();
@@ -82,50 +56,53 @@ public class BestiaryCommand {
 		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
 		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
 		arguments.put("amount", new IntegerArgument());
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			Player player = (Player)args[0];
-			if(!BestiaryManager.setKillsForMob((Player)args[0], (String)args[1], (Integer)args[2])) {
-				player.sendMessage(ChatColor.DARK_RED + "The storage system has not been instantiated yet!");
+		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
+			int kills = 0;
+			try {
+				kills = BestiaryManager.setKillsForMob((Player)args[0], LibraryOfSoulsCommand.getSoul((String)args[1]), (Integer)args[2]);
+			} catch (Exception ex) {
+				CommandAPI.fail(ex.getMessage());
 			}
+			return kills;
 		});
-		arguments.clear();
 
-		arguments.put("add", new LiteralArgument("add"));
-		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
-		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			Player player = (Player)args[0];
-			if(!BestiaryManager.addKillsToMob((Player)args[0], (String)args[1], 1)) {
-				player.sendMessage(ChatColor.DARK_RED + "The storage system has not been instantiated yet!");
-			}
-		});
 		arguments.clear();
-
 		arguments.put("add", new LiteralArgument("add"));
 		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
 		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
 		arguments.put("amount", new IntegerArgument());
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			Player player = (Player)sender;
-			if(!BestiaryManager.addKillsToMob((Player)args[0], (String)args[1], (Integer)args[2])) {
-				player.sendMessage(ChatColor.DARK_RED + "The storage system has not been instantiated yet!");
+		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
+			int kills = 0;
+			try {
+				kills = BestiaryManager.addKillsToMob((Player)args[0], LibraryOfSoulsCommand.getSoul((String)args[1]), (Integer)args[2]);
+			} catch (Exception ex) {
+				CommandAPI.fail(ex.getMessage());
 			}
+			return kills;
 		});
 		arguments.clear();
 
 		arguments.put("location", new DynamicSuggestedStringArgument(listMobsLocs));
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			Player player = (Player)sender;
-			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
-			(new BestiaryInventory(player, souls, (String)args[0])).openInventory(player, LibraryOfSouls.getInstance());
+		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
+			try {
+				Player player = (Player)sender;
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
+				(new BestiaryInventory(player, souls, (String)args[0])).openInventory(player, LibraryOfSouls.getInstance());
+			} catch (Exception ex) {
+				CommandAPI.fail(ex.getMessage());
+			}
 		});
 		arguments.clear();
 
 		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
-		CommandAPI.getInstance().register("bestiarymanage", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
-			Player player = (Player)sender;
-			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
-			(new BestiaryInventory(player, souls, (String)args[0])).openInventory(player, LibraryOfSouls.getInstance());
+		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
+			try {
+				Player player = (Player)sender;
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
+				(new BestiaryInventory(player, souls, (String)args[0])).openInventory(player, LibraryOfSouls.getInstance());
+			} catch (Exception ex) {
+				CommandAPI.fail(ex.getMessage());
+			}
 		});
 		arguments.clear();
 

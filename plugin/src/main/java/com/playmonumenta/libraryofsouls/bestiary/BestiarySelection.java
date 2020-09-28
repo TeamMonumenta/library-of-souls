@@ -86,7 +86,12 @@ public class BestiarySelection extends CustomInventory {
 					new BestiaryRegionInventory(player, BestiaryUtils.mBookMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());
 					event.setCancelled(true);
 				} else {
-					new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mBookMap.get(slot)), BestiaryUtils.mBookMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());;
+					try {
+						new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mBookMap.get(slot)), BestiaryUtils.mBookMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());;
+					} catch (Exception ex) {
+						LibraryOfSouls.getInstance().getLogger().severe("Caught error in BestiaryInventory: " + ex.getMessage());
+						ex.printStackTrace();
+					}
 					event.setCancelled(true);
 				}
 			}

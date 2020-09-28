@@ -25,6 +25,7 @@ import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
+import com.playmonumenta.libraryofsouls.SpawnerInventory;
 
 import io.github.jorelali.commandapi.api.CommandAPI;
 import io.github.jorelali.commandapi.api.CommandPermission;
@@ -97,6 +98,16 @@ public class LibraryOfSoulsCommand implements Listener {
 			}
 			(new SoulsInventory(player, souls, area))
 				.openInventory(player, LibraryOfSouls.getInstance());
+		});
+
+		/* los spawner <name> */
+		arguments = new LinkedHashMap<>();
+		arguments.put("spawner", new LiteralArgument("spawner"));
+		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		api.register("los", CommandPermission.fromString("los.spawner"), arguments, (sender, args) -> {
+			Player player = getPlayer(sender);
+			Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
+			SpawnerInventory.openSpawnerInventory(soul, player, null);
 		});
 
 		arguments = new LinkedHashMap<>();
@@ -179,7 +190,7 @@ public class LibraryOfSoulsCommand implements Listener {
 		});
 	}
 
-	private static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
+	public static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
 		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
 		if (soul != null) {
 			return soul;
