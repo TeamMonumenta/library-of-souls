@@ -80,8 +80,8 @@ public class BestiaryCommand {
 			}
 			return kills;
 		});
-		arguments.clear();
 
+		arguments.clear();
 		arguments.put("location", new DynamicSuggestedStringArgument(listMobsLocs));
 		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
 			try {
@@ -92,8 +92,8 @@ public class BestiaryCommand {
 				CommandAPI.fail(ex.getMessage());
 			}
 		});
-		arguments.clear();
 
+		arguments.clear();
 		arguments.put("mob", new DynamicSuggestedStringArgument(listMobs));
 		CommandAPI.getInstance().register("bestiary", CommandPermission.fromString("los.bestiarymanager"), arguments, (sender, args) -> {
 			try {
@@ -104,8 +104,8 @@ public class BestiaryCommand {
 				CommandAPI.fail(ex.getMessage());
 			}
 		});
-		arguments.clear();
 
+		arguments.clear();
 		arguments.put("player", new EntitySelectorArgument(EntitySelector.ONE_PLAYER));
 		CommandAPI.getInstance().register("bestiaryopen", CommandPermission.fromString("los.bestiaryopen"), arguments, (sender, args) -> {
 			new BestiarySelection((Player)args[0]).openInventory((Player)args[0], LibraryOfSouls.getInstance());
