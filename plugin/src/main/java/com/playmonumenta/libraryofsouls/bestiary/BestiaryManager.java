@@ -19,6 +19,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 
 public class BestiaryManager implements Listener {
@@ -105,5 +107,31 @@ public class BestiaryManager implements Listener {
 				}
 			}
 		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void playerJoinEvent(PlayerJoinEvent event) {
+		if (INSTANCE == null) {
+			mLogger.severe("Player joined but BestiaryManager not initialized!");
+			return;
+		}
+
+		SoulsDatabase database = SoulsDatabase.getInstance();
+		if (database == null) {
+			mLogger.severe("Player joined but SoulsDatabase not initialized!");
+			return;
+		}
+
+		INSTANCE.mStorage.load(event.getPlayer(), database);
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void playerQuitEvent(PlayerQuitEvent event) {
+		if (INSTANCE == null) {
+			mLogger.severe("Player joined but BestiaryManager not initialized!");
+			return;
+		}
+
+		INSTANCE.mStorage.save(event.getPlayer());
 	}
 }

@@ -23,7 +23,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class BestiaryRedisStorage implements BestiaryStorage {
 	private static final String IDENTIFIER = "LOS";
-	private static final int MAX_LOAD_PER_TICK = 20;
+	private static final int MAX_LOAD_PER_TICK = 25;
 	private static final int SAVE_PERIOD = 20 * 60 * 6; // 6 minutes
 
 	/*
@@ -38,16 +38,20 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 	private final Map<UUID, JsonObject> mPlayerOriginalData = new HashMap<>();
 	private final Map<UUID, Map<SoulEntry, Integer>> mPlayerKills = new HashMap<>();
 	private final Gson mGson = new Gson();
+	private final Plugin mPlugin;
 	private final Logger mLogger;
 
 
 	public BestiaryRedisStorage(final Plugin plugin) {
+		mPlugin = plugin;
 		mLogger = plugin.getLogger();
 	}
 
 	@Override
-	public void load(final Plugin plugin, final Player player, final SoulsDatabase database) {
+	public void load(final Player player, final SoulsDatabase database) {
 		final UUID uuid = player.getUniqueId();
+		mLogger.fine("Started loading redis player data for " + uuid);
+		Long startMainTime = System.currentTimeMillis();
 
 		/* Make sure we don't load data on top of existing data */
 		mPlayerOriginalData.remove(uuid);
@@ -56,14 +60,17 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 		/* Start loading the data async, store the resulting future for later evaluation */
 		final CompletableFuture<String> data = MonumentaRedisSyncAPI.loadPlayerPluginData(uuid, IDENTIFIER);
 
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+		Long startAsyncTime = System.currentTimeMillis();
+		Bukkit.getScheduler().runTaskAsynchronously(mPlugin, () -> {
 			String jsonData;
 			try {
+				mLogger.fine("Getting to async task took " + Long.toString(System.currentTimeMillis() - startAsyncTime) + " milliseconds");
 				jsonData = data.get();
+				mLogger.fine("Getting data took " + Long.toString(System.currentTimeMillis() - startAsyncTime) + " milliseconds");
 				if (jsonData == null || jsonData.isEmpty()) {
 					mLogger.warning("Bestiary data for player " + player.getName() + " is empty. If they are not new, this is a serious error!");
 
-					Bukkit.getScheduler().runTask(plugin, () -> {
+					Bukkit.getScheduler().runTask(mPlugin, () -> {
 						mPlayerKills.put(uuid, new HashMap<>());
 						mPlayerOriginalData.put(uuid, new JsonObject());
 					});
@@ -83,6 +90,7 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 					new BukkitRunnable() {
 						@Override
 						public void run() {
+							Long runnableTime = System.currentTimeMillis();
 							int stepCounter = 0;
 							while (iter.hasNext() && player.isOnline()) {
 								final SoulEntry soul = iter.next();
@@ -103,6 +111,7 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 									break;
 								}
 							}
+							mLogger.fine("Main thread data loading loop took " + Long.toString(System.currentTimeMillis() - runnableTime) + " milliseconds");
 
 							if (!player.isOnline()) {
 								/* Player logged out before their data finished loading - abort */
@@ -112,30 +121,32 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 								mPlayerKills.put(uuid, playerKills);
 								mPlayerOriginalData.put(uuid, obj);
 								this.cancel();
+								mLogger.fine("Data load complete, total time " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds");
 
 								/* Start an autosave task for this player */
 								new BukkitRunnable() {
 									@Override
 									public void run() {
 										if (player.isOnline()) {
-											save(player, database, false);
+											save(player, false);
 										} else {
 											this.cancel();
 										}
 									}
-								}.runTaskTimer(plugin, SAVE_PERIOD, SAVE_PERIOD);
+								}.runTaskTimer(mPlugin, SAVE_PERIOD, SAVE_PERIOD);
 							}
 						}
-					}.runTaskTimer(plugin, 1, 1);
+					}.runTaskTimer(mPlugin, 1, 1);
 				}
 			} catch (InterruptedException | ExecutionException e) {
 				mLogger.severe("Failed to retrieve bestiary data for player " + player.getName() + ": " + e.getMessage());
 				e.printStackTrace();
 			}
 		});
+		mLogger.fine("Main thread work took " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds");
 	}
 
-	private void save(final Player player, final SoulsDatabase database, final boolean waitForCommit) {
+	private void save(final Player player, final boolean waitForCommit) {
 		/* Have to save the data right now - can't spread it out over multiple ticks (server shutdown, etc.)
 		 *
 		 * Fortunately this is faster than loading - no strings to parse, no hashmap lookups.
@@ -150,6 +161,9 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 			return;
 		}
 
+		mLogger.fine("Started saving redis player data for " + uuid);
+		Long startMainTime = System.currentTimeMillis();
+
 		for (final Map.Entry<SoulEntry, Integer> entry : playerKills.entrySet()) {
 			originalData.addProperty(nameToHex(entry.getKey().getLabel()), entry.getValue());
 		}
@@ -160,20 +174,18 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 		/* Only wait & drive this to completion when waitForCommit is true (log out, server stop, etc.) */
 		if (waitForCommit) {
 			try {
-				final Boolean success = commit.get();
-				if (!success) {
-					mLogger.severe("Failed to commit bestiary data for player " + player.getName());
-				}
+				commit.get();
 			} catch (InterruptedException | ExecutionException e) {
 				mLogger.severe("Failed to commit bestiary data for player " + player.getName() + ": " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
+		mLogger.fine("Main thread work took " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds (wait for commit=" + Boolean.toString(waitForCommit) + ")");
 	}
 
 	@Override
-	public void save(final Player player, final SoulsDatabase database) {
-		save(player, database, true);
+	public void save(final Player player) {
+		save(player, true);
 	}
 
 	@Override
@@ -182,6 +194,7 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 		if (playerKills == null) {
 			throw new Exception("Bestiary data hasn't finished loading yet!");
 		}
+		mLogger.fine("Recording kill for player " + player.getName() + " mob " + soul.getLabel());
 
 		final Integer kills = playerKills.get(soul);
 		if (kills == null) {
@@ -198,7 +211,11 @@ public class BestiaryRedisStorage implements BestiaryStorage {
 			throw new Exception("Bestiary data hasn't finished loading yet!");
 		}
 
-		return playerKills.get(soul);
+		Integer kills = playerKills.get(soul);
+		if (kills == null) {
+			return 0;
+		}
+		return kills;
 	}
 
 	@Override

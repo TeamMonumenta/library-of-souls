@@ -7,14 +7,13 @@ import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public interface BestiaryStorage {
 	/** Loads data for a given player (such as at login) */
-	public void load(Plugin plugin, Player player, SoulsDatabase database);
+	public void load(Player player, SoulsDatabase database);
 
 	/** Saves data for a given player (such as at logout) */
-	public void save(Player player, SoulsDatabase database);
+	public void save(Player player);
 
 	/** Records when a player has killed the given mob */
 	public void recordKill(Player player, SoulEntry soul) throws Exception;
