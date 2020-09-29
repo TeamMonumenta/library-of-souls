@@ -1,5 +1,6 @@
 name: LibraryOfSouls
 main: com.playmonumenta.libraryofsouls.LibraryOfSouls
 depend: [CommandAPI,NBTEditor]
+softdepend: [MonumentaRedisSync]
 version: 0.0.1
 api-version: 1.13

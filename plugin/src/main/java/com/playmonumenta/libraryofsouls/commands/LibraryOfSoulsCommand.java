@@ -29,7 +29,7 @@ import io.github.jorelali.commandapi.api.exceptions.WrapperCommandSyntaxExceptio
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
-	private static final DynamicSuggestions listMobs = () -> SoulsDatabase.getInstance().listMobNames().toArray(new String[0]);
+	public static final DynamicSuggestions LIST_MOBS_FUNCTION = () -> SoulsDatabase.getInstance().listMobNames().toArray(new String[SoulsDatabase.getInstance().listMobNames().size()]);
 
 	public static void register() {
 		LinkedHashMap<String, Argument> arguments;
@@ -47,7 +47,7 @@ public class LibraryOfSoulsCommand {
 		/* los get <name> */
 		arguments = new LinkedHashMap<>();
 		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
 		api.register("los", CommandPermission.fromString("los.get"), arguments, (sender, args) -> {
 			PlayerInventory inv = getPlayer(sender).getInventory();
 			if (inv.firstEmpty() == -1) {
@@ -59,7 +59,7 @@ public class LibraryOfSoulsCommand {
 		/* los history <name> */
 		arguments = new LinkedHashMap<>();
 		arguments.put("history", new LiteralArgument("history"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
 		api.register("los", CommandPermission.fromString("los.history"), arguments, (sender, args) -> {
 			Player player = getPlayer(sender);
 			(new SoulsInventory(player, getSoul((String)args[0]).getHistory(), "History"))
@@ -70,7 +70,7 @@ public class LibraryOfSoulsCommand {
 		arguments = new LinkedHashMap<>();
 		arguments.put("summon", new LiteralArgument("summon"));
 		arguments.put("location", new LocationArgument());
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
 		api.register("los", CommandPermission.fromString("los.summon"), arguments, (sender, args) -> {
 			getSoul((String)args[1]).summon((Location)args[0]);
 		});
@@ -93,7 +93,7 @@ public class LibraryOfSoulsCommand {
 		/* los spawner <name> */
 		arguments = new LinkedHashMap<>();
 		arguments.put("spawner", new LiteralArgument("spawner"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
 		api.register("los", CommandPermission.fromString("los.spawner"), arguments, (sender, args) -> {
 			Player player = getPlayer(sender);
 			Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
@@ -134,13 +134,13 @@ public class LibraryOfSoulsCommand {
 		/* los del <name> */
 		arguments = new LinkedHashMap<>();
 		arguments.put("del", new LiteralArgument("del"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
+		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
 		api.register("los", CommandPermission.fromString("los.del"), arguments, (sender, args) -> {
 			SoulsDatabase.getInstance().del(sender, (String)args[0]);
 		});
 	}
 
-	private static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
+	public static SoulEntry getSoul(String name) throws WrapperCommandSyntaxException {
 		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
 		if (soul != null) {
 			return soul;

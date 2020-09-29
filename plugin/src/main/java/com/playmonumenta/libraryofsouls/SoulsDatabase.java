@@ -53,7 +53,7 @@ public class SoulsDatabase {
 	 * This is an index based on locations.
 	 * A SoulEntry may appear here many times, or not at all
 	 */
-	private Map<String, List<SoulEntry>> mLocsIndex = null;
+	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;

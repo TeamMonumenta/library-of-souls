@@ -9,6 +9,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 
@@ -53,11 +55,14 @@ public class LibraryOfSouls extends JavaPlugin {
 		 */
 		LibraryOfSoulsCommand.register();
 		SpawnerNBTCommand.register();
+		BestiaryCommand.register();
 	}
 
 	@Override
 	public void onEnable() {
 		INSTANCE = this;
+
+		getServer().getPluginManager().registerEvents(new BestiaryManager(this), this);
 
 		File directory = getDataFolder();
 		if (!directory.exists()) {
