@@ -63,7 +63,6 @@ public class LibraryOfSouls extends JavaPlugin {
 		INSTANCE = this;
 
 		getServer().getPluginManager().registerEvents(new BestiaryManager(getLogger()), this);
-		getServer().getPluginManager().registerEvents(new LibraryOfSoulsCommand(), this);
 
 		File directory = getDataFolder();
 		if (!directory.exists()) {

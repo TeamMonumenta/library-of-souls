@@ -45,6 +45,7 @@ public class BestiaryEntry extends CustomInventory {
 	private Region[] mCurrentPois;
 	private String mRegionTitle;
 	private int mOldOffset;
+	private Soul mSoul;
 
 	public BestiaryEntry (Soul soul, Player player, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs) {
 		this(soul, player, title, currentSoul, availableMobs, null, "", 0);
@@ -58,6 +59,7 @@ public class BestiaryEntry extends CustomInventory {
 		mTitle = title;
 		mCurrentPois = pois;
 		mRegionTitle = regionTitle;
+		mSoul = soul;
 		generateBestiaryEntry(soul, player);
 	}
 
@@ -67,9 +69,9 @@ public class BestiaryEntry extends CustomInventory {
 
 		double armor = 0;
 		double armorToughness = 0;
-		float health = Float.valueOf(vars.getFloat("Health"));
+		double health = vars.hasKey("Health") ? 0.0 + Float.valueOf(vars.getFloat("Health")) : 0;
 		double speed = vars.hasKey("MovementSpeed") ? 0.0 + Float.valueOf(vars.getFloat("MovementSpeed")) : 0.0;
-		double damage = 0;
+		double damage = entityNBT != null && entityNBT.getVariable("AttackDamage") != null ? 0.0 + Double.valueOf(entityNBT.getVariable("AttackDamage").get()) : 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
 		double bowDamage = 0;
@@ -80,7 +82,7 @@ public class BestiaryEntry extends CustomInventory {
 
 		// Only need to create one of these
 		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
-		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] { "Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment" });
+		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
 		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
 		NBTVariable tagsVar = entityNBT.getVariable("Tags");
 		// For each mob you want to work with:
@@ -110,14 +112,12 @@ public class BestiaryEntry extends CustomInventory {
 			for (ItemStack item : handItems) {
 				if (item != null && item.hasItemMeta()) {
 					EquipmentSlot slot = handItems[0] != null && handItems[0].equals(item) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-					if (item.getType().equals(Material.BOW)) {
+					if (item.getType().equals(Material.BOW) && slot == EquipmentSlot.HAND) {
 						ranged = true;
 						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
 					}
 
-					if (item.getType().equals(Material.TRIDENT)) {
-						trident = true;
-					}
+					trident = item.getType().equals(Material.TRIDENT) && slot == EquipmentSlot.HAND;
 
 					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot) == 0 && BestiaryUtils.mDefaultItemDamage.containsKey(item.getType())) {
 						damage += BestiaryUtils.mDefaultItemDamage.get(item.getType());
@@ -137,23 +137,24 @@ public class BestiaryEntry extends CustomInventory {
 			}
 		}
 
+		// Does the mob attack primarily through explosions?
 		if (entityNBT.getVariable("ExplosionPower") != null) {
 			explode = true;
 			explodePower = Double.valueOf(entityNBT.getVariable("ExplosionPower").get());
 		} else if (!ranged && !trident) {
 			damage += BestiaryUtils.mDefaultDamage.get(entityNBT.getEntityType());
 		}
-
+		// Mojang.
 		if (entityNBT.getEntityType() == EntityType.ZOMBIE || entityNBT.getEntityType() == EntityType.ZOMBIE_VILLAGER) {
 			armor += 2;
 		}
-
-		ItemStack armorItem = getArmorItem(armor, armorToughness);
+		//This logic is in other methods, not because it repeats, but because its much easier to parse
+		ItemStack armorItem = getArmorItem(armorItems[1], armor, armorToughness);
 
 		ItemStack healthItem = getHealthItem(health);
 
 		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, ranged, trident, explode);
-
+		// Maybe I should slap these in a differnet method? eh
 		ItemStack prevPageItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
 		ItemMeta meta = prevPageItem.getItemMeta();
 		meta.setDisplayName(ChatColor.BLUE + "Previous Page");
@@ -168,7 +169,7 @@ public class BestiaryEntry extends CustomInventory {
 		meta = goBackItem.getItemMeta();
 		meta.setDisplayName(ChatColor.RED + "Go Back");
 		goBackItem.setItemMeta(meta);
-
+		// Lower tier of information
 		if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
 			for (int i = 0; i < 36; i++) {
 				_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
@@ -188,12 +189,19 @@ public class BestiaryEntry extends CustomInventory {
 
 		ItemStack tagItem = getTagItem(tagString);
 
+		ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
+		meta = equipmentPageItem.getItemMeta();
+		meta.setDisplayName(ChatColor.GREEN + "View Equipment Items");
+		equipmentPageItem.setItemMeta(meta);
+
+		//Higher teir of information
 		for (int i = 0; i < 36; i++) {
 			_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
 		}
 		_inventory.setItem(2, healthItem);
 		_inventory.setItem(4, armorItem);
 		_inventory.setItem(6, damageItem);
+		_inventory.setItem(13, equipmentPageItem);
 		_inventory.setItem(20, speedItem);
 		_inventory.setItem(22, effectItem);
 		_inventory.setItem(24, tagItem);
@@ -224,6 +232,8 @@ public class BestiaryEntry extends CustomInventory {
 			}
 		} else if (mSouls != null && mAvailableMobs != null && slot == 31 && event.getCurrentItem().getType().equals(Material.RED_STAINED_GLASS_PANE)) {
 			new BestiaryInventory(player, mSouls, mAvailableMobs, mTitle, mCurrentPois, mOldOffset, mRegionTitle).openInventory(player, LibraryOfSouls.getInstance());
+		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
+			new EquipmentDisplay(mSoul, player, this);
 		}
 		event.setCancelled(true);
 	}
@@ -256,6 +266,8 @@ public class BestiaryEntry extends CustomInventory {
 		ItemMeta healthMeta = healthItem.getItemMeta();
 		List<String> lore = new ArrayList<>();
 
+		healthMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		healthMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		lore.add(ChatColor.RED + "" + health + " Max Health");
 		healthMeta.setLore(lore);
 		healthMeta.setDisplayName(ChatColor.RED + "Health");
@@ -264,12 +276,13 @@ public class BestiaryEntry extends CustomInventory {
 		return healthItem;
 	}
 
-	private static ItemStack getArmorItem(double armor, double armorToughness) {
-		ItemStack armorItem = new ItemStack(Material.IRON_CHESTPLATE);
+	private static ItemStack getArmorItem(ItemStack item, double armor, double armorToughness) {
+		ItemStack armorItem = item != null ? item : new ItemStack(Material.IRON_CHESTPLATE);
 		ItemMeta armorMeta = armorItem.getItemMeta();
 		List<String> lore = new ArrayList<>();
 
 		armorMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+
 		if (armorToughness != 0) {
 			lore.add(ChatColor.BLUE + "" + armorToughness + " Armor");
 		}
@@ -282,6 +295,10 @@ public class BestiaryEntry extends CustomInventory {
 
 		armorMeta.setLore(lore);
 		armorMeta.setDisplayName(ChatColor.WHITE + "Armor");
+
+		armorMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		armorMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
 		armorItem.setItemMeta(armorMeta);
 
 		return armorItem;
@@ -319,8 +336,13 @@ public class BestiaryEntry extends CustomInventory {
 			lore.add(ChatColor.DARK_GREEN + " " + damage + " Attack Damage");
 		}
 
+
 		damageMeta.setLore(lore);
 		damageMeta.setDisplayName(ChatColor.WHITE + "Damage");
+
+		damageMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		damageMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
 		damageItem.setItemMeta(damageMeta);
 
 		return damageItem;
@@ -328,7 +350,6 @@ public class BestiaryEntry extends CustomInventory {
 
 	private static ItemStack getEffectItem(ItemStack effectItem) {
 		List<String> lore = new ArrayList<>();
-
 		if (effectItem != null && effectItem.hasItemMeta()) {
 			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
 
@@ -339,12 +360,18 @@ public class BestiaryEntry extends CustomInventory {
 			potionMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 			potionMeta.setLore(lore);
 			potionMeta.setDisplayName(ChatColor.WHITE + "Effects");
+			potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+			potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			effectItem.setItemMeta(potionMeta);
 		} else {
 			effectItem = new ItemStack(Material.POTION);
 			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
 			potionMeta.setBasePotionData(new PotionData(PotionType.WATER));
 			potionMeta.setDisplayName(ChatColor.WHITE + "Effects");
+
+			potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+			potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
 			effectItem.setItemMeta(potionMeta);
 		}
 
@@ -373,6 +400,10 @@ public class BestiaryEntry extends CustomInventory {
 		lore.add(ChatColor.GREEN + "" + speed + " Speed");
 		speedMeta.setLore(lore);
 		speedMeta.setDisplayName(ChatColor.WHITE + "Speed");
+
+		speedMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		speedMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
 		speedItem.setItemMeta(speedMeta);
 
 		return speedItem;
@@ -393,6 +424,10 @@ public class BestiaryEntry extends CustomInventory {
 		}
 		tagMeta.setLore(lore);
 		tagMeta.setDisplayName(ChatColor.WHITE + "Tags");
+
+		tagMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		tagMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+
 		tagItem.setItemMeta(tagMeta);
 
 		return tagItem;

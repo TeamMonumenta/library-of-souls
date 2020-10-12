@@ -1,27 +1,18 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ProxiedCommandSender;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.spigotmc.event.entity.EntityDismountEvent;
 
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
@@ -31,7 +22,6 @@ import io.github.jorelali.commandapi.api.CommandPermission;
 import io.github.jorelali.commandapi.api.arguments.Argument;
 import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgument;
 import io.github.jorelali.commandapi.api.arguments.DynamicSuggestedStringArgument.DynamicSuggestions;
-import io.github.jorelali.commandapi.api.arguments.IntegerArgument;
 import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
 import io.github.jorelali.commandapi.api.arguments.LocationArgument;
 import io.github.jorelali.commandapi.api.exceptions.WrapperCommandSyntaxException;
@@ -97,46 +87,6 @@ public class LibraryOfSoulsCommand implements Listener {
 			}
 			(new SoulsInventory(player, souls, area))
 				.openInventory(player, LibraryOfSouls.getInstance());
-		});
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("mount", new LiteralArgument("mount"));
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
-		api.register("los", CommandPermission.fromString("los.mount"), arguments, (sender, args) -> {
-			if (!(sender instanceof Player)) {
-				return;
-			}
-			Player player = (Player)sender;
-			Entity entity = EntityNBT.fromEntityData(getSoul((String)args[0]).getNBT()).spawn(player.getLocation());
-			entity.addScoreboardTag("ismount");
-			Bukkit.broadcastMessage(entity.getScoreboardTags().toString());
-			entity.addPassenger(player);
-		});
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("eject", new LiteralArgument("eject"));
-		arguments.put("location", new LocationArgument());
-		arguments.put("radius", new IntegerArgument());
-		api.register("los", CommandPermission.fromString("los.mount"), arguments, (sender, args) -> {
-			Collection<LivingEntity> entities = ((Location)args[0]).getNearbyLivingEntities((Integer)args[1]);
-			for (LivingEntity e : entities) {
-				e.eject();
-			}
-		});
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("eject", new LiteralArgument("eject"));
-		arguments.put("location", new LocationArgument());
-		arguments.put("radius", new IntegerArgument());
-		arguments.put("name", new DynamicSuggestedStringArgument(listMobs));
-		api.register("los", CommandPermission.fromString("los.mount"), arguments, (sender, args) -> {
-			Soul soul = SoulsDatabase.getInstance().getSoul((String)args[2]);
-			Collection<LivingEntity> entities = ((Location)args[0]).getNearbyLivingEntities((Integer)args[1]);
-			for (LivingEntity e : entities) {
-				if (soul.getName() == e.getName()) {
-					e.eject();
-				}
-			}
 		});
 	}
 
@@ -213,18 +163,4 @@ public class LibraryOfSoulsCommand implements Listener {
 		return null;
 	}
 
-	@EventHandler(priority = EventPriority.LOWEST)
-	public void entityDismountEvent(EntityDismountEvent event) {
-		Entity entity = event.getDismounted();
-		Bukkit.broadcastMessage(entity.getScoreboardTags().toString());
-		if (entity.getScoreboardTags().contains("ismount")) {
-			if (entity instanceof LivingEntity) {
-				LivingEntity lEntity = (LivingEntity) entity;
-				lEntity.teleport(entity.getLocation().subtract(0, 1000, 0));
-				lEntity.setHealth(0);
-			} else {
-				entity.teleport(entity.getLocation().subtract(0, 1000, 0));
-			}
-		}
-	}
 }

@@ -24,7 +24,7 @@ public class BestiaryUtils {
 	public static EnumMap<EntityType, Double> mDefaultDamage = new EnumMap<>(EntityType.class);
 	public static EnumMap<EntityType, Double> mDefaultSpeed = new EnumMap<>(EntityType.class);
 	public static EnumMap<Material, Double> mDefaultItemDamage = new EnumMap<>(Material.class);
-	public static List<String> mBookMap = new ArrayList<>();
+	public static List<String> mDungeonMap = new ArrayList<>();
 	public static List<Region> mPoiMap = new ArrayList<>();
 	public static List<String> mDungeons;
 	public static Set<String> mLocs;
@@ -160,25 +160,25 @@ public class BestiaryUtils {
 		mDefaultSpeed.put(EntityType.SQUID, 0.7);
 		mDefaultSpeed.put(EntityType.VEX, 0.7);
 
-		mBookMap.add("white");
-		mBookMap.add("orange");
-		mBookMap.add("magenta");
-		mBookMap.add("lightblue");
-		mBookMap.add("yellow");
-		mBookMap.add("lime");
-		mBookMap.add("pink");
-		mBookMap.add("gray");
-		mBookMap.add("lightgray");
-		mBookMap.add("cyan");
-		mBookMap.add("purple");
-		mBookMap.add("labs");
-		mBookMap.add("willows");
-		mBookMap.add("sanctum");
-		mBookMap.add("roguelike");
-		mBookMap.add("reverie");
-		mBookMap.add("shiftingcity");
-		mBookMap.add("region_1");
-		mBookMap.add("region_2");
+		mDungeonMap.add("white");
+		mDungeonMap.add("orange");
+		mDungeonMap.add("magenta");
+		mDungeonMap.add("lightblue");
+		mDungeonMap.add("yellow");
+		mDungeonMap.add("lime");
+		mDungeonMap.add("pink");
+		mDungeonMap.add("gray");
+		mDungeonMap.add("lightgray");
+		mDungeonMap.add("cyan");
+		mDungeonMap.add("purple");
+		mDungeonMap.add("labs");
+		mDungeonMap.add("willows");
+		mDungeonMap.add("sanctum");
+		mDungeonMap.add("roguelike");
+		mDungeonMap.add("reverie");
+		mDungeonMap.add("shiftingcity");
+		mDungeonMap.add("region_1");
+		mDungeonMap.add("region_2");
 	}
 
 	public static String formatWell(String in) {
@@ -277,6 +277,14 @@ public class BestiaryUtils {
 				}
 				mPoiMap.add(new Region(loc, 2, area, adv));
 			}
+		}
+	}
+
+	public static void registerDungeons() {
+		Iterator<Advancement> advancements = Bukkit.advancementIterator();
+
+		while (advancements.hasNext()) {
+			Advancement adv = advancements.next();
 		}
 	}
 

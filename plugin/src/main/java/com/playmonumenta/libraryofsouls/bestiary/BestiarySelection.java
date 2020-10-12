@@ -43,13 +43,15 @@ public class BestiarySelection extends CustomInventory {
 			_inventory.setItem(i, new ItemStack(Material.BLUE_STAINED_GLASS_PANE));
 		}
 
-		for (int i = 0; i < BestiaryUtils.mBookMap.size(); i++) {
+		for (int i = 0; i < BestiaryUtils.mDungeonMap.size(); i++) {
 			lore.clear();
-			String name = BestiaryUtils.mBookMap.get(i);
+			String name = BestiaryUtils.mDungeonMap.get(i);
 			String obj = getScoreboard(name);
-			if ((scoreboard.getObjective(obj) != null && (scoreboard.getObjective(obj).getScore(player.getDisplayName()).getScore() >= 1
-					|| (obj.equals("roguelike") && getRoguelikeScores(scoreboard, player)) || obj.equals(""))) || player.getGameMode().equals(GameMode.CREATIVE)) {
-				ItemStack item = getDungeonItem(BestiaryUtils.formatWell(BestiaryUtils.mBookMap.get(i)));
+			if ((scoreboard.getObjective(obj) != null
+					&& (scoreboard.getObjective(obj).getScore(player.getDisplayName()).getScore() >= 1
+							|| (obj.equals("roguelike") && getRoguelikeScores(scoreboard, player)) || obj.equals("")))
+					|| player.getGameMode().equals(GameMode.CREATIVE)) {
+				ItemStack item = getDungeonItem(BestiaryUtils.formatWell(BestiaryUtils.mDungeonMap.get(i)));
 				ItemMeta meta = item.getItemMeta();
 				meta.setDisplayName(hashItemString(name) + BestiaryUtils.formatWell(name));
 				lore.add(hashItemString(name) + BestiaryUtils.formatWell(name));
@@ -62,14 +64,16 @@ public class BestiarySelection extends CustomInventory {
 		}
 
 		if (mOffset > 0) {
-			_inventory.setItem(27, UtilsMc.newSingleItemStack(Material.GREEN_STAINED_GLASS_PANE, "[" + Integer.toString(mOffset / 27) + "] Previous Page"));
+			_inventory.setItem(27, UtilsMc.newSingleItemStack(Material.GREEN_STAINED_GLASS_PANE,
+					"[" + Integer.toString(mOffset / 27) + "] Previous Page"));
 			mHasPrevPage = true;
 		} else {
 			mHasPrevPage = false;
 		}
 
-		if (27 + mOffset < BestiaryUtils.mBookMap.size()) {
-			_inventory.setItem(35, UtilsMc.newSingleItemStack(Material.GREEN_STAINED_GLASS_PANE, "[" + Integer.toString(mOffset / 27) + "] Next Page"));
+		if (27 + mOffset < BestiaryUtils.mDungeonMap.size()) {
+			_inventory.setItem(35, UtilsMc.newSingleItemStack(Material.GREEN_STAINED_GLASS_PANE,
+					"[" + Integer.toString(mOffset / 27) + "] Next Page"));
 			mHasNextPage = true;
 		} else {
 			mHasNextPage = false;
@@ -78,15 +82,20 @@ public class BestiarySelection extends CustomInventory {
 
 	@Override
 	public void inventoryClick(InventoryClickEvent event) {
-		Player player = (Player)event.getWhoClicked();
+		Player player = (Player) event.getWhoClicked();
 		final int slot = event.getRawSlot();
-		if (slot >= 0 && slot < 27 && slot < BestiaryUtils.mBookMap.size()) {
+		if (slot >= 0 && slot < 27 && slot < BestiaryUtils.mDungeonMap.size()) {
 			if (!(event.getCurrentItem().getType() == Material.PAPER)) {
-				if (event.getCurrentItem().getItemMeta().getDisplayName().contains("Region 1") || event.getCurrentItem().getItemMeta().getDisplayName().contains("Region 2")) {
-					new BestiaryRegionInventory(player, BestiaryUtils.mBookMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());
+				if (event.getCurrentItem().getItemMeta().getDisplayName().contains("Region 1")
+						|| event.getCurrentItem().getItemMeta().getDisplayName().contains("Region 2")) {
+					new BestiaryRegionInventory(player, BestiaryUtils.mDungeonMap.get(slot)).openInventory(player,
+							LibraryOfSouls.getInstance());
 					event.setCancelled(true);
 				} else {
-					new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mBookMap.get(slot)), BestiaryUtils.mBookMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());;
+					new BestiaryInventory(player,
+							SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mDungeonMap.get(slot)),
+							BestiaryUtils.mDungeonMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());
+					;
 					event.setCancelled(true);
 				}
 			}
@@ -111,7 +120,7 @@ public class BestiarySelection extends CustomInventory {
 		} else if (in.equals("reverie")) {
 			return "Corrupted";
 		} else if (in.equals("roguelike")) {
-			//have to do something extra for roguelike... 3 modes
+			// have to do something extra for roguelike... 3 modes
 			return in;
 		} else if (in.equals("region_1")) {
 			return in;
@@ -178,7 +187,8 @@ public class BestiarySelection extends CustomInventory {
 	}
 
 	private boolean getRoguelikeScores(Scoreboard scoreboard, Player player) {
-		return scoreboard.getObjective("RogFinishedN").getScore(player.getDisplayName()).getScore() >= 1 || scoreboard.getObjective("RogFinished").getScore(player.getDisplayName()).getScore() >= 1
+		return scoreboard.getObjective("RogFinishedN").getScore(player.getDisplayName()).getScore() >= 1
+				|| scoreboard.getObjective("RogFinished").getScore(player.getDisplayName()).getScore() >= 1
 				|| scoreboard.getObjective("RogFinishedC").getScore(player.getDisplayName()).getScore() >= 1;
 	}
 
