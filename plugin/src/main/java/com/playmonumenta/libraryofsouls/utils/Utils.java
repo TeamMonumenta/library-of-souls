@@ -7,7 +7,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
 public class Utils {
-	private static Gson gson = new GsonBuilder().setLenient().create();
+	private static final Gson GSON = new GsonBuilder().setLenient().create();
 
 	/*
 	 * Valid examples:
@@ -15,13 +15,13 @@ public class Utils {
 	 *   "§6Master Scavenger"
 	 *   "{\"text\":\"§6Master Scavenger\"}"
 	 */
-	public static String stripColorsAndJSON(Gson gson, String str) {
+	public static String stripColorsAndJSON(String str) {
 		if (str == null || str.isEmpty()) {
 			return str;
 		}
 
 		try {
-			JsonElement element = gson.fromJson(str, JsonElement.class);
+			JsonElement element = GSON.fromJson(str, JsonElement.class);
 			return stripColorsAndJSON(element);
 		} catch (Exception ex) {
 			// Not JSON...
@@ -86,7 +86,7 @@ public class Utils {
 
 		String label = null;
 		try {
-			label = Utils.stripColorsAndJSON(gson, name).replaceAll("[^A-Za-z]", "");
+			label = Utils.stripColorsAndJSON(name).replaceAll("[^A-Za-z]", "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");

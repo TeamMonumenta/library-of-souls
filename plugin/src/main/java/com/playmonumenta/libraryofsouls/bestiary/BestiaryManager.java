@@ -2,23 +2,11 @@ package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
 
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
@@ -27,109 +15,122 @@ import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryScoreboardStora
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryStorage;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.Plugin;
+
 public class BestiaryManager implements Listener {
 	private static BestiaryManager INSTANCE = null;
 
 	private final BestiaryStorage mStorage;
 	private final Logger mLogger;
+	private final Map<Entity, Set<Player>> mDamageTracker = new HashMap<>();
 
-	public BestiaryManager(Logger logger) {
+	public BestiaryManager(Plugin plugin) {
 		INSTANCE = this;
-		mLogger = logger;
+		mLogger = plugin.getLogger();
 
 		/*
 		 * If MonumentaRedisSync is available, use it for storage
 		 * Otherwise fall back to scoreboard storage (which may create a LOT of objectives!)
 		 */
 		if (Bukkit.getPluginManager().isPluginEnabled("MonumentaRedisSync")) {
-			mStorage = new BestiaryRedisStorage();
+			mStorage = new BestiaryRedisStorage(plugin);
 			mLogger.info("Using MonumentaRedisSync for bestiary storage");
 		} else {
 			mStorage = new BestiaryScoreboardStorage();
 			mLogger.info("Using scoreboard for bestiary storage");
 		}
+
+		// Schedule a slow-ticking task to clean stale junk out of the map periodically
+		Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+			Iterator<Map.Entry<Entity, Set<Player>>> iter = mDamageTracker.entrySet().iterator();
+			while (iter.hasNext()) {
+				if (!iter.next().getKey().isValid()) {
+					iter.remove();
+				}
+			}
+			if (mDamageTracker.size() > 50) {
+				mLogger.warning("There are " + mDamageTracker.size() + " entries in the damage tracker which is abnormally high. Maybe a bug?");
+			}
+		}, 1150, 1150);
 	}
 
 	public BestiaryManager getInstance() {
 		return INSTANCE;
 	}
 
-	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) {
+	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) throws Exception {
 		if (INSTANCE == null) {
-			return new HashMap<>();
+			throw new IllegalStateException("BestiaryManager not initialized!");
 		}
 
 		return INSTANCE.mStorage.getAllKilledMobs(player, searchSouls);
 	}
 
-	public static int getKillsForMob(Player player, String name) {
+	public static int getKillsForMob(Player player, SoulEntry soul) throws Exception {
 		if (INSTANCE == null) {
-			return -1;
+			throw new IllegalStateException("BestiaryManager not initialized!");
 		}
 
-		return INSTANCE.mStorage.getKillsForMob(player, name);
+		return INSTANCE.mStorage.getKillsForMob(player, soul);
 	}
 
-	public static int bindKillsToEntry(Player player, String name, String objName) {
+	public static int setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception {
 		if (INSTANCE == null) {
-			return -1;
+			throw new IllegalStateException("BestiaryManager not initialized!");
 		}
 
-		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-		Objective objective = scoreboard.getObjective(objName);
-		if (SoulsDatabase.getInstance().getSoul(name) == null) {
-			return -1;
-		}
-
-		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
-		if (objective == null) {
-			objective = scoreboard.registerNewObjective(objName, "dummy", soul.getName() + ChatColor.WHITE + " kills");
-		}
-
-		Score score = objective.getScore(player.getDisplayName());
-		score.setScore(INSTANCE.mStorage.getKillsForMob(player, name));
-		return score.getScore();
+		return INSTANCE.mStorage.setKillsForMob(player, soul, amount);
 	}
 
-	public static int bindKillsToEntry(Player player, String name, String objName, String entryName) {
+	public static int addKillsToMob(Player player, SoulEntry soul, int amount) throws Exception {
 		if (INSTANCE == null) {
-			return -1;
+			throw new IllegalStateException("BestiaryManager not initialized!");
 		}
 
-		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-		Objective objective = scoreboard.getObjective(objName);
-		if (SoulsDatabase.getInstance().getSoul(name) == null) {
-			return -1;
-		}
-
-		SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
-		if (objective == null) {
-			objective = scoreboard.registerNewObjective(objName, "dummy", soul.getName() + ChatColor.WHITE + " kills");
-		}
-
-		Score score = objective.getScore(entryName);
-		score.setScore(INSTANCE.mStorage.getKillsForMob(player, name));
-		Iterator<Advancement> advance = Bukkit.advancementIterator();
-		while (advance.hasNext()) {
-			Bukkit.broadcastMessage(advance.next().getKey().getKey());
-		}
-		return score.getScore();
+		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);
 	}
 
-	public static boolean setKillsForMob(Player player, String name, int amount) {
-		if (INSTANCE == null) {
-			return false;
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void entityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+		Entity entity = event.getEntity();
+		Entity damager = event.getDamager();
+		if (!event.isCancelled() && entity instanceof LivingEntity &&
+		    !(entity instanceof Player) && damager instanceof Player) {
+			// Non-player living entity was damaged by player
+
+			String name = entity.getCustomName();
+			if (name != null && !name.isEmpty()) {
+				// Damaged entity had a non-empty name
+
+				Set<String> tags = entity.getScoreboardTags();
+				if (tags != null && !tags.isEmpty() && tags.contains("Boss")) {
+					// Damaged entity has the Boss tag
+
+					// Keep track of all players that damage this mob
+					Set<Player> damagers = mDamageTracker.get(entity);
+					if (damagers == null) {
+						// Hasn't been damaged yet - create new set of damaging players
+						damagers = new HashSet<>();
+						damagers.add((Player)damager);
+						mDamageTracker.put(entity, damagers);
+					} else {
+						// Has been damaged already - add player to set
+						damagers.add((Player)damager);
+					}
+				}
+			}
 		}
-
-		return INSTANCE.mStorage.setKillsForMob(player, name, amount);
-	}
-
-	public static boolean addKillsToMob(Player player, String name, int amount) {
-		if (INSTANCE == null) {
-			return false;
-		}
-
-		return INSTANCE.mStorage.addKillsToMob(player, name, amount);
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -148,7 +149,28 @@ public class BestiaryManager implements Listener {
 							String label = Utils.getLabelFromName(name);
 							SoulEntry soul = database.getSoul(label);
 							if (soul != null) {
-								mStorage.recordKill(player, soul);
+								// A soul entry exists for this mob
+
+								// Check if this was a boss with multiple tracked damagers
+								Set<Player> damagers = mDamageTracker.remove(entity);
+								if (damagers != null) {
+									// A boss, record kill for everyone who damaged the mob (including the killer)
+									damagers.add(player);
+									for (Player damager : damagers) {
+										try {
+											mStorage.recordKill(damager, soul);
+										} catch (Exception ex) {
+											mLogger.warning(ex.getMessage());
+										}
+									}
+								} else {
+									// Not a boss, just record kill for the killer
+									try {
+										mStorage.recordKill(player, soul);
+									} catch (Exception ex) {
+										mLogger.warning(ex.getMessage());
+									}
+								}
 							}
 						} catch (Exception ex) {
 							mLogger.warning(ex.getMessage());
@@ -157,5 +179,31 @@ public class BestiaryManager implements Listener {
 				}
 			}
 		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void playerJoinEvent(PlayerJoinEvent event) {
+		if (INSTANCE == null) {
+			mLogger.severe("Player joined but BestiaryManager not initialized!");
+			return;
+		}
+
+		SoulsDatabase database = SoulsDatabase.getInstance();
+		if (database == null) {
+			mLogger.severe("Player joined but SoulsDatabase not initialized!");
+			return;
+		}
+
+		INSTANCE.mStorage.load(event.getPlayer(), database);
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void playerQuitEvent(PlayerQuitEvent event) {
+		if (INSTANCE == null) {
+			mLogger.severe("Player joined but BestiaryManager not initialized!");
+			return;
+		}
+
+		INSTANCE.mStorage.save(event.getPlayer());
 	}
 }

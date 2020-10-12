@@ -47,7 +47,7 @@ public class BestiaryInventory extends CustomInventory {
 	}
 
 	//If it is not the region inventory
-	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title) {
+	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title) throws Exception {
 		this(owner, souls, title, BestiaryManager.getAllKilledMobs(owner, souls));
 	}
 

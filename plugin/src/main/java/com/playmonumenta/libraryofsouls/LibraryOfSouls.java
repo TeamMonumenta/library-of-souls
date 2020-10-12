@@ -13,6 +13,7 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.GetBestiaryCommand;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
+import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 
 public class LibraryOfSouls extends JavaPlugin {
 	private static LibraryOfSouls INSTANCE = null;
@@ -54,6 +55,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		 * These need to register immediately on load to prevent function loading errors
 		 */
 		LibraryOfSoulsCommand.register();
+		SpawnerNBTCommand.register();
 		GetBestiaryCommand.register();
 		BestiaryCommand.register();
 	}

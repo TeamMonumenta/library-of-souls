@@ -151,9 +151,14 @@ public class BestiaryRegionInventory extends CustomInventory {
 		int slot = event.getRawSlot();
 		if (slot >= 0 && slot < 27 && slot < mCurrentPois.length + mOffset) {
 			if (event.getClick().equals(ClickType.LEFT) && mCurrentPois != null && slot < mCurrentPois.length) {
-				new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName()),
-						BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName())), mCurrentPois[slot + mOffset].getPoiName(), mCurrentPois, mOffset, mTitle)
-						.openInventory(player, LibraryOfSouls.getInstance());
+				try {
+					new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName()),
+							BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName())), mCurrentPois[slot + mOffset].getPoiName(), mCurrentPois, mOffset, mTitle)
+							.openInventory(player, LibraryOfSouls.getInstance());
+				} catch (Exception ex) {
+					LibraryOfSouls.getInstance().getLogger().severe("Caught error in BestiaryInventory: " + ex.getMessage());
+					ex.printStackTrace();
+				}
 			}
 			event.setCancelled(true);
 		} else if (slot == 27 && mHasPrevPage) {
