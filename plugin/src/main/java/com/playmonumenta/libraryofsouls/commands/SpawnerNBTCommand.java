@@ -4,32 +4,37 @@ import java.util.LinkedHashMap;
 
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
-import io.github.jorelali.commandapi.api.CommandAPI;
-import io.github.jorelali.commandapi.api.CommandPermission;
-import io.github.jorelali.commandapi.api.arguments.Argument;
-import io.github.jorelali.commandapi.api.arguments.IntegerArgument;
-import io.github.jorelali.commandapi.api.arguments.LiteralArgument;
-import io.github.jorelali.commandapi.api.exceptions.WrapperCommandSyntaxException;
-import net.md_5.bungee.api.ChatColor;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.arguments.Argument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.LiteralArgument;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 public class SpawnerNBTCommand {
 
 	public static void registerType(String method) {
-		CommandPermission perms = CommandPermission.fromString("monumenta.spawnerNBT");
+		CommandPermission perms = CommandPermission.fromString("los.nbtheldspawner");
 		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
 
 		arguments.put(method, new LiteralArgument(method));
 		arguments.put("value", new IntegerArgument());
 
-		CommandAPI.getInstance().register("nbtheldspawner", perms, arguments, (sender, args) -> {
-			changeSpawnerNBT(method, (Integer)args[0], (Player)sender);
-		});
+		new CommandAPICommand("nbtheldspawner")
+			.withPermission(perms)
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				changeSpawnerNBT(method, (Integer)args[0], (Player)sender);
+			})
+			.register();
 	}
 
 	public static void register() {
