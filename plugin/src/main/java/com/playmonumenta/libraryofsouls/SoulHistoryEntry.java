@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -162,7 +163,22 @@ public class SoulHistoryEntry implements Soul {
 	private void regenerateItems() {
 		EntityNBT entityNBT = EntityNBT.fromEntityData(mNBT);
 
-		mBoS = (new BookOfSouls(entityNBT)).getBook();
+		try {
+			mBoS = (new BookOfSouls(entityNBT)).getBook();
+		} catch (Exception ex) {
+			Logger logger = LibraryOfSouls.getInstance().getLogger();
+			logger.warning("Library of souls entry for '" + mName + "' failed to load: " + ex.getMessage());
+			ex.printStackTrace();
+
+			mPlaceholder = new ItemStack(Material.BARRIER);
+			mPlaceholder = mPlaceholder.ensureServerConversions();
+			ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
+			placeholderWrap.getVariable("Name").set("FAILED TO LOAD: " + getDisplayName(), null);
+			placeholderWrap.save();
+
+			mBoS = mPlaceholder.clone();
+			return;
+		}
 
 		switch (entityNBT.getEntityType()) {
 			case BLAZE:
