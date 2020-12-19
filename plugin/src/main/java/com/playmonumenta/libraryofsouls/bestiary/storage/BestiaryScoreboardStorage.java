@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,16 +14,6 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 public class BestiaryScoreboardStorage implements BestiaryStorage {
-	@Override
-	public void load(Player player, SoulsDatabase database) {
-		// Nothing to do
-	}
-
-	@Override
-	public void save(Player player) {
-		// Nothing to do
-	}
-
 	@Override
 	public void recordKill(Player player, SoulEntry soul) {
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
