@@ -1,0 +1,3 @@
+[submodule "plugin/NBTEditor"]
+	path = plugin/NBTEditor
+	url = https://github.com/goncalomb/NBTEditor.git

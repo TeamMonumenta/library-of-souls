@@ -17,8 +17,8 @@ jobs:
       with:
         java-version: 1.8
     - name: Build NBTEditor
-      working-directory: ./plugin
-      run: ./compile-nbteditor.sh
+      working-directory: ./plugin/NBTEditor
+      run: mvn install
     - name: Deploy to Github Package Registry
       working-directory: ./plugin
       env:

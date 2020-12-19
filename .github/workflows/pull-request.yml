@@ -19,8 +19,8 @@ jobs:
         reviewdog_version: latest
 
     - name: Build NBTEditor
-      working-directory: ./plugin
-      run: ./compile-nbteditor.sh
+      working-directory: ./plugin/NBTEditor
+      run: mvn install
 
     # Checkstyle
     - name: Run checkstyle
