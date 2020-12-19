@@ -4,17 +4,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import org.bukkit.entity.Player;
 
 public interface BestiaryStorage {
-	/** Loads data for a given player (such as at login) */
-	void load(Player player, SoulsDatabase database);
-
-	/** Saves data for a given player (such as at logout) */
-	void save(Player player);
-
 	/** Records when a player has killed the given mob */
 	void recordKill(Player player, SoulEntry soul) throws Exception;
 
