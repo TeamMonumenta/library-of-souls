@@ -19,8 +19,10 @@ jobs:
         reviewdog_version: latest
 
     - name: Build NBTEditor
-      working-directory: ./plugin
-      run: ./compile-nbteditor.sh
+      working-directory: ./plugin/NBTEditor
+      run: |
+        git submodule update --init --recursive
+        mvn install
 
     # Checkstyle
     - name: Run checkstyle
