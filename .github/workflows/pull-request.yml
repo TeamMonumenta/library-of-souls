@@ -20,7 +20,9 @@ jobs:
 
     - name: Build NBTEditor
       working-directory: ./plugin/NBTEditor
-      run: mvn install
+      run: |
+        git submodule update --init --recursive
+        mvn install
 
     # Checkstyle
     - name: Run checkstyle
