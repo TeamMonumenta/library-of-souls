@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.playmonumenta</groupId>
             <artifactId>redissync</artifactId>
-            <version>1.4</version>
+            <version>1.7</version>
             <scope>provided</scope>
         </dependency>
 
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>com.goncalomb.bukkit</groupId>
             <artifactId>nbteditor</artifactId>
-            <version>3.2-SNAPSHOT</version>
+            <version>3.3-SNAPSHOT</version>
         </dependency>
 
         <dependency>
