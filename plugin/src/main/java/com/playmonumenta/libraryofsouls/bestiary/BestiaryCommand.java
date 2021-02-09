@@ -1,7 +1,8 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.text.MessageFormat;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
