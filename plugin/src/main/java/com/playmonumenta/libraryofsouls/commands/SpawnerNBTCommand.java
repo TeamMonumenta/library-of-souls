@@ -16,23 +16,23 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
-import dev.jorel.commandapi.arguments.LiteralArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 public class SpawnerNBTCommand {
 
 	public static void registerType(String method) {
 		CommandPermission perms = CommandPermission.fromString("los.nbtheldspawner");
-		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
+		List<Argument> arguments = new ArrayList<>();
 
-		arguments.put(method, new LiteralArgument(method));
-		arguments.put("value", new IntegerArgument());
+		arguments.add(new MultiLiteralArgument(method));
+		arguments.add(new IntegerArgument("value"));
 
 		new CommandAPICommand("nbtheldspawner")
 			.withPermission(perms)
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-				changeSpawnerNBT(method, (Integer)args[0], (Player)sender);
+				changeSpawnerNBT(method, (Integer)args[1], (Player)sender);
 			})
 			.register();
 	}
