@@ -2,7 +2,6 @@ package com.playmonumenta.libraryofsouls.bestiary;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,8 +18,8 @@ public class EquipmentDisplay extends CustomInventory {
 
 	private Soul mSoul;
 	private BestiaryEntry mEntry;
-	public EquipmentDisplay(Soul soul, Player player, BestiaryEntry entry) {
-		super(player, 36, soul.getName() + "'s Equipment");
+	public EquipmentDisplay(Soul soul, String title, Player player, BestiaryEntry entry) {
+		super(player, 36,  BestiaryUtils.hashColor(title) + soul.getPlaceholder().getItemMeta().getDisplayName() + "'s Equipment");
 		mSoul = soul;
 		mEntry = entry;
 		loadWindow(mSoul);
@@ -47,22 +46,22 @@ public class EquipmentDisplay extends CustomInventory {
 		//Using i just because it makes things simpler
 		for (int i = 0; i < 4; i++) {
 			ItemStack armorItem = armorItems[i];
-			if (armorItem == null) {
-				_inventory.setItem(i + 10, nullItem);
+			if (armorItem == null || armorItem.getType() == Material.AIR) {
+				_inventory.setItem(13 - i, nullItem);
 				continue;
 			}
 
-			_inventory.setItem(i + 10, armorItem);
+			_inventory.setItem(13 - i, armorItem);
 		}
 
 		for (int i = 0; i < 2; i++) {
 			ItemStack handItem = handItems[i];
-			if (handItem == null) {
-				_inventory.setItem(i + 10, nullItem);
+			if (handItem == null || handItem.getType() == Material.AIR) {
+				_inventory.setItem(15 + i, nullItem);
 				continue;
 			}
 
-			_inventory.setItem(i + 15, handItem);
+			_inventory.setItem(15 + i, handItem);
 		}
 
 		ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
@@ -76,8 +75,10 @@ public class EquipmentDisplay extends CustomInventory {
 	@Override
 	public void inventoryClick(InventoryClickEvent event) {
 		int slot = event.getRawSlot();
-		if (event.getClick() == ClickType.LEFT && slot == 31 && event.getCurrentItem().getType() == Material.RED_STAINED_GLASS_PANE) {
-			mEntry.openInventory((Player)event.getWhoClicked(), LibraryOfSouls.getInstance());
+		Player player = (Player)event.getWhoClicked();
+		if (slot == 31 && event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.RED_STAINED_GLASS_PANE) {
+			mEntry.clone().openInventory(player, LibraryOfSouls.getInstance());
 		}
+		event.setCancelled(true);
 	}
 }

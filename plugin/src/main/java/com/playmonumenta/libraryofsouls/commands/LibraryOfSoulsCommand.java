@@ -2,6 +2,7 @@ package com.playmonumenta.libraryofsouls.commands;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
@@ -10,21 +11,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import java.util.function.Function;
 
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
-
-import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ProxiedCommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -101,19 +95,23 @@ public class LibraryOfSoulsCommand implements Listener {
 		/* los search <area> */
 		arguments.clear();
 		arguments.put("search", new LiteralArgument("search"));
-		arguments.put("area", new DynamicSuggestedStringArgument(() -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[0])));
-		api.register("los", CommandPermission.fromString("los.search"), arguments, (sender, args) -> {
-			Player player = getPlayer(sender);
-			String area = (String)args[0];
-			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
-			if (souls == null) {
-				CommandAPI.fail("Area '" + area + "' not found");
-			}
-			(new SoulsInventory(player, souls, area))
-				.openInventory(player, LibraryOfSouls.getInstance());
-		});
-		
-		arguments.put("area", new StringArgument().overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[0])));
+		arguments.put("area", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.search"))
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				Player player = getPlayer(sender);
+				String area = (String)args[0];
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
+				if (souls == null) {
+					CommandAPI.fail("Area '" + area + "' not found");
+				}
+				(new SoulsInventory(player, souls, area))
+					.openInventory(player, LibraryOfSouls.getInstance());
+			})
+			.register();
+
+		arguments.put("area", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
@@ -130,15 +128,19 @@ public class LibraryOfSoulsCommand implements Listener {
 			.register();
 
 		/* los spawner <name> */
-		arguments.clear();
-		arguments.put("spawner", new LiteralArgument("spawner"));
-		arguments.put("name", new DynamicSuggestedStringArgument(LIST_MOBS_FUNCTION));
-		api.register("los", CommandPermission.fromString("los.spawner"), arguments, (sender, args) -> {
-			Player player = getPlayer(sender);
-			Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
-			SpawnerInventory.openSpawnerInventory(soul, player, null);
-		});
-		
+			arguments.clear();
+			arguments.put("spawner", new LiteralArgument("spawner"));
+			arguments.put("name", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+			new CommandAPICommand(COMMAND)
+				.withPermission(CommandPermission.fromString("los.spawner"))
+				.withArguments(arguments)
+				.executes((sender, args) -> {
+				Player player = getPlayer(sender);
+				Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
+				SpawnerInventory.openSpawnerInventory(soul, player, null);
+			})
+			.register();
+
 		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.spawner"))

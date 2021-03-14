@@ -23,18 +23,17 @@ import net.md_5.bungee.api.ChatColor;
 
 public class BestiaryInventory extends CustomInventory {
 
-	private List<? extends Soul> mCurrentSlots;
-	private List<? extends Soul> mSouls;
+	private List<SoulEntry> mCurrentSlots;
+	private List<SoulEntry> mSouls;
 	private static String mTitle = "";
-	private int mOffset;
-	private int mOldOffset = 0;
+	private int mOffset = 0;
 	private boolean mHasPrevPage;
 	private boolean mHasNextPage;
-	private Region[] mCurrentPois;
 	private static ItemStack mNotFound = new ItemStack(Material.PAPER);
 	private static ItemStack mGoBack = new ItemStack(Material.RED_STAINED_GLASS_PANE);
 	private Map<SoulEntry, Integer> mAvailableMobs;
-	private String mPrevTitle;
+	private BestiaryRegionInventory mBestiaryRegionInventory;
+	private Player mPlayer;
 
 	static {
 		ItemMeta meta = mNotFound.getItemMeta();
@@ -46,29 +45,17 @@ public class BestiaryInventory extends CustomInventory {
 		mGoBack.setItemMeta(meta);
 	}
 
-	//If it is not the region inventory
-	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title) throws Exception {
-		this(owner, souls, title, BestiaryManager.getAllKilledMobs(owner, souls));
-	}
-
 	//If it is not the region Inventory
 	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, Map<SoulEntry, Integer> availableMobs) {
 		this(owner, souls, title, availableMobs, null);
 	}
 
-	//So you can go back to the region inventory
-	public BestiaryInventory(Player owner, List<SoulEntry> souls, Map<SoulEntry, Integer> availableMobs, String title, Region[] pois, int offset, String prevTitle) {
-		this(owner, souls, title, availableMobs, pois);
-		mOldOffset = offset;
-		mPrevTitle = prevTitle;
-	}
-
-	//The final one
-	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, Map<SoulEntry, Integer> availableMobs, Region[] pois) {
+	public BestiaryInventory(Player owner, List<SoulEntry> souls, String title, Map<SoulEntry, Integer> availableMobs, BestiaryRegionInventory previousInventory) {
 		super(owner, 36, ChatColor.BLACK + "Bestiary: " + BestiaryUtils.hashColor(title) + BestiaryUtils.formatWell(title));
 		mSouls = souls;
 		mTitle = title;
-		mCurrentPois = pois;
+		mPlayer = owner;
+		mBestiaryRegionInventory = previousInventory;
 		mAvailableMobs = availableMobs;
 		loadWindow(owner);
 	}
@@ -119,9 +106,9 @@ public class BestiaryInventory extends CustomInventory {
 			if (event.getClick().equals(ClickType.LEFT) && mCurrentSlots != null && slot < mCurrentSlots.size()) {
 					Soul soul = mCurrentSlots.get(slot);
 					if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 3 || player.getGameMode() == GameMode.CREATIVE) {
-						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, mCurrentPois, mPrevTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, this).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
-						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, mCurrentPois, mPrevTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, this).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 1) {
 						player.sendMessage(ChatColor.DARK_RED + "You Have Not gained enough knowledge of this mob!");
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 0) {
@@ -134,8 +121,8 @@ public class BestiaryInventory extends CustomInventory {
 			loadWindow(player);
 			event.setCancelled(true);
 		} else if (slot == 31) {
-			if (mCurrentPois != null) {
-				new BestiaryRegionInventory(player, mPrevTitle, mCurrentPois, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+			if (mBestiaryRegionInventory != null) {
+				mBestiaryRegionInventory.clone().openInventory(player, LibraryOfSouls.getInstance());
 			} else {
 				new BestiarySelection(player).openInventory(player, LibraryOfSouls.getInstance());
 			}
@@ -170,5 +157,10 @@ public class BestiaryInventory extends CustomInventory {
 		}
 
 		return BestiaryUtils.hashColor(mTitle);
+	}
+
+	@Override
+	public BestiaryInventory clone() {
+		return new BestiaryInventory(mPlayer, mSouls, mTitle, mAvailableMobs, mBestiaryRegionInventory);
 	}
 }

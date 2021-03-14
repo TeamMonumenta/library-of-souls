@@ -20,6 +20,7 @@ public class BestiaryRegionInventory extends CustomInventory {
 	private int mOffset;
 	private boolean mHasPrevPage;
 	private boolean mHasNextPage;
+	private Player mPlayer;
 	private Region[] mCurrentPois;
 	private static ItemStack mNotFound = new ItemStack(Material.PAPER);
 	private static ItemStack mGoBack = new ItemStack(Material.RED_STAINED_GLASS_PANE);
@@ -39,12 +40,13 @@ public class BestiaryRegionInventory extends CustomInventory {
 		this(owner, title, null, 0);
 	}
 
-	//To load it from a certain place
+	// To load it from a certain place
 	public BestiaryRegionInventory(Player owner, String title, Region[] pois, int offset) {
 		super(owner, 36, ChatColor.BLACK + "Bestiary: " + BestiaryUtils.hashColor(title) + BestiaryUtils.formatWell(title));
 		mTitle = title;
 		mCurrentPois = pois;
 		mOffset = offset;
+		mPlayer = owner;
 		loadRegionWindow(mTitle, owner);
 	}
 
@@ -153,7 +155,7 @@ public class BestiaryRegionInventory extends CustomInventory {
 			if (event.getClick().equals(ClickType.LEFT) && mCurrentPois != null && slot < mCurrentPois.length) {
 				try {
 					new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName()),
-							BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName())), mCurrentPois[slot + mOffset].getPoiName(), mCurrentPois, mOffset, mTitle)
+							mCurrentPois[slot + mOffset].getPoiName(), BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(mCurrentPois[slot + mOffset].getPoiName())), this)
 							.openInventory(player, LibraryOfSouls.getInstance());
 				} catch (Exception ex) {
 					LibraryOfSouls.getInstance().getLogger().severe("Caught error in BestiaryInventory: " + ex.getMessage());
@@ -174,5 +176,10 @@ public class BestiaryRegionInventory extends CustomInventory {
 		} else {
 			event.setCancelled(true);
 		}
+	}
+
+	@Override
+	public BestiaryRegionInventory clone() {
+		return new BestiaryRegionInventory(mPlayer, mTitle, mCurrentPois, mOffset);
 	}
 }

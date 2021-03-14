@@ -101,10 +101,12 @@ public class SoulHistoryEntry implements Soul {
 		return mName;
 	}
 
+	@Override
 	public String getDisplayName() {
 		return (isElite() ? ChatColor.GOLD : ChatColor.WHITE) + "" + ChatColor.BOLD + Utils.stripColorsAndJSON(mName);
 	}
 
+	@Override
 	public boolean isElite() {
 		boolean isElite = false;
 		NBTTagList tags = mNBT.getList("Tags");
@@ -118,6 +120,7 @@ public class SoulHistoryEntry implements Soul {
 		return isElite;
 	}
 
+	@Override
 	public String getLabel() {
 		return mLabel;
 	}
@@ -235,7 +238,7 @@ public class SoulHistoryEntry implements Soul {
 			case PHANTOM:
 				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
 				break;
-			case PIG_ZOMBIE:
+			case ZOMBIFIED_PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
 				break;
 			case SHULKER:

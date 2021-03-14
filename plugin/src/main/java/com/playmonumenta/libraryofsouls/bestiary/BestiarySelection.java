@@ -93,7 +93,8 @@ public class BestiarySelection extends CustomInventory {
 					event.setCancelled(true);
 				} else {
 					try {
-						new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mDungeonMap.get(slot)), BestiaryUtils.mDungeonMap.get(slot)).openInventory(player, LibraryOfSouls.getInstance());;
+						// Since this is the first level, it doesnt need to pass its information on - its whatever if you go back and its on the first page
+						new BestiaryInventory(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mDungeonMap.get(slot)), BestiaryUtils.mDungeonMap.get(slot), BestiaryManager.getAllKilledMobs(player, SoulsDatabase.getInstance().getSoulsByLocation(BestiaryUtils.mDungeonMap.get(slot)))).openInventory(player, LibraryOfSouls.getInstance());
 					} catch (Exception ex) {
 						LibraryOfSouls.getInstance().getLogger().severe("Caught error in BestiaryInventory: " + ex.getMessage());
 						ex.printStackTrace();
@@ -101,6 +102,7 @@ public class BestiarySelection extends CustomInventory {
 					event.setCancelled(true);
 				}
 			}
+			event.setCancelled(true);
 		} else if (slot == 27 && mHasPrevPage) {
 			mOffset -= 27;
 			loadWindow(player);

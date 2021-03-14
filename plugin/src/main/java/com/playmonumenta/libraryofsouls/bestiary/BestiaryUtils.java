@@ -94,7 +94,7 @@ public class BestiaryUtils {
 		mDefaultDamage.put(EntityType.IRON_GOLEM, 21.0);
 		mDefaultDamage.put(EntityType.MAGMA_CUBE, 6.0);
 		mDefaultDamage.put(EntityType.PHANTOM, 6.0);
-		mDefaultDamage.put(EntityType.PIG_ZOMBIE, 4.0);
+		mDefaultDamage.put(EntityType.ZOMBIFIED_PIGLIN, 4.0);
 		//??
 		mDefaultDamage.put(EntityType.PILLAGER, 4.0);
 		mDefaultDamage.put(EntityType.POLAR_BEAR, 6.0);
@@ -128,7 +128,7 @@ public class BestiaryUtils {
 		mDefaultSpeed.put(EntityType.HUSK, 0.23);
 		mDefaultSpeed.put(EntityType.ZOMBIE, 0.23);
 		mDefaultSpeed.put(EntityType.ZOMBIE_VILLAGER, 0.23);
-		mDefaultSpeed.put(EntityType.PIG_ZOMBIE, 0.23);
+		mDefaultSpeed.put(EntityType.ZOMBIFIED_PIGLIN, 0.23);
 		mDefaultSpeed.put(EntityType.CREEPER, 0.25);
 		mDefaultSpeed.put(EntityType.ENDERMITE, 0.25);
 		mDefaultSpeed.put(EntityType.IRON_GOLEM, 0.25);

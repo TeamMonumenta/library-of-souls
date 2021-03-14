@@ -5,7 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -41,25 +41,20 @@ public class BestiaryEntry extends CustomInventory {
 	private Map<SoulEntry, Integer> mAvailableMobs;
 	private List<SoulEntry> mSouls;
 	private int mCurrentSoul;
-	private String mTitle;
-	private Region[] mCurrentPois;
-	private String mRegionTitle;
-	private int mOldOffset;
+	private String mLocation;
 	private Soul mSoul;
+	private BestiaryInventory mBestiaryInventory;
+	private Player mPlayer;
 
-	public BestiaryEntry (Soul soul, Player player, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs) {
-		this(soul, player, title, currentSoul, availableMobs, null, "", 0);
-	}
-
-	public BestiaryEntry (Soul soul, Player player, String title, int currentSoul, Map<SoulEntry, Integer> availableMobs, Region[] pois, String regionTitle, int offset) {
-		super(player, 36, BestiaryUtils.hashColor(title) + soul.getPlaceholder().getItemMeta().getDisplayName());
-		mSouls = SoulsDatabase.getInstance().getSoulsByLocation(title);
-		mAvailableMobs = availableMobs;
+	public BestiaryEntry (Soul soul, Player player, String location, int currentSoul, Map<SoulEntry, Integer> availableMobs, BestiaryInventory bestiaryInventory) {
+		super(player, 36, BestiaryUtils.hashColor(location) + soul.getPlaceholder().getItemMeta().getDisplayName());
+		mSouls = SoulsDatabase.getInstance().getSoulsByLocation(location);
 		mCurrentSoul = currentSoul;
-		mTitle = title;
-		mCurrentPois = pois;
-		mRegionTitle = regionTitle;
+		mLocation = location;
 		mSoul = soul;
+		mPlayer = player;
+		mBestiaryInventory = bestiaryInventory;
+		mAvailableMobs = availableMobs;
 		generateBestiaryEntry(soul, player);
 	}
 
@@ -217,23 +212,23 @@ public class BestiaryEntry extends CustomInventory {
 		if (mSouls != null && mAvailableMobs != null && slot == 27 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
 			for (int i = mCurrentSoul - 1; i >= 0; i--) {
 				Soul soul = mSouls.get(i);
-				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2) {
-					new BestiaryEntry(soul, player, mTitle, i, mAvailableMobs, mCurrentPois, mRegionTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2 || player.getGameMode() == GameMode.CREATIVE) {
+					new BestiaryEntry(soul, player, mLocation, i, mAvailableMobs, mBestiaryInventory).openInventory(player, LibraryOfSouls.getInstance());
 					break;
 				}
 			}
 		} else if (mSouls != null && mAvailableMobs != null && slot == 35 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
 			for (int i = mCurrentSoul + 1; i < mSouls.size(); i++) {
 				Soul soul = mSouls.get(i);
-				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2) {
-					new BestiaryEntry(soul, player, mTitle, i, mAvailableMobs, mCurrentPois, mRegionTitle, mOldOffset).openInventory(player, LibraryOfSouls.getInstance());
+				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2 || player.getGameMode() == GameMode.CREATIVE) {
+					new BestiaryEntry(soul, player, mLocation, i, mAvailableMobs, mBestiaryInventory).openInventory(player, LibraryOfSouls.getInstance());
 					break;
 				}
 			}
 		} else if (mSouls != null && mAvailableMobs != null && slot == 31 && event.getCurrentItem().getType().equals(Material.RED_STAINED_GLASS_PANE)) {
-			new BestiaryInventory(player, mSouls, mAvailableMobs, mTitle, mCurrentPois, mOldOffset, mRegionTitle).openInventory(player, LibraryOfSouls.getInstance());
+			mBestiaryInventory.clone().openInventory(player, LibraryOfSouls.getInstance());
 		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
-			new EquipmentDisplay(mSoul, player, this);
+			new EquipmentDisplay(mSoul, mLocation, player, this).openInventory(player, LibraryOfSouls.getInstance());
 		}
 		event.setCancelled(true);
 	}
@@ -277,7 +272,7 @@ public class BestiaryEntry extends CustomInventory {
 	}
 
 	private static ItemStack getArmorItem(ItemStack item, double armor, double armorToughness) {
-		ItemStack armorItem = item != null ? item : new ItemStack(Material.IRON_CHESTPLATE);
+		ItemStack armorItem = item != null && item.getItemMeta() != null ? item : new ItemStack(Material.IRON_CHESTPLATE);
 		ItemMeta armorMeta = armorItem.getItemMeta();
 		List<String> lore = new ArrayList<>();
 
@@ -306,7 +301,7 @@ public class BestiaryEntry extends CustomInventory {
 
 	private static ItemStack getDamageItem(ItemStack item, double damage, double bowDamage, double explodePower, boolean ranged, boolean trident, boolean explode) {
 		ItemStack damageItem = item;
-		if (damageItem == null) {
+		if (damageItem == null || damageItem.getItemMeta() == null) {
 			if (ranged) {
 				damageItem = new ItemStack(Material.BOW);
 			} else if (trident) {
@@ -439,7 +434,6 @@ public class BestiaryEntry extends CustomInventory {
 		if (tag.contains(",")) {
 			String[] tags = tag.split(",");
 			for (String iterTag : tags) {
-				Bukkit.broadcastMessage(iterTag);
 				iterTag = iterTag.replaceAll("\"", "");
 				iterTag = iterTag.replaceAll("\\[", "");
 				iterTag = iterTag.replaceAll("\\]", "");
@@ -464,5 +458,10 @@ public class BestiaryEntry extends CustomInventory {
 		}
 
 		return Math.ceil((0.0006633685369 * powerLevel * powerLevel) + (0.7553196723 * powerLevel) + 4.97314159) - adjust;
+	}
+
+	@Override
+	public BestiaryEntry clone() {
+		return new BestiaryEntry(mSoul, mPlayer, mLocation, mCurrentSoul, mAvailableMobs, mBestiaryInventory);
 	}
 }
