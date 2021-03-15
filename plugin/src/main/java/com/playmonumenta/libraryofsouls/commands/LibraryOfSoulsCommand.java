@@ -1,16 +1,8 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-
-import org.bukkit.Location;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ProxiedCommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
@@ -20,25 +12,32 @@ import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
 
+import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ProxiedCommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.LocationArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
-public class LibraryOfSoulsCommand implements Listener {
+public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
 	public static final Function<CommandSender, String[]> LIST_MOBS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobNames().toArray(new String[SoulsDatabase.getInstance().listMobNames().size()]);
 	private static final String COMMAND = "los";
 
 	public static void register() {
-		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
+		List<Argument> arguments = new ArrayList<>();
 
 		/* los open */
-		arguments.put("open", new LiteralArgument("open"));
+		arguments.add(new MultiLiteralArgument("open"));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.open"))
 			.withArguments(arguments)
@@ -51,8 +50,8 @@ public class LibraryOfSoulsCommand implements Listener {
 
 		/* los get <name> */
 		arguments.clear();
-		arguments.put("get", new LiteralArgument("get"));
-		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new MultiLiteralArgument("get"));
+		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.get"))
 			.withArguments(arguments)
@@ -61,64 +60,48 @@ public class LibraryOfSoulsCommand implements Listener {
                 if (inv.firstEmpty() == -1) {
                     CommandAPI.fail("Your inventory is full!");
                 }
-                inv.addItem(getSoul((String)args[0]).getBoS());
+                inv.addItem(getSoul((String)args[1]).getBoS());
 			})
 			.register();
 
 		/* los history <name> */
 		arguments.clear();
-		arguments.put("history", new LiteralArgument("history"));
-		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new MultiLiteralArgument("history"));
+		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.history"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				(new SoulsInventory(player, getSoul((String)args[0]).getHistory(), "History"))
+				(new SoulsInventory(player, getSoul((String)args[1]).getHistory(), "History"))
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
 
 		/* los summon <location> <name> */
 		arguments.clear();
-		arguments.put("summon", new LiteralArgument("summon"));
-		arguments.put("location", new LocationArgument());
-		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new MultiLiteralArgument("summon"));
+		arguments.add(new LocationArgument("location"));
+		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.summon"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-				getSoul((String)args[1]).summon((Location)args[0]);
+				getSoul((String)args[2]).summon((Location)args[1]);
 			})
 			.register();
 
 		/* los search <area> */
 		arguments.clear();
-		arguments.put("search", new LiteralArgument("search"));
-		arguments.put("area", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new MultiLiteralArgument("search"));
+		arguments.add(new StringArgument("area").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobLocations().toArray(String[]::new)));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String area = (String)args[0];
-				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
-				if (souls == null) {
-					CommandAPI.fail("Area '" + area + "' not found");
-				}
-				(new SoulsInventory(player, souls, area))
-					.openInventory(player, LibraryOfSouls.getInstance());
-			})
-			.register();
-
-		arguments.put("area", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
-		new CommandAPICommand(COMMAND)
-			.withPermission(CommandPermission.fromString("los.search"))
-			.withArguments(arguments)
-			.executes((sender, args) -> {
-				Player player = getPlayer(sender);
-				String area = (String)args[0];
-				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[0]);
+				String area = (String)args[1];
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[1]);
 				if (souls == null) {
 					CommandAPI.fail("Area '" + area + "' not found");
 				}
@@ -128,37 +111,26 @@ public class LibraryOfSoulsCommand implements Listener {
 			.register();
 
 		/* los spawner <name> */
-			arguments.clear();
-			arguments.put("spawner", new LiteralArgument("spawner"));
-			arguments.put("name", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
-			new CommandAPICommand(COMMAND)
-				.withPermission(CommandPermission.fromString("los.spawner"))
-				.withArguments(arguments)
-				.executes((sender, args) -> {
-				Player player = getPlayer(sender);
-				Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
-				SpawnerInventory.openSpawnerInventory(soul, player, null);
-			})
-			.register();
-
-		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.clear();
+		arguments.add(new MultiLiteralArgument("spawner"));
+		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.spawner"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				Soul soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
+				Soul soul = SoulsDatabase.getInstance().getSoul((String)args[1]);
 				SpawnerInventory.openSpawnerInventory(soul, player, null);
 			})
 			.register();
 	}
 
 	public static void registerWriteAccessCommands() {
-		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
+		List<Argument> arguments = new ArrayList<>();
 
 		/* los add */
 		arguments.clear();
-		arguments.put("add", new LiteralArgument("add"));
+		arguments.add(new MultiLiteralArgument("add"));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.add"))
 			.withArguments(arguments)
@@ -175,7 +147,7 @@ public class LibraryOfSoulsCommand implements Listener {
 
 		/* los update */
 		arguments.clear();
-		arguments.put("update", new LiteralArgument("update"));
+		arguments.add(new MultiLiteralArgument("update"));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.update"))
 			.withArguments(arguments)
@@ -192,13 +164,13 @@ public class LibraryOfSoulsCommand implements Listener {
 
 		/* los del <name> */
 		arguments.clear();
-		arguments.put("del", new LiteralArgument("del"));
-		arguments.put("mobLabel", new StringArgument().overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new MultiLiteralArgument("del"));
+		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.del"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-				SoulsDatabase.getInstance().del(sender, (String)args[0]);
+				SoulsDatabase.getInstance().del(sender, (String)args[1]);
 			})
 			.register();
 	}
@@ -236,5 +208,4 @@ public class LibraryOfSoulsCommand implements Listener {
 		CommandAPI.fail("You must be holding a Book of Souls!");
 		return null;
 	}
-
 }
