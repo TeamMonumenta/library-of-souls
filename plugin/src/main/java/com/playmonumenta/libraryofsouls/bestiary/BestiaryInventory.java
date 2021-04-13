@@ -110,7 +110,7 @@ public class BestiaryInventory extends CustomInventory {
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
 						new BestiaryEntry(soul, player, mTitle, slot + mOffset, mAvailableMobs, this).openInventory(player, LibraryOfSouls.getInstance());
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 1) {
-						player.sendMessage(ChatColor.DARK_RED + "You Have Not gained enough knowledge of this mob!");
+						player.sendMessage(ChatColor.DARK_RED + "You have not gained enough knowledge of this mob!");
 					} else if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 0) {
 						event.setCancelled(true);
 					}
