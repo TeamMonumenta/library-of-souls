@@ -101,11 +101,30 @@ public class LibraryOfSoulsCommand {
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
 				String area = (String)args[1];
-				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation((String)args[1]);
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(area);
 				if (souls == null) {
 					CommandAPI.fail("Area '" + area + "' not found");
 				}
 				(new SoulsInventory(player, souls, area))
+					.openInventory(player, LibraryOfSouls.getInstance());
+			})
+			.register();
+
+		/* los searchtype <id> */
+		arguments.clear();
+		arguments.add(new MultiLiteralArgument("searchtype"));
+		arguments.add(new StringArgument("id").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobTypes().toArray(new String[0])));
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.search"))
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				Player player = getPlayer(sender);
+				String id = (String)args[1];
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByType(id);
+				if (souls == null) {
+					CommandAPI.fail("Mob type '" + id + "' not found");
+				}
+				(new SoulsInventory(player, souls, id))
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();

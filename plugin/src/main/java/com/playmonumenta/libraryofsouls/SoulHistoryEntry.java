@@ -10,13 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
@@ -29,6 +22,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 
 public class SoulHistoryEntry implements Soul {
 	private static Gson gson = null;
@@ -39,6 +40,7 @@ public class SoulHistoryEntry implements Soul {
 	private final String mName;
 	private final String mLabel;
 	private final Set<String> mLocs;
+	private final NamespacedKey mId;
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
@@ -48,6 +50,7 @@ public class SoulHistoryEntry implements Soul {
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
+		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 
 		mName = nbt.getString("CustomName");
 		mLabel = Utils.getLabelFromName(mName);
@@ -94,6 +97,11 @@ public class SoulHistoryEntry implements Soul {
 			regenerateItems();
 		}
 		return mBoS;
+	}
+
+	@Override
+	public NamespacedKey getId() {
+		return mId;
 	}
 
 	@Override

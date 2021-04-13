@@ -7,17 +7,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
@@ -29,6 +22,12 @@ import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.bestiary.GetBestiary;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -55,6 +54,11 @@ public class SoulsDatabase {
 	 * A SoulEntry may appear here many times, or not at all
 	 */
 	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<>();
+	/*
+	 * This is an index based on mob ID (zombie, skeleton, etc.)
+	 * A SoulEntry may appear here many times
+	 */
+	private Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;
@@ -86,6 +90,10 @@ public class SoulsDatabase {
 
 	public List<SoulEntry> getSoulsByLocation(String location) {
 		return mLocsIndex.get(location);
+	}
+
+	public List<SoulEntry> getSoulsByType(String id) {
+		return mTypesIndex.get(id);
 	}
 
 	public List<SoulEntry> getSouls() {
@@ -228,15 +236,26 @@ public class SoulsDatabase {
 
 	private void updateIndex() {
 		mLocsIndex = new HashMap<>();
+		mTypesIndex = new HashMap<>();
 		for (SoulEntry soul : mSouls.values()) {
+			/* Update location index */
 			for (String tag : soul.getLocationNames()) {
 				List<SoulEntry> lst = mLocsIndex.get(tag);
 				if (lst == null) {
-					lst = new LinkedList<SoulEntry>();
+					lst = new ArrayList<SoulEntry>();
 					mLocsIndex.put(tag, lst);
 				}
 				lst.add(soul);
 			}
+
+			/* Update type index */
+			String id = soul.getId().getKey().toLowerCase();
+			List<SoulEntry> lst = mTypesIndex.get(id);
+			if (lst == null) {
+				lst = new ArrayList<SoulEntry>();
+				mTypesIndex.put(id, lst);
+			}
+			lst.add(soul);
 		}
 
 		GetBestiary.regenerateBook();
@@ -270,5 +289,9 @@ public class SoulsDatabase {
 
 	public Set<String> listMobLocations() {
 		return mLocsIndex.keySet();
+	}
+
+	public Set<String> listMobTypes() {
+		return mTypesIndex.keySet();
 	}
 }
