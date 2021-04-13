@@ -1,10 +1,11 @@
 package com.playmonumenta.libraryofsouls;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
-
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 
 public interface Soul {
 	NBTTagCompound getNBT();
@@ -16,6 +17,9 @@ public interface Soul {
 	ItemStack getPlaceholder();
 
 	ItemStack getBoS();
+
+	/* NamespacedKey of the mob (i.e. minecraft:zombie, etc.) */
+	NamespacedKey getId();
 
 	/* This is the full raw mob name, with colors, spaces, and possibly JSON */
 	String getName();

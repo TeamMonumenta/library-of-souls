@@ -6,16 +6,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.bukkit.Location;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class SoulEntry implements Soul {
 	private static Gson gson = null;
@@ -79,6 +80,11 @@ public class SoulEntry implements Soul {
 
 	public ItemStack getBoS() {
 		return mHistory.get(0).getBoS();
+	}
+
+	@Override
+	public NamespacedKey getId() {
+		return mHistory.get(0).getId();
 	}
 
 	public String getName() {
