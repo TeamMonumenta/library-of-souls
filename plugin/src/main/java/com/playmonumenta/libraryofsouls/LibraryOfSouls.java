@@ -4,21 +4,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
+
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class LibraryOfSouls extends JavaPlugin {
 	private static LibraryOfSouls INSTANCE = null;
 
 	public static class Config {
 		private static boolean mReadOnly = true;
+		private static BestiaryArea mBestiary = null;
 
 		static void load(Logger logger, File dataFolder) {
 			File configFile = new File(dataFolder, "config.yml");
@@ -28,6 +30,14 @@ public class LibraryOfSouls extends JavaPlugin {
 
 				if (yamlConfig.isBoolean("read_only")) {
 					mReadOnly = yamlConfig.getBoolean("read_only", mReadOnly);
+				}
+				if (yamlConfig.isConfigurationSection("bestiary")) {
+					try {
+						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+					} catch (Exception ex) {
+						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
+						ex.printStackTrace();
+					}
 				}
 			} else {
 				try {
@@ -43,6 +53,10 @@ public class LibraryOfSouls extends JavaPlugin {
 
 		public static boolean isReadOnly() {
 			return mReadOnly;
+		}
+
+		public static BestiaryArea getBestiary() {
+			return mBestiary;
 		}
 	}
 

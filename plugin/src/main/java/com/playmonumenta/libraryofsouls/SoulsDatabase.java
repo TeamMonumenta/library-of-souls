@@ -19,7 +19,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.bestiary.GetBestiary;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
@@ -257,8 +256,6 @@ public class SoulsDatabase {
 			}
 			lst.add(soul);
 		}
-
-		GetBestiary.regenerateBook();
 	}
 
 	private void save() {

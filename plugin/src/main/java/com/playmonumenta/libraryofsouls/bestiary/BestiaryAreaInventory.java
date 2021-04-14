@@ -31,10 +31,10 @@ public class BestiaryAreaInventory extends CustomInventory {
 	private final BestiaryArea mArea;
 	private final List<BestiaryEntryInterface> mChildren;
 
-	public BestiaryAreaInventory(Player player, BestiaryArea container, int offset) {
-		super(player, 36, ChatColor.BLACK + "Bestiary: " + container.getName());
+	public BestiaryAreaInventory(Player player, BestiaryArea area, int offset) {
+		super(player, 36, ChatColor.BLACK + "Bestiary: " + area.getName());
 		mOffset = offset;
-		mArea = container;
+		mArea = area;
 		mChildren = mArea.getBestiaryChildren();
 
 		for (int i = 0 + mOffset; i < 27 + mOffset; i++) {
@@ -57,7 +57,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			_inventory.setItem(35, UtilsMc.newSingleItemStack(CHANGE_PAGE_MAT, "[" + Integer.toString(mOffset / 27) + "] Next Page"));
 		}
 
-		if (container.getBestiaryParent() != null) {
+		if (area.getBestiaryParent() != null) {
 			_inventory.setItem(31, GO_BACK_ITEM);
 		}
 	}

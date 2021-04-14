@@ -20,7 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class BestiaryArea implements BestiaryEntryInterface {
-	private final BestiaryEntryInterface mParent;
+	private final BestiaryArea mParent;
 	private final String mName;
 	private final String mLocation;
 	private final String mSubtitle;
@@ -35,7 +35,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		NOT_FOUND_ITEM.setItemMeta(meta);
 	}
 
-	public BestiaryArea(BestiaryEntryInterface parent, String name, ConfigurationSection config) throws Exception {
+	public BestiaryArea(BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
 		mName = name;
 
@@ -43,7 +43,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			throw new Exception("Bestiary entry " + mName + " should contain only location_tag OR children, not both");
 		} else if (config.contains("location_tag")) {
 			mLocation = config.getString("location_tag");
-			mChildren = SoulsDatabase.getInstance().getSoulsByLocation(mLocation);
+			mChildren = new ArrayList<BestiaryEntryInterface>(SoulsDatabase.getInstance().getSoulsByLocation(mLocation));
 			if (mChildren == null || mChildren.isEmpty()) {
 				throw new Exception("Bestiary entry " + mName + " specifies nonexistent location " + mLocation);
 			}
@@ -122,7 +122,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	 *--------------------------------------------------------------------------------*/
 
 	/* Note that this is *not* in the interface - because there's no way for a regular mob to know what its parent is */
-	public BestiaryEntryInterface getBestiaryParent() {
+	public BestiaryArea getBestiaryParent() {
 		return mParent;
 	}
 

@@ -81,7 +81,12 @@ public class BestiaryCommand {
 				.withPermission(CommandPermission.fromString("los.bestiary.open"))
 				.executes((sender, args) -> {
 					Player player = LibraryOfSoulsCommand.getPlayer(sender);
-					new BestiarySelection((Player)args[0]).openInventory((Player)args[0], LibraryOfSouls.getInstance());
+					BestiaryArea bestiary = LibraryOfSouls.Config.getBestiary();
+					if (bestiary == null) {
+						player.sendMessage(ChatColor.RED + "Bestiary not loaded");
+					} else {
+						bestiary.openBestiary(player, null);
+					}
 				}))
 			.withSubcommand(new CommandAPICommand("book")
 				.withPermission(CommandPermission.fromString("los.bestiary.book"))

@@ -11,13 +11,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryAreaInventory;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -125,6 +126,13 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 * BestiaryEntryInterface Interface
 	 */
 
+	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
+	static {
+		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
+		meta.setDisplayName(ChatColor.DARK_RED  + "Mob not discovered!");
+		NOT_FOUND_ITEM.setItemMeta(meta);
+	}
+
 	@Override
 	public boolean canOpenBestiary(Player player) {
 		return getInfoTier(player).allowsAccessTo(InfoTier.STATS);
@@ -147,13 +155,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			meta.setLore(lore);
 			item.setItemMeta(meta);
 			return item;
-
 		}
 		return NOT_FOUND_ITEM;
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryAreaInventory parent) {
+	public void openBestiary(Player player, BestiaryArea parent) {
 		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
 	}
 

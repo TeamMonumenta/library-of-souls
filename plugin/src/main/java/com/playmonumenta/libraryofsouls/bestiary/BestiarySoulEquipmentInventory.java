@@ -23,10 +23,10 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		NULL_ITEM.setItemMeta(meta);
 	}
 
-	private final BestiaryEntryInterface mParent;
-	private final BestiaryEntryInterface mParentsParent;
+	private final BestiaryArea mParent;
+	private final BestiaryArea mParentsParent;
 
-	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryEntryInterface parent, BestiaryEntryInterface parentsParent) {
+	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea parent, BestiaryArea parentsParent) {
 		super(player, 36,  soul.getDisplayName() + "'s Equipment");
 		mParent = parent;
 		mParentsParent = parentsParent;
