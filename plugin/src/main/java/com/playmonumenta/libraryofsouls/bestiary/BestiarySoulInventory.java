@@ -32,14 +32,14 @@ import org.bukkit.potion.PotionType;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class BestiaryEntry extends CustomInventory {
+public class BestiarySoulInventory extends CustomInventory {
 	private static final AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_NUMBER;
 	private static final AttributeModifier.Operation SCALAR = AttributeModifier.Operation.ADD_SCALAR;
 
 	private final SoulEntry mSoul;
-	private final BestiaryEntryInterface mParent;
+	private final BestiaryArea mParent;
 
-	public BestiaryEntry(Player player, SoulEntry soul, BestiaryEntryInterface parent, boolean lowerInfoTier) {
+	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier) {
 		super(player, 36, soul.getDisplayName());
 
 		mSoul = soul;
@@ -136,7 +136,7 @@ public class BestiaryEntry extends CustomInventory {
 		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, ranged, trident, explode);
 
 		for (int i = 0; i < 36; i++) {
-			_inventory.setItem(i, new ItemStack(BestiaryEntryContainerInventory.EMPTY_MAT));
+			_inventory.setItem(i, new ItemStack(BestiaryAreaInventory.EMPTY_MAT));
 		}
 
 		if (lowerInfoTier) {
@@ -144,7 +144,7 @@ public class BestiaryEntry extends CustomInventory {
 			_inventory.setItem(11, healthItem);
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
-			_inventory.setItem(31, BestiaryEntryContainerInventory.GO_BACK_ITEM);
+			_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
 		} else {
 			// Higher teir of information
 			ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
@@ -166,7 +166,7 @@ public class BestiaryEntry extends CustomInventory {
 			_inventory.setItem(20, speedItem);
 			_inventory.setItem(22, effectItem);
 			_inventory.setItem(24, tagItem);
-			_inventory.setItem(31, BestiaryEntryContainerInventory.GO_BACK_ITEM);
+			_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
 		}
 	}
 
@@ -183,14 +183,14 @@ public class BestiaryEntry extends CustomInventory {
 		Player player = (Player)event.getWhoClicked();
 		int slot = event.getRawSlot();
 
-		if (slot == 31 && event.getCurrentItem().getType().equals(BestiaryEntryContainerInventory.GO_BACK_MAT)) {
+		if (slot == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
 			 */
 			mParent.openBestiary(player, null);
 		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
-			new EquipmentDisplay(player, mSoul, mParent, mParent.getBestiaryParent()).openInventory(player, LibraryOfSouls.getInstance());
+			new BestiarySoulEquipmentInventory(player, mSoul, mParent, mParent.getBestiaryParent()).openInventory(player, LibraryOfSouls.getInstance());
 		}
 	}
 

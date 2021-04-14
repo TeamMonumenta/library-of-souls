@@ -17,5 +17,5 @@ public interface BestiaryEntryInterface {
 	 * Note that parent must be provided here so a mob bestiary page can get
 	 * back to the index page that accessed it
 	 */
-	void openBestiary(Player player, BestiaryEntryInterface parent);
+	void openBestiary(Player player, BestiaryArea parent);
 }

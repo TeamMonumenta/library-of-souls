@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class BestiaryEntryContainer implements BestiaryEntryInterface {
+public class BestiaryArea implements BestiaryEntryInterface {
 	private final BestiaryEntryInterface mParent;
 	private final String mName;
 	private final String mLocation;
@@ -35,7 +35,7 @@ public class BestiaryEntryContainer implements BestiaryEntryInterface {
 		NOT_FOUND_ITEM.setItemMeta(meta);
 	}
 
-	public BestiaryEntryContainer(BestiaryEntryInterface parent, String name, ConfigurationSection config) throws Exception {
+	public BestiaryArea(BestiaryEntryInterface parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
 		mName = name;
 
@@ -54,7 +54,7 @@ public class BestiaryEntryContainer implements BestiaryEntryInterface {
 			Set<String> childKeys = children.getKeys(false);
 			mChildren = new ArrayList<>(childKeys.size());
 			for (String childKey : childKeys) {
-				mChildren.add(new BestiaryEntryContainer(this, childKey, children.getConfigurationSection(childKey)));
+				mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
 			}
 		} else {
 			throw new Exception("Bestiary entry " + mName + " must contain location_tag OR children");
@@ -112,9 +112,9 @@ public class BestiaryEntryContainer implements BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryEntryInterface parent) {
+	public void openBestiary(Player player, BestiaryArea parent) {
 		/* Note this ignores the provided parent - the inventory will know to call getBestiaryParent() */
-		new BestiaryEntryContainerInventory(player, this, 0).openInventory(player, LibraryOfSouls.getInstance());
+		new BestiaryAreaInventory(player, this, 0).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
 	/*

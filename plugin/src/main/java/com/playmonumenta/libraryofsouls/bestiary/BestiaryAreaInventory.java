@@ -14,7 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-public class BestiaryEntryContainerInventory extends CustomInventory {
+public class BestiaryAreaInventory extends CustomInventory {
 	public static final Material EMPTY_MAT = Material.BLUE_STAINED_GLASS_PANE;
 	public static final Material GO_BACK_MAT = Material.RED_STAINED_GLASS_PANE;
 	public static final Material CHANGE_PAGE_MAT = Material.GREEN_STAINED_GLASS_PANE;
@@ -28,14 +28,14 @@ public class BestiaryEntryContainerInventory extends CustomInventory {
 	}
 
 	private final int mOffset;
-	private final BestiaryEntryContainer mContainer;
+	private final BestiaryArea mArea;
 	private final List<BestiaryEntryInterface> mChildren;
 
-	public BestiaryEntryContainerInventory(Player player, BestiaryEntryContainer container, int offset) {
+	public BestiaryAreaInventory(Player player, BestiaryArea container, int offset) {
 		super(player, 36, ChatColor.BLACK + "Bestiary: " + container.getName());
 		mOffset = offset;
-		mContainer = container;
-		mChildren = mContainer.getBestiaryChildren();
+		mArea = container;
+		mChildren = mArea.getBestiaryChildren();
 
 		for (int i = 0 + mOffset; i < 27 + mOffset; i++) {
 			if (i < mChildren.size()) {
@@ -78,19 +78,19 @@ public class BestiaryEntryContainerInventory extends CustomInventory {
 		if (slot >= 0 && slot < 27 && slot + mOffset < mChildren.size()) {
 			/* Clicked a valid entry */
 			BestiaryEntryInterface clickedEntry = mChildren.get(slot + mOffset);
-			clickedEntry.openBestiary(player, mContainer);
+			clickedEntry.openBestiary(player, mArea);
 		} else if (slot == 27 && event.getCurrentItem().getType().equals(CHANGE_PAGE_MAT)) {
 			/* Previous Page */
-			new BestiaryEntryContainerInventory(player, mContainer, mOffset - 27).openInventory(player, LibraryOfSouls.getInstance());
+			new BestiaryAreaInventory(player, mArea, mOffset - 27).openInventory(player, LibraryOfSouls.getInstance());
 		} else if (slot == 31 && event.getCurrentItem().getType().equals(GO_BACK_MAT)) {
 			/* Go Back
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
 			 */
-			mContainer.getBestiaryParent().openBestiary(player, null);
+			mArea.getBestiaryParent().openBestiary(player, null);
 		} else if (slot == 35 && event.getCurrentItem().getType().equals(CHANGE_PAGE_MAT)) {
 			/* Next Page */
-			new BestiaryEntryContainerInventory(player, mContainer, mOffset + 27).openInventory(player, LibraryOfSouls.getInstance());
+			new BestiaryAreaInventory(player, mArea, mOffset + 27).openInventory(player, LibraryOfSouls.getInstance());
 		}
 	}
 }

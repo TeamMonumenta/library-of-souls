@@ -14,7 +14,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import net.md_5.bungee.api.ChatColor;
 
-public class EquipmentDisplay extends CustomInventory {
+public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private static final ItemStack NULL_ITEM = new ItemStack(Material.BARRIER);
 
 	static {
@@ -26,7 +26,7 @@ public class EquipmentDisplay extends CustomInventory {
 	private final BestiaryEntryInterface mParent;
 	private final BestiaryEntryInterface mParentsParent;
 
-	public EquipmentDisplay(Player player, SoulEntry soul, BestiaryEntryInterface parent, BestiaryEntryInterface parentsParent) {
+	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryEntryInterface parent, BestiaryEntryInterface parentsParent) {
 		super(player, 36,  soul.getDisplayName() + "'s Equipment");
 		mParent = parent;
 		mParentsParent = parentsParent;
@@ -62,7 +62,7 @@ public class EquipmentDisplay extends CustomInventory {
 			_inventory.setItem(15 + i, handItem);
 		}
 
-		_inventory.setItem(31, BestiaryEntryContainerInventory.GO_BACK_ITEM);
+		_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class EquipmentDisplay extends CustomInventory {
 			return;
 		}
 
-		if (event.getRawSlot() == 31 && event.getCurrentItem().getType().equals(BestiaryEntryContainerInventory.GO_BACK_MAT)) {
+		if (event.getRawSlot() == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back */
 			mParent.openBestiary((Player)event.getWhoClicked(), mParentsParent);
 		}

@@ -11,9 +11,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntry;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryAreaInventory;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
+import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -152,8 +153,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryEntryInterface parent) {
-		new BestiaryEntry(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
+	public void openBestiary(Player player, BestiaryAreaInventory parent) {
+		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
 	/*
