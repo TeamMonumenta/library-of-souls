@@ -1,7 +1,5 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import java.util.List;
-
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -14,9 +12,6 @@ public interface BestiaryEntryInterface {
 
 	/* Gets the item that would be clicked on to open this entry */
 	ItemStack getBestiaryItem(Player player);
-
-	/* Get the parent that contains this entry */
-	BestiaryEntryInterface getBestiaryParent();
 
 	/* Open the contents of this entry for a specific player
 	 * Note that parent must be provided here so a mob bestiary page can get

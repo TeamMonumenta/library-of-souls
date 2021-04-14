@@ -204,7 +204,7 @@ public class LibraryOfSoulsCommand {
 		return null;
 	}
 
-	private static Player getPlayer(CommandSender sender) throws WrapperCommandSyntaxException {
+	public static Player getPlayer(CommandSender sender) throws WrapperCommandSyntaxException {
 		if (sender instanceof Player) {
 			return (Player) sender;
 		} else if ((sender instanceof ProxiedCommandSender) && (((ProxiedCommandSender)sender).getCallee() instanceof Player)) {
