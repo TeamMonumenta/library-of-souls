@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
@@ -67,33 +68,37 @@ public class BestiaryManager implements Listener {
 		return INSTANCE;
 	}
 
-	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) throws Exception {
+	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) {
 		if (INSTANCE == null) {
-			throw new IllegalStateException("BestiaryManager not initialized!");
+			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
+			return Map.of();
 		}
 
 		return INSTANCE.mStorage.getAllKilledMobs(player, searchSouls);
 	}
 
-	public static int getKillsForMob(Player player, SoulEntry soul) throws Exception {
+	public static int getKillsForMob(Player player, SoulEntry soul) {
 		if (INSTANCE == null) {
-			throw new IllegalStateException("BestiaryManager not initialized!");
+			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
+			return 0;
 		}
 
 		return INSTANCE.mStorage.getKillsForMob(player, soul);
 	}
 
-	public static int setKillsForMob(Player player, SoulEntry soul, int amount) throws Exception {
+	public static void setKillsForMob(Player player, SoulEntry soul, int amount) {
 		if (INSTANCE == null) {
-			throw new IllegalStateException("BestiaryManager not initialized!");
+			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
+			return;
 		}
 
-		return INSTANCE.mStorage.setKillsForMob(player, soul, amount);
+		INSTANCE.mStorage.setKillsForMob(player, soul, amount);
 	}
 
-	public static int addKillsToMob(Player player, SoulEntry soul, int amount) throws Exception {
+	public static int addKillsToMob(Player player, SoulEntry soul, int amount) {
 		if (INSTANCE == null) {
-			throw new IllegalStateException("BestiaryManager not initialized!");
+			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
+			return 0;
 		}
 
 		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);

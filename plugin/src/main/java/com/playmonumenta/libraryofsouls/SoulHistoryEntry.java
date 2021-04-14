@@ -115,6 +115,20 @@ public class SoulHistoryEntry implements Soul {
 	}
 
 	@Override
+	public boolean isBoss() {
+		boolean isBoss = false;
+		NBTTagList tags = mNBT.getList("Tags");
+		if (tags != null && tags.size() > 0) {
+			for (Object obj : tags.getAsArray()) {
+				if (obj.equals("Boss")) {
+					isBoss = true;
+				}
+			}
+		}
+		return isBoss;
+	}
+
+	@Override
 	public boolean isElite() {
 		boolean isElite = false;
 		NBTTagList tags = mNBT.getList("Tags");

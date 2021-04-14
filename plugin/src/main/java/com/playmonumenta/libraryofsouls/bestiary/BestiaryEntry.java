@@ -3,15 +3,23 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.bukkit.GameMode;
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
+
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
@@ -22,43 +30,21 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.Soul;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
-
 import net.md_5.bungee.api.ChatColor;
 
 public class BestiaryEntry extends CustomInventory {
 	private static final AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_NUMBER;
 	private static final AttributeModifier.Operation SCALAR = AttributeModifier.Operation.ADD_SCALAR;
-	private Map<SoulEntry, Integer> mAvailableMobs;
-	private List<SoulEntry> mSouls;
-	private int mCurrentSoul;
-	private String mLocation;
-	private Soul mSoul;
-	private BestiaryInventory mBestiaryInventory;
-	private Player mPlayer;
 
-	public BestiaryEntry (Soul soul, Player player, String location, int currentSoul, Map<SoulEntry, Integer> availableMobs, BestiaryInventory bestiaryInventory) {
-		super(player, 36, BestiaryUtils.hashColor(location) + soul.getPlaceholder().getItemMeta().getDisplayName());
-		mSouls = SoulsDatabase.getInstance().getSoulsByLocation(location);
-		mCurrentSoul = currentSoul;
-		mLocation = location;
+	private final SoulEntry mSoul;
+	private final BestiaryEntryInterface mParent;
+
+	public BestiaryEntry(Player player, SoulEntry soul, BestiaryEntryInterface parent, boolean lowerInfoTier) {
+		super(player, 36, soul.getDisplayName());
+
 		mSoul = soul;
-		mPlayer = player;
-		mBestiaryInventory = bestiaryInventory;
-		mAvailableMobs = availableMobs;
-		generateBestiaryEntry(soul, player);
-	}
+		mParent = parent;
 
-	private void generateBestiaryEntry(Soul soul, Player player) {
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
 
@@ -81,7 +67,6 @@ public class BestiaryEntry extends CustomInventory {
 		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
 		NBTVariable tagsVar = entityNBT.getVariable("Tags");
 		// For each mob you want to work with:
-		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
 		ItemStack[] armorItems = ((ItemsVariable)itemsVar.bind(entityNBT.getData())).getItems();
 		ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
 		String tagString = tagsVar.bind(entityNBT.getData()).get();
@@ -149,93 +134,71 @@ public class BestiaryEntry extends CustomInventory {
 		ItemStack healthItem = getHealthItem(health);
 
 		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, ranged, trident, explode);
-		// Maybe I should slap these in a differnet method? eh
-		ItemStack prevPageItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
-		ItemMeta meta = prevPageItem.getItemMeta();
-		meta.setDisplayName(ChatColor.BLUE + "Previous Page");
-		prevPageItem.setItemMeta(meta);
 
-		ItemStack nextPageItem = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
-		meta = nextPageItem.getItemMeta();
-		meta.setDisplayName(ChatColor.BLUE + "Next Page");
-		nextPageItem.setItemMeta(meta);
+		for (int i = 0; i < 36; i++) {
+			_inventory.setItem(i, new ItemStack(BestiaryEntryContainerInventory.EMPTY_MAT));
+		}
 
-		ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
-		meta = goBackItem.getItemMeta();
-		meta.setDisplayName(ChatColor.RED + "Go Back");
-		goBackItem.setItemMeta(meta);
-		// Lower tier of information
-		if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) == 2) {
-			for (int i = 0; i < 36; i++) {
-				_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
-			}
+		if (lowerInfoTier) {
+			// Lower tier of information
 			_inventory.setItem(11, healthItem);
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
-			_inventory.setItem(27, prevPageItem);
-			_inventory.setItem(31, goBackItem);
-			_inventory.setItem(35, nextPageItem);
-			return;
+			_inventory.setItem(31, BestiaryEntryContainerInventory.GO_BACK_ITEM);
+		} else {
+			// Higher teir of information
+			ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
+			effectItem = getEffectItem(effectItem);
+
+			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
+
+			ItemStack tagItem = getTagItem(tagString);
+
+			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
+			ItemMeta meta = equipmentPageItem.getItemMeta();
+			meta.setDisplayName(ChatColor.GREEN + "View Equipment Items");
+			equipmentPageItem.setItemMeta(meta);
+
+			_inventory.setItem(2, healthItem);
+			_inventory.setItem(4, armorItem);
+			_inventory.setItem(6, damageItem);
+			_inventory.setItem(13, equipmentPageItem);
+			_inventory.setItem(20, speedItem);
+			_inventory.setItem(22, effectItem);
+			_inventory.setItem(24, tagItem);
+			_inventory.setItem(31, BestiaryEntryContainerInventory.GO_BACK_ITEM);
 		}
-
-		effectItem = getEffectItem(effectItem);
-
-		ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
-
-		ItemStack tagItem = getTagItem(tagString);
-
-		ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
-		meta = equipmentPageItem.getItemMeta();
-		meta.setDisplayName(ChatColor.GREEN + "View Equipment Items");
-		equipmentPageItem.setItemMeta(meta);
-
-		//Higher teir of information
-		for (int i = 0; i < 36; i++) {
-			_inventory.setItem(i, new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE));
-		}
-		_inventory.setItem(2, healthItem);
-		_inventory.setItem(4, armorItem);
-		_inventory.setItem(6, damageItem);
-		_inventory.setItem(13, equipmentPageItem);
-		_inventory.setItem(20, speedItem);
-		_inventory.setItem(22, effectItem);
-		_inventory.setItem(24, tagItem);
-		_inventory.setItem(27, prevPageItem);
-		_inventory.setItem(31, goBackItem);
-		_inventory.setItem(35, nextPageItem);
 	}
 
 	@Override
 	protected void inventoryClick(final InventoryClickEvent event) {
-		int slot = event.getRawSlot();
-		Player player = (Player)event.getWhoClicked();
-		if (mSouls != null && mAvailableMobs != null && slot == 27 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
-			for (int i = mCurrentSoul - 1; i >= 0; i--) {
-				Soul soul = mSouls.get(i);
-				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2 || player.getGameMode() == GameMode.CREATIVE) {
-					new BestiaryEntry(soul, player, mLocation, i, mAvailableMobs, mBestiaryInventory).openInventory(player, LibraryOfSouls.getInstance());
-					break;
-				}
-			}
-		} else if (mSouls != null && mAvailableMobs != null && slot == 35 && event.getCurrentItem().getType().equals(Material.GREEN_STAINED_GLASS_PANE)) {
-			for (int i = mCurrentSoul + 1; i < mSouls.size(); i++) {
-				Soul soul = mSouls.get(i);
-				if (BestiaryUtils.getInfoTier(soul, mAvailableMobs) >= 2 || player.getGameMode() == GameMode.CREATIVE) {
-					new BestiaryEntry(soul, player, mLocation, i, mAvailableMobs, mBestiaryInventory).openInventory(player, LibraryOfSouls.getInstance());
-					break;
-				}
-			}
-		} else if (mSouls != null && mAvailableMobs != null && slot == 31 && event.getCurrentItem().getType().equals(Material.RED_STAINED_GLASS_PANE)) {
-			mBestiaryInventory.clone().openInventory(player, LibraryOfSouls.getInstance());
-		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
-			new EquipmentDisplay(mSoul, mLocation, player, this).openInventory(player, LibraryOfSouls.getInstance());
-		}
+		/* Always cancel the event */
 		event.setCancelled(true);
+
+		/* Ignore non-left clicks */
+		if (!event.getClick().equals(ClickType.LEFT)) {
+			return;
+		}
+
+		Player player = (Player)event.getWhoClicked();
+		int slot = event.getRawSlot();
+
+		if (slot == 31 && event.getCurrentItem().getType().equals(BestiaryEntryContainerInventory.GO_BACK_MAT)) {
+			/* Go Back
+			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
+			 * That information isn't practical to determine here
+			 */
+			mParent.openBestiary(player, null);
+		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
+			new EquipmentDisplay(player, mSoul, mParent, mParent.getBestiaryParent()).openInventory(player, LibraryOfSouls.getInstance());
+		}
 	}
+
 	// Use this one if you dont care about the slot
 	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation) {
 		return getAttributeNumber(item, attribute, operation, null);
 	}
+
 	// Use this one if you do care about the slot
 	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation, EquipmentSlot slot) {
 		ItemMeta meta = item.getItemMeta();
@@ -458,10 +421,5 @@ public class BestiaryEntry extends CustomInventory {
 		}
 
 		return Math.ceil((0.0006633685369 * powerLevel * powerLevel) + (0.7553196723 * powerLevel) + 4.97314159) - adjust;
-	}
-
-	@Override
-	public BestiaryEntry clone() {
-		return new BestiaryEntry(mSoul, mPlayer, mLocation, mCurrentSoul, mAvailableMobs, mBestiaryInventory);
 	}
 }

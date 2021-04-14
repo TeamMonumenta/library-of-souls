@@ -27,6 +27,9 @@ public interface Soul {
 	/* This is a color-adjusted LoS name with spaces and no JSON, colored white=normal gold if the Elite tag is present */
 	String getDisplayName();
 
+	/* Whether the mob has the tag "Boss" or not */
+	boolean isBoss();
+
 	/* Whether the mob has the tag "Elite" or not */
 	boolean isElite();
 

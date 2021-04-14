@@ -46,7 +46,7 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 	}
 
 	@Override
-	public int setKillsForMob(Player player, SoulEntry soul, int amount) {
+	public void setKillsForMob(Player player, SoulEntry soul, int amount) {
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 		String objectiveName = getObjectiveName(soul);
 		Objective objective = scoreboard.getObjective(objectiveName);
@@ -57,7 +57,6 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 
 		Score score = objective.getScore(player.getDisplayName());
 		score.setScore(amount);
-		return amount;
 	}
 
 	@Override

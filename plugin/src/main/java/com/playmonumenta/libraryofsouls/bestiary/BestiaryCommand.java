@@ -60,13 +60,7 @@ public class BestiaryCommand {
 			.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 			.withArguments(new IntegerArgument("amount"))
 			.executes((sender, args) -> {
-				int kills = 0;
-				try {
-					kills = BestiaryManager.setKillsForMob((Player)args[1], LibraryOfSoulsCommand.getSoul((String)args[2]), (Integer)args[3]);
-				} catch (Exception ex) {
-					CommandAPI.fail(ex.getMessage());
-				}
-				return kills;
+				BestiaryManager.setKillsForMob((Player)args[1], LibraryOfSoulsCommand.getSoul((String)args[2]), (Integer)args[3]);
 			})
 			.register();
 

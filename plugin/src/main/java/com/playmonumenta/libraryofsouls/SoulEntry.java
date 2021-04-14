@@ -11,14 +11,19 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntry;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-public class SoulEntry implements Soul {
+public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private static Gson gson = null;
 
 	private final Set<String> mLocs;
@@ -95,6 +100,10 @@ public class SoulEntry implements Soul {
 		return mHistory.get(0).getDisplayName();
 	}
 
+	public boolean isBoss() {
+		return mHistory.get(0).isBoss();
+	}
+
 	public boolean isElite() {
 		return mHistory.get(0).isElite();
 	}
@@ -110,6 +119,81 @@ public class SoulEntry implements Soul {
 	/*
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
+
+	/*--------------------------------------------------------------------------------
+	 * BestiaryEntryInterface Interface
+	 */
+
+	@Override
+	public boolean canOpenBestiary(Player player) {
+		return getInfoTier(player).allowsAccessTo(InfoTier.STATS);
+	}
+
+	@Override
+	public ItemStack getBestiaryItem(Player player) {
+		InfoTier info = getInfoTier(player);
+		if (info.allowsAccessTo(InfoTier.MINIMAL)) {
+			ItemStack item = new ItemStack(getPlaceholder());
+			ItemMeta meta = item.getItemMeta();
+			List<String> lore = new ArrayList<String>();
+
+			lore.add(getId().getKey());
+			lore.add(ChatColor.DARK_RED + "Kills: " + BestiaryManager.getKillsForMob(player, this));
+			if (info.allowsAccessTo(InfoTier.STATS)) {
+				lore.add(ChatColor.LIGHT_PURPLE + "Click for mob info");
+			}
+
+			meta.setLore(lore);
+			item.setItemMeta(meta);
+			return item;
+
+		}
+		return NOT_FOUND_ITEM;
+	}
+
+	@Override
+	public void openBestiary(Player player, BestiaryEntryInterface parent) {
+		new BestiaryEntry(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
+	}
+
+	/*
+	 * BestiaryEntryInterface Interface
+	 *--------------------------------------------------------------------------------*/
+
+	public static enum InfoTier {
+		EVERYTHING(3),
+		STATS(2),
+		MINIMAL(1),
+		NOTHING(0);
+
+		private final int mTier;
+		private InfoTier(int tier) {
+			mTier = tier;
+		}
+
+		public boolean allowsAccessTo(InfoTier compareTo) {
+			return mTier >= compareTo.mTier;
+		}
+	}
+
+	private InfoTier getInfoTier(Player player) {
+		Integer kills = BestiaryManager.getKillsForMob(player, this);
+		if (kills != null && kills >= 1) {
+			if (kills >= 10
+				|| (isElite() && kills >= 5)
+				|| (isBoss() && kills >= 2)) {
+				return InfoTier.EVERYTHING;
+			} else if (kills >= 5
+			           || (isElite() && kills >= 3)
+					   || (isBoss() && kills >= 1)) {
+				return InfoTier.STATS;
+			} else {
+				return InfoTier.MINIMAL;
+			}
+		}
+		return InfoTier.NOTHING;
+	}
+
 
 	public List<Soul> getHistory() {
 		return new ArrayList<Soul>(mHistory);

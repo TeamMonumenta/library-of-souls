@@ -27,11 +27,6 @@ public class GetBestiary {
 		lore.add(ChatColor.GRAY + "throughout the ages.");
 	}
 
-	public static void regenerateBook() {
-		//Methods that need to be done as soon as the los plugin loads to work
-		BestiaryUtils.registerPoiLocs();
-	}
-
 	public static void getBook(Player player) {
 		World world = player.getWorld();
 		Item itemEntity = world.dropItem(player.getLocation(), mBestiary);
