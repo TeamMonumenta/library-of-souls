@@ -23,21 +23,13 @@ public class LibraryOfSouls extends JavaPlugin {
 		private static BestiaryArea mBestiary = null;
 
 		static void load(Logger logger, File dataFolder) {
+			/* Main config file, currently mostly unused */
 			File configFile = new File(dataFolder, "config.yml");
-
 			if (configFile.exists() && configFile.isFile()) {
 				FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
 
 				if (yamlConfig.isBoolean("read_only")) {
 					mReadOnly = yamlConfig.getBoolean("read_only", mReadOnly);
-				}
-				if (yamlConfig.isConfigurationSection("bestiary")) {
-					try {
-						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
-					} catch (Exception ex) {
-						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
-						ex.printStackTrace();
-					}
 				}
 			} else {
 				try {
@@ -47,6 +39,21 @@ public class LibraryOfSouls extends JavaPlugin {
 					yamlConfig.save(configFile);
 				} catch (IOException ex) {
 					logger.warning("Failed to save default config to '" + configFile.getPath() + "': " + ex.getMessage());
+				}
+			}
+
+			/* Bestiary config file */
+			configFile = new File(dataFolder, "bestiary_config.yml");
+			if (configFile.exists() && configFile.isFile()) {
+				FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
+
+				if (yamlConfig.isConfigurationSection("bestiary") && SoulsDatabase.getInstance() != null) {
+					try {
+						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+					} catch (Exception ex) {
+						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
+						ex.printStackTrace();
+					}
 				}
 			}
 		}

@@ -224,6 +224,9 @@ public class SoulsDatabase {
 			mSouls = newSouls;
 			updateIndex();
 
+			/* Reload the main plugin config / bestiary also after reloading the database */
+			LibraryOfSouls.Config.load(mPlugin.getLogger(), mPlugin.getDataFolder());
+
 			mPlugin.getLogger().info("Finished parsing souls library");
 			mPlugin.getLogger().info("Loaded " + Integer.toString(finalCount) + " mob souls");
 		});

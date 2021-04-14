@@ -8,6 +8,7 @@ import java.util.Set;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import org.bukkit.Bukkit;
@@ -43,10 +44,11 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			throw new Exception("Bestiary entry " + mName + " should contain only location_tag OR children, not both");
 		} else if (config.contains("location_tag")) {
 			mLocation = config.getString("location_tag");
-			mChildren = new ArrayList<BestiaryEntryInterface>(SoulsDatabase.getInstance().getSoulsByLocation(mLocation));
-			if (mChildren == null || mChildren.isEmpty()) {
+			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(mLocation);
+			if (souls == null || souls.isEmpty()) {
 				throw new Exception("Bestiary entry " + mName + " specifies nonexistent location " + mLocation);
 			}
+			mChildren = new ArrayList<BestiaryEntryInterface>(souls);
 		} else if (config.contains("children")) {
 			mLocation = null;
 
@@ -54,7 +56,11 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			Set<String> childKeys = children.getKeys(false);
 			mChildren = new ArrayList<>(childKeys.size());
 			for (String childKey : childKeys) {
-				mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
+				try {
+					mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
+				} catch (Exception ex) {
+					LibraryOfSouls.getInstance().getLogger().severe("Failed to load bestiary area " + childKey + ": " + ex.getMessage());
+				}
 			}
 		} else {
 			throw new Exception("Bestiary entry " + mName + " must contain location_tag OR children");
@@ -62,6 +68,15 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 		if (config.contains("required_advancement")) {
 			mAdvancementKey = NamespacedKey.fromString(config.getString("required_advancement"));
+			/* Try to load the advancement */
+			try {
+				if (Bukkit.getAdvancement(mAdvancementKey) == null) {
+					throw new Exception("Bestiary advancement " + mAdvancementKey + " does not exist!");
+				}
+			} catch (Exception ex) {
+				/* This message is really ugly otherwise */
+				throw new Exception("Bestiary advancement " + mAdvancementKey + " does not exist!");
+			}
 		} else {
 			mAdvancementKey = null;
 		}
@@ -73,7 +88,12 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		if (config.contains("item")) {
-			mItem = NBTUtils.itemStackFromNBTData(NBTTagCompound.fromString(config.getString("item")));
+			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
+			compound.setByte("Count", (byte)1);
+			mItem = NBTUtils.itemStackFromNBTData(compound);
+			if (mItem == null || mItem.getType().isAir()) {
+				throw new Exception("Item for " + mName + " failed to parse, was: " + config.getString("item"));
+			}
 		} else {
 			throw new Exception("Bestiary entry " + mName + " is missing 'item'");
 		}
