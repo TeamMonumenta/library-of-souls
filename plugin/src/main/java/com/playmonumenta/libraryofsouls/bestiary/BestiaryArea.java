@@ -59,7 +59,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 				try {
 					mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
 				} catch (Exception ex) {
-					LibraryOfSouls.getInstance().getLogger().severe("Failed to load bestiary area " + childKey + ": " + ex.getMessage());
+					LibraryOfSouls.getInstance().getLogger().warning("Failed to load bestiary area " + childKey + ": " + ex.getMessage());
 				}
 			}
 		} else {
