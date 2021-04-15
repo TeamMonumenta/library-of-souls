@@ -12,24 +12,26 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private static final ItemStack NULL_ITEM = new ItemStack(Material.BARRIER);
 
 	static {
 		ItemMeta meta = NULL_ITEM.getItemMeta();
-		meta.setDisplayName(ChatColor.RED + "Nothing here");
+		meta.displayName(Component.text("Nothing here", NamedTextColor.RED, TextDecoration.ITALIC));
 		NULL_ITEM.setItemMeta(meta);
 	}
 
-	private final BestiaryArea mParent;
-	private final BestiaryArea mParentsParent;
+	private final SoulEntry mSoul;
+	private final BestiaryArea mSoulsParent;
 
-	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea parent, BestiaryArea parentsParent) {
+	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent) {
 		super(player, 36,  soul.getDisplayName() + "'s Equipment");
-		mParent = parent;
-		mParentsParent = parentsParent;
+		mSoul = soul;
+		mSoulsParent = soulsParent;
 
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
 		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
@@ -77,7 +79,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 
 		if (event.getRawSlot() == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back */
-			mParent.openBestiary((Player)event.getWhoClicked(), mParentsParent);
+			mSoul.openBestiary((Player)event.getWhoClicked(), mSoulsParent);
 		}
 	}
 }

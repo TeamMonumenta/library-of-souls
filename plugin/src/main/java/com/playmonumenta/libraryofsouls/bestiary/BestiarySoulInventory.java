@@ -325,7 +325,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			 */
 			mParent.openBestiary(player, null);
 		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
-			new BestiarySoulEquipmentInventory(player, mSoul, mParent, mParent.getBestiaryParent()).openInventory(player, LibraryOfSouls.getInstance());
+			new BestiarySoulEquipmentInventory(player, mSoul, mParent).openInventory(player, LibraryOfSouls.getInstance());
 		}
 	}
 

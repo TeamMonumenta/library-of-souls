@@ -14,6 +14,10 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
 public class BestiaryAreaInventory extends CustomInventory {
 	public static final Material EMPTY_MAT = Material.BLUE_STAINED_GLASS_PANE;
 	public static final Material GO_BACK_MAT = Material.RED_STAINED_GLASS_PANE;
@@ -23,7 +27,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 
 	static {
 		ItemMeta meta = GO_BACK_ITEM.getItemMeta();
-		meta.setDisplayName(ChatColor.RED + "Go Back");
+		meta.displayName(Component.text("Go Back", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
 		GO_BACK_ITEM.setItemMeta(meta);
 	}
 
