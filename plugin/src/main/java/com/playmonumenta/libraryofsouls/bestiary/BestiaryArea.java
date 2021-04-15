@@ -20,11 +20,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+
 public class BestiaryArea implements BestiaryEntryInterface {
 	private final BestiaryArea mParent;
 	private final String mName;
 	private final String mLocation;
-	private final String mSubtitle;
 	private final NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
 	private final List<BestiaryEntryInterface> mChildren;
@@ -32,7 +37,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
 	static {
 		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
-		meta.setDisplayName(ChatColor.DARK_RED  + "Area not discovered!");
+		meta.displayName(Component.text("Area not discovered!", NamedTextColor.DARK_RED, TextDecoration.ITALIC));
 		NOT_FOUND_ITEM.setItemMeta(meta);
 	}
 
@@ -81,12 +86,6 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			mAdvancementKey = null;
 		}
 
-		if (config.contains("subtitle")) {
-			mSubtitle = config.getString("subtitle");
-		} else {
-			mSubtitle = null;
-		}
-
 		if (config.contains("item")) {
 			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
 			compound.setByte("Count", (byte)1);
@@ -99,10 +98,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		ItemMeta meta = mItem.getItemMeta();
-		meta.setDisplayName(ChatColor.WHITE + mName);
-		if (mSubtitle != null) {
-			meta.setLore(Arrays.asList(mSubtitle));
+		meta.displayName(Component.text(mName, NamedTextColor.WHITE));
+
+		if (config.contains("subtitle")) {
+			TextComponent subtitle = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getString("subtitle"));
+			meta.lore(Arrays.asList(subtitle));
 		}
+
 		mItem.setItemMeta(meta);
 	}
 

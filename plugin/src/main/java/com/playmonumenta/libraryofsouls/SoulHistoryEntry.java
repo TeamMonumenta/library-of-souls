@@ -28,6 +28,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
 
@@ -257,8 +258,14 @@ public class SoulHistoryEntry implements Soul {
 			case OCELOT:
 				mPlaceholder = new ItemStack(Material.CHICKEN);
 				break;
+			case PILLAGER:
+				mPlaceholder = new ItemStack(Material.CROSSBOW);
+				break;
 			case PHANTOM:
 				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
+				break;
+			case POLAR_BEAR:
+				mPlaceholder = new ItemStack(Material.SNOW);
 				break;
 			case ZOMBIFIED_PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
@@ -317,6 +324,7 @@ public class SoulHistoryEntry implements Soul {
 		}
 
 		mPlaceholder = mPlaceholder.ensureServerConversions();
+		mPlaceholder.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
 		mBoS = mBoS.ensureServerConversions();
 
 		ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);

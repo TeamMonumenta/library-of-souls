@@ -22,8 +22,13 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private static Gson gson = null;
@@ -129,7 +134,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
 	static {
 		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
-		meta.setDisplayName(ChatColor.DARK_RED  + "Mob not discovered!");
+		meta.displayName(Component.text("Mob not discovered!", NamedTextColor.DARK_RED, TextDecoration.ITALIC));
 		NOT_FOUND_ITEM.setItemMeta(meta);
 	}
 
@@ -144,15 +149,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		if (info.allowsAccessTo(InfoTier.MINIMAL)) {
 			ItemStack item = new ItemStack(getPlaceholder());
 			ItemMeta meta = item.getItemMeta();
-			List<String> lore = new ArrayList<String>();
+			List<Component> lore = new ArrayList<>();
 
-			lore.add(getId().getKey());
-			lore.add(ChatColor.DARK_RED + "Kills: " + BestiaryManager.getKillsForMob(player, this));
+			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY));
+			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED));
 			if (info.allowsAccessTo(InfoTier.STATS)) {
-				lore.add(ChatColor.LIGHT_PURPLE + "Click for mob info");
+				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC));
 			}
 
-			meta.setLore(lore);
+			meta.lore(lore);
 			item.setItemMeta(meta);
 			return item;
 		}
