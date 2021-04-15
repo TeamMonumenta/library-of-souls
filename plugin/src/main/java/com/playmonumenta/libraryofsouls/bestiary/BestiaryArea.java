@@ -117,7 +117,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 	@Override
 	public boolean canOpenBestiary(Player player) {
-		return mAdvancementKey == null || player.getAdvancementProgress(Bukkit.getAdvancement(mAdvancementKey)).isDone();
+		return mAdvancementKey == null || player.getAdvancementProgress(Bukkit.getAdvancement(mAdvancementKey)).isDone() || player.hasPermission("los.bestiary.viewall");
 	}
 
 	@Override

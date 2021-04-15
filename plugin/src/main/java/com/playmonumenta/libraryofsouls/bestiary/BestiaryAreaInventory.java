@@ -78,7 +78,9 @@ public class BestiaryAreaInventory extends CustomInventory {
 		if (slot >= 0 && slot < 27 && slot + mOffset < mChildren.size()) {
 			/* Clicked a valid entry */
 			BestiaryEntryInterface clickedEntry = mChildren.get(slot + mOffset);
-			clickedEntry.openBestiary(player, mArea);
+			if (clickedEntry.canOpenBestiary(player)) {
+				clickedEntry.openBestiary(player, mArea);
+			}
 		} else if (slot == 27 && event.getCurrentItem().getType().equals(CHANGE_PAGE_MAT)) {
 			/* Previous Page */
 			new BestiaryAreaInventory(player, mArea, mOffset - 27).openInventory(player, LibraryOfSouls.getInstance());

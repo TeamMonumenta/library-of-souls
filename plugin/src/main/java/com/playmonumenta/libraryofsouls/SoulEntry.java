@@ -189,7 +189,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		if (kills != null && kills >= 1) {
 			if (kills >= 10
 				|| (isElite() && kills >= 5)
-				|| (isBoss() && kills >= 2)) {
+				|| (isBoss() && kills >= 2)
+				|| player.hasPermission("los.bestiary.viewall")) {
 				return InfoTier.EVERYTHING;
 			} else if (kills >= 5
 			           || (isElite() && kills >= 3)
