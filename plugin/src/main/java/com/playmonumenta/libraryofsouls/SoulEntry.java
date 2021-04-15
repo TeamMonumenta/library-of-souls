@@ -16,13 +16,11 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -151,8 +149,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			ItemMeta meta = item.getItemMeta();
 			List<Component> lore = new ArrayList<>();
 
-			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY));
-			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED));
+			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
 			if (info.allowsAccessTo(InfoTier.STATS)) {
 				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC));
 			}

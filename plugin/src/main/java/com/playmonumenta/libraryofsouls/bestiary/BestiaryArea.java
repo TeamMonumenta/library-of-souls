@@ -12,7 +12,6 @@ import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -98,10 +97,10 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		ItemMeta meta = mItem.getItemMeta();
-		meta.displayName(Component.text(mName, NamedTextColor.WHITE));
+		meta.displayName(Component.text(mName, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 
 		if (config.contains("subtitle")) {
-			TextComponent subtitle = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getString("subtitle"));
+			TextComponent subtitle = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
 			meta.lore(Arrays.asList(subtitle));
 		}
 
