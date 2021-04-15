@@ -34,6 +34,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	private final List<BestiaryEntryInterface> mChildren;
 
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
+
 	static {
 		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
 		meta.displayName(Component.text("Area not discovered!", NamedTextColor.DARK_RED, TextDecoration.ITALIC));

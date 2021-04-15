@@ -130,6 +130,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 */
 
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
+
 	static {
 		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
 		meta.displayName(Component.text("Mob not discovered!", NamedTextColor.DARK_RED, TextDecoration.ITALIC));
@@ -171,14 +172,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 * BestiaryEntryInterface Interface
 	 *--------------------------------------------------------------------------------*/
 
-	public static enum InfoTier {
+	public enum InfoTier {
 		EVERYTHING(3),
 		STATS(2),
 		MINIMAL(1),
 		NOTHING(0);
 
 		private final int mTier;
-		private InfoTier(int tier) {
+
+		InfoTier(int tier) {
 			mTier = tier;
 		}
 
