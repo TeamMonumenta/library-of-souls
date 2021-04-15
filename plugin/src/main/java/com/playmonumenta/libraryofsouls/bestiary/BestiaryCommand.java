@@ -3,17 +3,14 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.Soul;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,10 +26,9 @@ import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiaryCommand {
-	private static final Function<CommandSender, String[]> LIST_LOCATIONS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[SoulsDatabase.getInstance().listMobLocations().size()]);
-
 	public static void register() {
 		final String command = "bestiary";
 
@@ -54,7 +50,7 @@ public class BestiaryCommand {
 																ChatColor.BLUE, ((Player)args[0]).getName(),
 																ChatColor.WHITE,
 																ChatColor.GREEN, kills,
-																ChatColor.WHITE, soul.getDisplayName()));
+																ChatColor.WHITE, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName())));
 					}
 					return kills;
 				}))
