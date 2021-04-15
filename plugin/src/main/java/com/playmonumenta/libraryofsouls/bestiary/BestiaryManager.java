@@ -1,6 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -71,7 +72,7 @@ public class BestiaryManager implements Listener {
 	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) {
 		if (INSTANCE == null) {
 			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
-			return Map.of();
+			return Collections.emptyMap();
 		}
 
 		return INSTANCE.mStorage.getAllKilledMobs(player, searchSouls);
