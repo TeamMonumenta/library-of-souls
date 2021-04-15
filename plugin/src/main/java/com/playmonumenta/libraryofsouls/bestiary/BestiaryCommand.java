@@ -1,20 +1,13 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -23,9 +16,6 @@ import dev.jorel.commandapi.arguments.EntitySelectorArgument;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument.EntitySelector;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiaryCommand {
@@ -87,22 +77,17 @@ public class BestiaryCommand {
 						bestiary.openBestiary(player, null);
 					}
 				}))
-			.withSubcommand(new CommandAPICommand("book")
-				.withPermission(CommandPermission.fromString("los.bestiary.book"))
+			.withSubcommand(new CommandAPICommand("open")
+				.withPermission(CommandPermission.fromString("los.bestiary.openother"))
+				.withArguments(new EntitySelectorArgument("player", EntitySelector.ONE_PLAYER))
 				.executes((sender, args) -> {
-					Player player = LibraryOfSoulsCommand.getPlayer(sender);
-					ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
-					ItemMeta meta = book.getItemMeta();
-					meta.displayName(Component.text("Bestiary", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
-					List<String> lore = new ArrayList<>();
-					lore.add("Written by: Erwen");
-					lore.add(ChatColor.GRAY + "A compendium of every manner of beasts");
-					lore.add(ChatColor.GRAY + "from across land and sea,");
-					lore.add(ChatColor.GRAY + "passed from adventurer to adventurer");
-					lore.add(ChatColor.GRAY + "throughout the ages.");
-					World world = player.getWorld();
-					Item itemEntity = world.dropItem(player.getLocation(), book);
-					itemEntity.setPickupDelay(0);
+					Player player = (Player)args[0];
+					BestiaryArea bestiary = LibraryOfSouls.Config.getBestiary();
+					if (bestiary == null) {
+						player.sendMessage(ChatColor.RED + "Bestiary not loaded");
+					} else {
+						bestiary.openBestiary(player, null);
+					}
 				}))
 			.register();
 	}
