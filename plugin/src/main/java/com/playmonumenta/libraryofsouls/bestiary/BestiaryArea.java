@@ -20,10 +20,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 public class BestiaryArea implements BestiaryEntryInterface {
@@ -43,7 +42,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 	public BestiaryArea(BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
-		mName = LegacyComponentSerializer.legacyAmpersand().deserialize(name).decoration(TextDecoration.ITALIC, false);
+		mName = MiniMessage.get().parse(name).decoration(TextDecoration.ITALIC, false);
 
 		if (config.contains("location_tag") && config.contains("children")) {
 			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " should contain only location_tag OR children, not both");
@@ -101,7 +100,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		meta.displayName(mName.colorIfAbsent(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 
 		if (config.contains("subtitle")) {
-			TextComponent subtitle = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
+			Component subtitle = MiniMessage.get().parse(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
 			meta.lore(Arrays.asList(subtitle));
 		}
 
