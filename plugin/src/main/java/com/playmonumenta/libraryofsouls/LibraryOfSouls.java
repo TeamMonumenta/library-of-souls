@@ -44,16 +44,16 @@ public class LibraryOfSouls extends JavaPlugin {
 
 			/* Bestiary config file */
 			configFile = new File(dataFolder, "bestiary_config.yml");
-			if (configFile.exists() && configFile.isFile()) {
-				FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
+			if (configFile.exists() && configFile.isFile() && SoulsDatabase.getInstance() != null) {
+				try {
+					FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
 
-				if (yamlConfig.isConfigurationSection("bestiary") && SoulsDatabase.getInstance() != null) {
-					try {
-						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
-					} catch (Exception ex) {
-						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
-						ex.printStackTrace();
+					if (yamlConfig.isConfigurationSection("bestiary")) {
+							mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
 					}
+				} catch (Exception ex) {
+					logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
+					ex.printStackTrace();
 				}
 			}
 		}

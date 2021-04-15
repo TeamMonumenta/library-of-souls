@@ -7,11 +7,14 @@ import java.util.Map;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class BestiaryScoreboardStorage implements BestiaryStorage {
 	@Override
@@ -20,7 +23,7 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		String objectiveName = getObjectiveName(soul);
 		Objective objective = scoreboard.getObjective(objectiveName);
 		if (objective == null) {
-			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName() + ChatColor.WHITE + " kills");
+			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName().append(Component.text(" kills", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false)));
 		}
 
 		Score score = objective.getScore(player.getName());
@@ -37,7 +40,7 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 			return 0;
 		}
 
-		Score score = objective.getScore(player.getDisplayName());
+		Score score = objective.getScore(player.getName());
 		if (score == null || !score.isScoreSet()) {
 			return 0;
 		}
@@ -52,10 +55,10 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		Objective objective = scoreboard.getObjective(objectiveName);
 
 		if (objective == null) {
-			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName() + ChatColor.WHITE + " kills");
+			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName().append(Component.text(" kills", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false)));
 		}
 
-		Score score = objective.getScore(player.getDisplayName());
+		Score score = objective.getScore(player.getName());
 		score.setScore(amount);
 	}
 
@@ -65,10 +68,10 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		String objectiveName = getObjectiveName(soul);
 		Objective objective = scoreboard.getObjective(objectiveName);
 		if (objective == null) {
-			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName() + ChatColor.WHITE + " kills");
+			objective = scoreboard.registerNewObjective(objectiveName, "dummy", soul.getName().append(Component.text(" kills", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false)));
 		}
 
-		Score score = objective.getScore(player.getDisplayName());
+		Score score = objective.getScore(player.getName());
 		amount = score.getScore() + amount;
 		score.setScore(amount);
 		return amount;

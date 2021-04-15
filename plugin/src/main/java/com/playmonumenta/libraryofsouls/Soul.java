@@ -7,6 +7,8 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
+import net.kyori.adventure.text.Component;
+
 public interface Soul {
 	NBTTagCompound getNBT();
 
@@ -22,10 +24,10 @@ public interface Soul {
 	NamespacedKey getId();
 
 	/* This is the full raw mob name, with colors, spaces, and possibly JSON */
-	String getName();
+	Component getName();
 
 	/* This is a color-adjusted LoS name with spaces and no JSON, colored white=normal gold if the Elite tag is present */
-	String getDisplayName();
+	Component getDisplayName();
 
 	/* Whether the mob has the tag "Boss" or not */
 	boolean isBoss();

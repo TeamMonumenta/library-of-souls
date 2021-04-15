@@ -26,6 +26,9 @@ import dev.jorel.commandapi.arguments.EntitySelectorArgument;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument.EntitySelector;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public class BestiaryCommand {
 	private static final Function<CommandSender, String[]> LIST_LOCATIONS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[SoulsDatabase.getInstance().listMobLocations().size()]);
@@ -48,7 +51,7 @@ public class BestiaryCommand {
 					}
 					if (sender instanceof Player) {
 						sender.sendMessage(MessageFormat.format("{0}{1} {2}has killed {3}{4} {5}{6}",
-																ChatColor.BLUE, ((Player)args[0]).getDisplayName(),
+																ChatColor.BLUE, ((Player)args[0]).getName(),
 																ChatColor.WHITE,
 																ChatColor.GREEN, kills,
 																ChatColor.WHITE, soul.getDisplayName()));
@@ -94,7 +97,7 @@ public class BestiaryCommand {
 					Player player = LibraryOfSoulsCommand.getPlayer(sender);
 					ItemStack book = new ItemStack(Material.ENCHANTED_BOOK);
 					ItemMeta meta = book.getItemMeta();
-					meta.setDisplayName(ChatColor.GOLD + "Bestiary");
+					meta.displayName(Component.text("Bestiary", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
 					List<String> lore = new ArrayList<>();
 					lore.add("Written by: Erwen");
 					lore.add(ChatColor.GRAY + "A compendium of every manner of beasts");

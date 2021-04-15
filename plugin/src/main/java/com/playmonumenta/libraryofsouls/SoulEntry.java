@@ -45,7 +45,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 
 		String refLabel = history.get(0).getLabel();
-		String refName = history.get(0).getName();
+		Component refName = history.get(0).getName();
 
 		for (SoulHistoryEntry entry : history) {
 			if (!entry.getLabel().equals(refLabel)) {
@@ -97,11 +97,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).getId();
 	}
 
-	public String getName() {
+	public Component getName() {
 		return mHistory.get(0).getName();
 	}
 
-	public String getDisplayName() {
+	public Component getDisplayName() {
 		return mHistory.get(0).getDisplayName();
 	}
 

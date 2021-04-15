@@ -24,10 +24,11 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 public class BestiaryArea implements BestiaryEntryInterface {
 	private final BestiaryArea mParent;
-	private final String mName;
+	private final Component mName;
 	private final String mLocation;
 	private final NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
@@ -42,15 +43,15 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 	public BestiaryArea(BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
-		mName = name;
+		mName = LegacyComponentSerializer.legacyAmpersand().deserialize(name).decoration(TextDecoration.ITALIC, false);
 
 		if (config.contains("location_tag") && config.contains("children")) {
-			throw new Exception("Bestiary entry " + mName + " should contain only location_tag OR children, not both");
+			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " should contain only location_tag OR children, not both");
 		} else if (config.contains("location_tag")) {
 			mLocation = config.getString("location_tag");
 			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(mLocation);
 			if (souls == null || souls.isEmpty()) {
-				throw new Exception("Bestiary entry " + mName + " specifies nonexistent location " + mLocation);
+				throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " specifies nonexistent location " + mLocation);
 			}
 			mChildren = new ArrayList<BestiaryEntryInterface>(souls);
 		} else if (config.contains("children")) {
@@ -67,7 +68,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 				}
 			}
 		} else {
-			throw new Exception("Bestiary entry " + mName + " must contain location_tag OR children");
+			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " must contain location_tag OR children");
 		}
 
 		if (config.contains("required_advancement")) {
@@ -90,14 +91,14 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			compound.setByte("Count", (byte)1);
 			mItem = NBTUtils.itemStackFromNBTData(compound);
 			if (mItem == null || mItem.getType().isAir()) {
-				throw new Exception("Item for " + mName + " failed to parse, was: " + config.getString("item"));
+				throw new Exception("Item for " + PlainComponentSerializer.plain().serialize(mName) + " failed to parse, was: " + config.getString("item"));
 			}
 		} else {
-			throw new Exception("Bestiary entry " + mName + " is missing 'item'");
+			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " is missing 'item'");
 		}
 
 		ItemMeta meta = mItem.getItemMeta();
-		meta.displayName(Component.text(mName, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+		meta.displayName(mName.colorIfAbsent(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 
 		if (config.contains("subtitle")) {
 			TextComponent subtitle = LegacyComponentSerializer.legacyAmpersand().deserialize(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
@@ -112,7 +113,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	 */
 
 	@Override
-	public String getName() {
+	public Component getName() {
 		return mName;
 	}
 

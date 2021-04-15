@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private static final ItemStack NULL_ITEM = new ItemStack(Material.BARRIER);
@@ -29,7 +30,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private final BestiaryArea mSoulsParent;
 
 	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent) {
-		super(player, 36,  soul.getDisplayName() + "'s Equipment");
+		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()) + "'s Equipment");
 		mSoul = soul;
 		mSoulsParent = soulsParent;
 

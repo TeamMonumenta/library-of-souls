@@ -31,6 +31,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 public class SoulHistoryEntry implements Soul {
 	private static Gson gson = null;
@@ -38,7 +43,7 @@ public class SoulHistoryEntry implements Soul {
 	private final NBTTagCompound mNBT;
 	private final long mModifiedOn;
 	private final String mModifiedBy;
-	private final String mName;
+	private final Component mName;
 	private final String mLabel;
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
@@ -53,8 +58,8 @@ public class SoulHistoryEntry implements Soul {
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 
-		mName = nbt.getString("CustomName");
-		mLabel = Utils.getLabelFromName(mName);
+		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
+		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
 		if (mLabel == null || mLabel.isEmpty()) {
 			throw new Exception("Refused to load Library of Souls mob with no name!");
 		}
@@ -106,13 +111,13 @@ public class SoulHistoryEntry implements Soul {
 	}
 
 	@Override
-	public String getName() {
+	public Component getName() {
 		return mName;
 	}
 
 	@Override
-	public String getDisplayName() {
-		return (isElite() ? ChatColor.GOLD : ChatColor.WHITE) + "" + ChatColor.BOLD + Utils.stripColorsAndJSON(mName);
+	public Component getDisplayName() {
+		return Component.text(PlainComponentSerializer.plain().serialize(mName), isElite() ? NamedTextColor.GOLD : isBoss() ? NamedTextColor.RED : NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
@@ -331,8 +336,9 @@ public class SoulHistoryEntry implements Soul {
 		ItemStackNBTWrapper bosWrap = new ItemStackNBTWrapper(mBoS);
 
 		/* Set the item's display name (recolored, does not exactly match actual mob name) */
-		placeholderWrap.getVariable("Name").set(getDisplayName(), null);
-		bosWrap.getVariable("Name").set(getDisplayName(), null);
+		String serializedDisplayName = GsonComponentSerializer.gson().serialize(getDisplayName());
+		placeholderWrap.getVariable("Name").set(serializedDisplayName, null);
+		bosWrap.getVariable("Name").set(serializedDisplayName, null);
 
 		/* Set hide flags to hide the BoS author info */
 		placeholderWrap.getVariable("HideFlags").set("32", null);

@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiaryAreaInventory extends CustomInventory {
 	public static final Material EMPTY_MAT = Material.BLUE_STAINED_GLASS_PANE;
@@ -36,7 +37,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 	private final List<BestiaryEntryInterface> mChildren;
 
 	public BestiaryAreaInventory(Player player, BestiaryArea area, int offset) {
-		super(player, 36, ChatColor.BLACK + "Bestiary: " + area.getName());
+		super(player, 36, ChatColor.BLACK + "Bestiary: " + LegacyComponentSerializer.legacySection().serialize(area.getName()));
 		mOffset = offset;
 		mArea = area;
 		mChildren = mArea.getBestiaryChildren();

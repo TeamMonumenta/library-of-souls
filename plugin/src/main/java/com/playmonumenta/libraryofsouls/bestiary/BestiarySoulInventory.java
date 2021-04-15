@@ -31,6 +31,7 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 
 public class BestiarySoulInventory extends CustomInventory {
@@ -175,7 +176,7 @@ public class BestiarySoulInventory extends CustomInventory {
 	private final BestiaryArea mParent;
 
 	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier) {
-		super(player, 36, soul.getDisplayName());
+		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
 
 		mSoul = soul;
 		mParent = parent;

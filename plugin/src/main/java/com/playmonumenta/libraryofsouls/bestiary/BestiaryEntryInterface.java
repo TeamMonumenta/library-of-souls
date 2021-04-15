@@ -3,9 +3,11 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import net.kyori.adventure.text.Component;
+
 public interface BestiaryEntryInterface {
 	/* Name of this bestiary entry for display purposes */
-	String getName();
+	Component getName();
 
 	/* Checks whether the player has permission to open this bestiary entry */
 	boolean canOpenBestiary(Player player);
