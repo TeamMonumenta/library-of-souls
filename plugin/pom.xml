@@ -14,7 +14,7 @@
         <maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <minecraft.server.version>1.15.2-R0.1-SNAPSHOT</minecraft.server.version>
+        <minecraft.server.version>1.16.5-R0.1-SNAPSHOT</minecraft.server.version>
     </properties>
 
     <distributionManagement>
@@ -44,6 +44,10 @@
         <repository>
             <id>commandapi</id>
             <url>https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/</url>
+        </repository>
+        <repository>
+            <id>sonatype-oss-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </repository>
     </repositories>
 
@@ -80,10 +84,15 @@
             <version>5.2</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>4.1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>LibraryOfSouls_1.13.2_${project.version}_${maven.build.timestamp}</finalName>
+        <finalName>LibraryOfSouls_1.16.5_${project.version}_${maven.build.timestamp}</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -106,6 +115,11 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>3.7.0</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -114,6 +128,10 @@
                 <artifactId>maven-pmd-plugin</artifactId>
                 <configuration>
                     <targetJdk>1.8</targetJdk>
+                    <format>txt</format>
+                    <rulesets>
+                        <ruleset>${basedir}/pmd-ruleset.xml</ruleset>
+                    </rulesets>
                 </configuration>
             </plugin>
             <plugin>
@@ -147,6 +165,72 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <configLocation>${basedir}/checkstyle.xml</configLocation>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <includes>
+                                <include>META-INF/**</include>
+                                <include>plugin.yml</include>
+                                <include>com/playmonumenta/**</include>
+                                <include>net/kyori/adventure/text/minimessage/**</include>
+                                <include>org/checkerframework/**</include>
+                                <include>org/jetbrains/annotations/**</include>
+                                <include>org/intellij/lang/annotations/**</include>
+                            </includes>
+                            <excludes>
+                                <!-- Avoid "Invalid signature file digest" error -->
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>com.playmonumenta.libraryofsouls.LibraryOfSouls</mainClass>
+                        </transformer>
+                    </transformers>
+                    <relocations>
+                        <relocation>
+                            <pattern>net.kyori.adventure.text.minimessage</pattern>
+                            <shadedPattern>com.playmonumenta.libraryofsouls.internal.net.kyori.adventure.text.minimessage</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.checkerframework</pattern>
+                            <shadedPattern>com.playmonumenta.libraryofsouls.internal.org.checkerframework</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.jetbrains.annotations</pattern>
+                            <shadedPattern>com.playmonumenta.libraryofsouls.internal.org.jetbrains.annotations</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.intellij.lang.annotations</pattern>
+                            <shadedPattern>com.playmonumenta.libraryofsouls.internal.org.intellij.lang.annotations</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

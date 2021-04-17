@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 
 public class SoulsInventory extends CustomInventory {
 	private List<? extends Soul> mCurrentSlots;
@@ -110,7 +109,4 @@ public class SoulsInventory extends CustomInventory {
 			}
 		}
 	}
-
-	@Override
-	protected void inventoryClose(InventoryCloseEvent event) { }
 }

@@ -30,7 +30,7 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
-	public static final Function<CommandSender, String[]> LIST_MOBS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobNames().toArray(new String[SoulsDatabase.getInstance().listMobNames().size()]);
+	public static final Function<CommandSender, String[]> LIST_MOBS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobNames().stream().toArray(String[]::new);
 	private static final String COMMAND = "los";
 
 	public static void register() {
@@ -94,7 +94,7 @@ public class LibraryOfSoulsCommand {
 		/* los search <area> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("search"));
-		arguments.add(new StringArgument("area").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobLocations().toArray(new String[0])));
+		arguments.add(new StringArgument("area").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobLocations().stream().toArray(String[]::new)));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
@@ -113,7 +113,7 @@ public class LibraryOfSoulsCommand {
 		/* los searchtype <id> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("searchtype"));
-		arguments.add(new StringArgument("id").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobTypes().toArray(new String[0])));
+		arguments.add(new StringArgument("id").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobTypes().stream().toArray(String[]::new)));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
@@ -204,7 +204,7 @@ public class LibraryOfSoulsCommand {
 		return null;
 	}
 
-	private static Player getPlayer(CommandSender sender) throws WrapperCommandSyntaxException {
+	public static Player getPlayer(CommandSender sender) throws WrapperCommandSyntaxException {
 		if (sender instanceof Player) {
 			return (Player) sender;
 		} else if ((sender instanceof ProxiedCommandSender) && (((ProxiedCommandSender)sender).getCallee() instanceof Player)) {

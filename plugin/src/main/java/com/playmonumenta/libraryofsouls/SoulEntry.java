@@ -11,14 +11,24 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
+import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
+import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-public class SoulEntry implements Soul {
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+
+public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private static Gson gson = null;
 
 	private final Set<String> mLocs;
@@ -35,7 +45,7 @@ public class SoulEntry implements Soul {
 		}
 
 		String refLabel = history.get(0).getLabel();
-		String refName = history.get(0).getName();
+		Component refName = history.get(0).getName();
 
 		for (SoulHistoryEntry entry : history) {
 			if (!entry.getLabel().equals(refLabel)) {
@@ -87,12 +97,16 @@ public class SoulEntry implements Soul {
 		return mHistory.get(0).getId();
 	}
 
-	public String getName() {
+	public Component getName() {
 		return mHistory.get(0).getName();
 	}
 
-	public String getDisplayName() {
+	public Component getDisplayName() {
 		return mHistory.get(0).getDisplayName();
+	}
+
+	public boolean isBoss() {
+		return mHistory.get(0).isBoss();
 	}
 
 	public boolean isElite() {
@@ -110,6 +124,93 @@ public class SoulEntry implements Soul {
 	/*
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
+
+	/*--------------------------------------------------------------------------------
+	 * BestiaryEntryInterface Interface
+	 */
+
+	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
+
+	static {
+		ItemMeta meta = NOT_FOUND_ITEM.getItemMeta();
+		meta.displayName(Component.text("Mob not discovered!", NamedTextColor.DARK_RED, TextDecoration.ITALIC));
+		NOT_FOUND_ITEM.setItemMeta(meta);
+	}
+
+	@Override
+	public boolean canOpenBestiary(Player player) {
+		return getInfoTier(player).allowsAccessTo(InfoTier.STATS);
+	}
+
+	@Override
+	public ItemStack getBestiaryItem(Player player) {
+		InfoTier info = getInfoTier(player);
+		if (info.allowsAccessTo(InfoTier.MINIMAL)) {
+			ItemStack item = new ItemStack(getPlaceholder());
+			ItemMeta meta = item.getItemMeta();
+			List<Component> lore = new ArrayList<>();
+
+			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
+			if (info.allowsAccessTo(InfoTier.STATS)) {
+				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC));
+			}
+
+			meta.lore(lore);
+			item.setItemMeta(meta);
+			return item;
+		}
+		return NOT_FOUND_ITEM;
+	}
+
+	@Override
+	public void openBestiary(Player player, BestiaryArea parent) {
+		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
+	}
+
+	/*
+	 * BestiaryEntryInterface Interface
+	 *--------------------------------------------------------------------------------*/
+
+	public enum InfoTier {
+		EVERYTHING(3),
+		STATS(2),
+		MINIMAL(1),
+		NOTHING(0);
+
+		private final int mTier;
+
+		InfoTier(int tier) {
+			mTier = tier;
+		}
+
+		public boolean allowsAccessTo(InfoTier compareTo) {
+			return mTier >= compareTo.mTier;
+		}
+	}
+
+	private InfoTier getInfoTier(Player player) {
+		if (player.hasPermission("los.bestiary.viewall")) {
+			return InfoTier.EVERYTHING;
+		}
+
+		Integer kills = BestiaryManager.getKillsForMob(player, this);
+		if (kills != null && kills >= 1) {
+			if (kills >= 10
+				|| (isElite() && kills >= 5)
+				|| (isBoss() && kills >= 2)) {
+				return InfoTier.EVERYTHING;
+			} else if (kills >= 5
+			           || (isElite() && kills >= 3)
+					   || (isBoss() && kills >= 1)) {
+				return InfoTier.STATS;
+			} else {
+				return InfoTier.MINIMAL;
+			}
+		}
+		return InfoTier.NOTHING;
+	}
+
 
 	public List<Soul> getHistory() {
 		return new ArrayList<Soul>(mHistory);

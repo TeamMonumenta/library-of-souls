@@ -1,6 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary.storage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -169,10 +170,12 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	@Override
-	public void recordKill(final Player player, final SoulEntry soul) throws Exception {
+	public void recordKill(final Player player, final SoulEntry soul) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
-			throw new Exception("Bestiary data hasn't finished loading yet!");
+			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
+			mLogger.severe("Attempted to record player kill but bestiary data hasn't finished loading yet");
+			return;
 		}
 		mLogger.fine("Recording kill for player " + player.getName() + " mob " + soul.getLabel());
 
@@ -185,10 +188,12 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	@Override
-	public int getKillsForMob(final Player player, final SoulEntry soul) throws Exception {
+	public int getKillsForMob(final Player player, final SoulEntry soul) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
-			throw new Exception("Bestiary data hasn't finished loading yet!");
+			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
+			mLogger.severe("Attempted to get kills for mob but bestiary data hasn't finished loading yet");
+			return 0;
 		}
 
 		final Integer kills = playerKills.get(soul);
@@ -199,22 +204,25 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	@Override
-	public int setKillsForMob(final Player player, final SoulEntry soul, final int amount) throws Exception {
+	public void setKillsForMob(final Player player, final SoulEntry soul, final int amount) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
-			throw new Exception("Bestiary data hasn't finished loading yet!");
+			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
+			mLogger.severe("Attempted to set kills for mob but bestiary data hasn't finished loading yet");
+			return;
 		}
 
 		playerKills.put(soul, amount);
 		mPlayerKills.put(player.getUniqueId(), playerKills);
-		return amount;
 	}
 
 	@Override
-	public int addKillsForMob(final Player player, final SoulEntry soul, int amount) throws Exception {
+	public int addKillsForMob(final Player player, final SoulEntry soul, int amount) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
-			throw new Exception("Bestiary data hasn't finished loading yet!");
+			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
+			mLogger.severe("Attempted to add kills for mob but bestiary data hasn't finished loading yet");
+			return 0;
 		}
 
 		amount = playerKills.get(soul) + amount;
@@ -224,10 +232,12 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	@Override
-	public Map<SoulEntry, Integer> getAllKilledMobs(final Player player, final Collection<SoulEntry> searchSouls) throws Exception {
+	public Map<SoulEntry, Integer> getAllKilledMobs(final Player player, final Collection<SoulEntry> searchSouls) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		if (playerKills == null) {
-			throw new Exception("Bestiary data hasn't finished loading yet!");
+			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
+			mLogger.severe("Attempted to get all killed mobs but bestiary data hasn't finished loading yet");
+			return Collections.emptyMap();
 		}
 
 		final Map<SoulEntry, Integer> map = new HashMap<>();

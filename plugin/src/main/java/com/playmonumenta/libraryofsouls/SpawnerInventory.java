@@ -3,6 +3,11 @@ package com.playmonumenta.libraryofsouls;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,16 +21,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class SpawnerInventory extends CustomInventory {
 	private final SoulsInventory mGoBackInventory;
 
 	public SpawnerInventory(Player owner, Soul soul, ItemStack spawner, SoulsInventory previous) {
-		super(owner, 9, soul.getDisplayName());
+		super(owner, 9, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
 
 		mGoBackInventory = previous;
 		loadWindow(spawner);
@@ -44,7 +49,7 @@ public class SpawnerInventory extends CustomInventory {
 		if (mGoBackInventory != null) {
 			ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
 			ItemMeta meta = goBackItem.getItemMeta();
-			meta.setDisplayName(ChatColor.RED + "Go Back");
+			meta.displayName(Component.text("Go Back", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
 			goBackItem.setItemMeta(meta);
 			_inventory.setItem(0, goBackItem);
 		}
@@ -131,7 +136,7 @@ public class SpawnerInventory extends CustomInventory {
 		ItemStack item = new ItemStack(Material.SPAWNER);
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		meta.setBlockState(spawnerBlock);
-		meta.setDisplayName(soul.getDisplayName() + ChatColor.RESET + " " + ChatColor.YELLOW + nbt.getEntityType().toString().toLowerCase());
+		meta.displayName(soul.getDisplayName().append(Component.text(" " + nbt.getEntityType().toString().toLowerCase(), NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false)));
 		item.setItemMeta(meta);
 
 		// Update the item's lore/name
