@@ -1,5 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import java.util.List;
+
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
@@ -28,11 +30,15 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 
 	private final SoulEntry mSoul;
 	private final BestiaryArea mSoulsParent;
+	private final List<BestiaryEntryInterface> mSoulPeers;
+	private final int mSoulPeerIndex;
 
-	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent) {
+	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
 		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()) + "'s Equipment");
 		mSoul = soul;
 		mSoulsParent = soulsParent;
+		mSoulPeers = soulPeers;
+		mSoulPeerIndex = soulPeerIndex;
 
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
 		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
@@ -80,7 +86,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 
 		if (event.getRawSlot() == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back */
-			mSoul.openBestiary((Player)event.getWhoClicked(), mSoulsParent);
+			mSoul.openBestiary((Player)event.getWhoClicked(), mSoulsParent, mSoulPeers, mSoulPeerIndex);
 		}
 	}
 }

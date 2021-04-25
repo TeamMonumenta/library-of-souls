@@ -134,8 +134,9 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent) {
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
 		/* Note this ignores the provided parent - the inventory will know to call getBestiaryParent() */
+		/* Maybe someday could use peers and peerIndex to go back and forth between areas too? */
 		new BestiaryAreaInventory(player, this, 0).openInventory(player, LibraryOfSouls.getInstance());
 	}
 

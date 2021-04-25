@@ -84,7 +84,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			/* Clicked a valid entry */
 			BestiaryEntryInterface clickedEntry = mChildren.get(slot + mOffset);
 			if (clickedEntry.canOpenBestiary(player)) {
-				clickedEntry.openBestiary(player, mArea);
+				clickedEntry.openBestiary(player, mArea, mChildren, slot + mOffset);
 			}
 		} else if (slot == 27 && event.getCurrentItem().getType().equals(CHANGE_PAGE_MAT)) {
 			/* Previous Page */
@@ -94,7 +94,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
 			 */
-			mArea.getBestiaryParent().openBestiary(player, null);
+			mArea.getBestiaryParent().openBestiary(player, null, null, -1);
 		} else if (slot == 35 && event.getCurrentItem().getType().equals(CHANGE_PAGE_MAT)) {
 			/* Next Page */
 			new BestiaryAreaInventory(player, mArea, mOffset + 27).openInventory(player, LibraryOfSouls.getInstance());

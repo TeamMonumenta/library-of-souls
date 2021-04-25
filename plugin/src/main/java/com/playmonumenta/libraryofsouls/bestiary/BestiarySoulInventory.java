@@ -192,12 +192,17 @@ public class BestiarySoulInventory extends CustomInventory {
 
 	private final SoulEntry mSoul;
 	private final BestiaryArea mParent;
+	/* TODO: Use these to provide previous / next buttons */
+	private final List<BestiaryEntryInterface> mPeers;
+	private final int mPeerIndex;
 
-	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier) {
+	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
 		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
 
 		mSoul = soul;
 		mParent = parent;
+		mPeers = peers;
+		mPeerIndex = peerIndex;
 
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
@@ -372,9 +377,9 @@ public class BestiarySoulInventory extends CustomInventory {
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
 			 */
-			mParent.openBestiary(player, null);
+			mParent.openBestiary(player, null, null, -1);
 		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
-			new BestiarySoulEquipmentInventory(player, mSoul, mParent).openInventory(player, LibraryOfSouls.getInstance());
+			new BestiarySoulEquipmentInventory(player, mSoul, mParent, mPeers, mPeerIndex).openInventory(player, LibraryOfSouls.getInstance());
 		}
 	}
 

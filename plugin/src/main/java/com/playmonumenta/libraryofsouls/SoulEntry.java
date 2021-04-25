@@ -164,8 +164,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent) {
-		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
+		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
 	/*
