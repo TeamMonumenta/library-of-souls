@@ -4,15 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
-
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulEntry;
+import java.util.logging.Level;
 
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -31,6 +23,18 @@ import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.MobNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
+
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.md_5.bungee.api.ChatColor;
 
@@ -39,8 +43,20 @@ public class BestiarySoulInventory extends CustomInventory {
 	private static EnumMap<EntityType, Double> mDefaultDamage = new EnumMap<>(EntityType.class);
 	private static EnumMap<EntityType, Double> mDefaultSpeed = new EnumMap<>(EntityType.class);
 	private static EnumMap<Material, Double> mDefaultItemDamage = new EnumMap<>(Material.class);
+	private static EnumMap<EntityType, Double> mDefaultHealth = new EnumMap<>(EntityType.class);
 	private static final AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_NUMBER;
 	private static final AttributeModifier.Operation SCALAR = AttributeModifier.Operation.ADD_SCALAR;
+
+	enum DamageType {
+		MELEE,
+		RANGED,
+		GHAST,
+		CREEPER,
+		CROSSBOW,
+		TRIDENT,
+		EVOKER,
+		BLAZE
+	}
 
 	static {
 		mDefaultArmor.put(Material.LEATHER_HELMET, 1.0);
@@ -91,14 +107,14 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultDamage.put(EntityType.SHULKER, 4.0);
 		mDefaultDamage.put(EntityType.SILVERFISH, 1.0);
 		//??
-		mDefaultDamage.put(EntityType.SKELETON, 2.0);
+		mDefaultDamage.put(EntityType.SKELETON, 2.5);
 		mDefaultDamage.put(EntityType.SLIME, 2.0);
 		mDefaultDamage.put(EntityType.SPIDER, 2.0);
 		//??
 		mDefaultDamage.put(EntityType.STRAY, 2.0);
-		mDefaultDamage.put(EntityType.VEX, 9.0);
-		mDefaultDamage.put(EntityType.VINDICATOR, 13.0);
-		mDefaultDamage.put(EntityType.WITHER_SKELETON, 8.0);
+		mDefaultDamage.put(EntityType.VEX, 3.0);
+		mDefaultDamage.put(EntityType.VINDICATOR, 5.0);
+		mDefaultDamage.put(EntityType.WITHER_SKELETON, 3.0);
 		//??
 		mDefaultDamage.put(EntityType.WITHER, 8.0);
 		mDefaultDamage.put(EntityType.WOLF, 2.0);
@@ -148,6 +164,8 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultSpeed.put(EntityType.DOLPHIN, 1.2);
 		mDefaultSpeed.put(EntityType.SQUID, 0.7);
 		mDefaultSpeed.put(EntityType.VEX, 0.7);
+
+
 	}
 
 	private static String formatWell(String in) {
@@ -183,19 +201,21 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
+		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();;
+
 
 		double armor = 0;
 		double armorToughness = 0;
 		double health = vars.hasKey("Health") ? 0.0 + Float.valueOf(vars.getFloat("Health")) : 0;
 		double speed = vars.hasKey("MovementSpeed") ? 0.0 + Float.valueOf(vars.getFloat("MovementSpeed")) : 0.0;
-		double damage = entityNBT != null && entityNBT.getVariable("AttackDamage") != null ? 0.0 + Double.valueOf(entityNBT.getVariable("AttackDamage").get()) : 0.0;
+		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase() : 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
 		double bowDamage = 0;
 		double explodePower = 0;
-		boolean ranged = false;
-		boolean trident = false;
-		boolean explode = false;
+		double horseJumpPower = 0;
+		double handDamage = 0;
+		DamageType type = null;
 
 		// Only need to create one of these
 		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
@@ -216,7 +236,6 @@ public class BestiarySoulInventory extends CustomInventory {
 					}
 
 					armorToughness += getAttributeNumber(item, Attribute.GENERIC_ARMOR_TOUGHNESS, ADD);
-					health += getAttributeNumber(item, Attribute.GENERIC_MAX_HEALTH, ADD);
 					speedScalar += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, ADD);
 					speedPercent += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, SCALAR);
 					damage += getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD);
@@ -229,11 +248,17 @@ public class BestiarySoulInventory extends CustomInventory {
 				if (item != null && item.hasItemMeta()) {
 					EquipmentSlot slot = handItems[0] != null && handItems[0].equals(item) ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
 					if (item.getType().equals(Material.BOW) && slot == EquipmentSlot.HAND) {
-						ranged = true;
+						type = DamageType.RANGED;
 						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
 					}
 
-					trident = item.getType().equals(Material.TRIDENT) && slot == EquipmentSlot.HAND;
+					if (item.getType().equals(Material.CROSSBOW) && slot == EquipmentSlot.HAND) {
+						type = DamageType.CROSSBOW;
+					}
+
+					if (item.getType().equals(Material.TRIDENT) && slot == EquipmentSlot.HAND) {
+						type = DamageType.TRIDENT;
+					}
 
 					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot) == 0 && mDefaultItemDamage.containsKey(item.getType())) {
 						damage += mDefaultItemDamage.get(item.getType());
@@ -243,23 +268,46 @@ public class BestiarySoulInventory extends CustomInventory {
 						damage += ((0.0 + item.getEnchantmentLevel(Enchantment.DAMAGE_ALL)) / 2) + 0.5;
 					}
 
-					armor += getAttributeNumber(item, Attribute.GENERIC_ARMOR, ADD);
-					armorToughness += getAttributeNumber(item, Attribute.GENERIC_ARMOR_TOUGHNESS, ADD);
-					health += getAttributeNumber(item, Attribute.GENERIC_MAX_HEALTH, ADD);
-					speedScalar += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, ADD);
-					speedPercent += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, SCALAR);
-					damage += getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD);
+					if (slot == EquipmentSlot.HAND) {
+						horseJumpPower += getAttributeNumber(item, Attribute.HORSE_JUMP_STRENGTH, ADD, slot);
+					}
+
+					if (slot == EquipmentSlot.HAND) {
+						handDamage += getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot);
+					}
+
+					armor += getAttributeNumber(item, Attribute.GENERIC_ARMOR, ADD, slot);
+					armorToughness += getAttributeNumber(item, Attribute.GENERIC_ARMOR_TOUGHNESS, ADD, slot);
+					speedScalar += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, ADD, slot);
+					speedPercent += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, SCALAR, slot);
+					damage += getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot);
 				}
 			}
 		}
 
 		// Does the mob attack primarily through explosions?
-		if (entityNBT.getVariable("ExplosionPower") != null) {
-			explode = true;
+		if (entityNBT.getEntityType() == EntityType.GHAST) {
+			type = DamageType.GHAST;
 			explodePower = Double.valueOf(entityNBT.getVariable("ExplosionPower").get());
-		} else if (!ranged && !trident) {
+		} else if (entityNBT.getVariable("ExplosionRadius") != null) {
+			type = DamageType.CREEPER;
+			explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
+			if (entityNBT.getVariable("Powered") != null) {
+				explodePower = Boolean.parseBoolean(entityNBT.getVariable("Powered").get()) ? explodePower * 2 : explodePower;
+			}
+		} else if (entityNBT.getEntityType() == EntityType.BLAZE) {
+			type = DamageType.BLAZE;
+		} else if (entityNBT.getEntityType() == EntityType.EVOKER) {
+			type = DamageType.EVOKER;
+		} else if (type == null && attr.getAttribute(AttributeType.ATTACK_DAMAGE) == null) {
+			type = DamageType.MELEE;
 			damage += mDefaultDamage.get(entityNBT.getEntityType());
+		} else if (type == null) {
+			type = DamageType.MELEE;
+		} else {
+			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob somehow gained no type: " + soul.getName());
 		}
+
 		// Mojang.
 		if (entityNBT.getEntityType() == EntityType.ZOMBIE || entityNBT.getEntityType() == EntityType.ZOMBIE_VILLAGER) {
 			armor += 2;
@@ -269,7 +317,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		ItemStack healthItem = getHealthItem(health);
 
-		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, ranged, trident, explode);
+		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, horseJumpPower, handDamage, type);
 
 		for (int i = 0; i < 36; i++) {
 			_inventory.setItem(i, new ItemStack(BestiaryAreaInventory.EMPTY_MAT));
@@ -390,7 +438,9 @@ public class BestiarySoulInventory extends CustomInventory {
 		armorMeta.setLore(lore);
 		armorMeta.setDisplayName(ChatColor.WHITE + "Armor");
 
-		armorMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		if (armor != 0 || armorToughness != 0) {
+			armorMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		}
 		armorMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
 		armorItem.setItemMeta(armorMeta);
@@ -398,35 +448,62 @@ public class BestiarySoulInventory extends CustomInventory {
 		return armorItem;
 	}
 
-	private static ItemStack getDamageItem(ItemStack item, double damage, double bowDamage, double explodePower, boolean ranged, boolean trident, boolean explode) {
+	private static ItemStack getDamageItem(ItemStack item, double damage, double bowDamage, double explodePower, double horseJumpPower, double handDamage, DamageType type) {
 		ItemStack damageItem = item;
 		if (damageItem == null || damageItem.getItemMeta() == null) {
-			if (ranged) {
+			if (type == DamageType.RANGED) {
 				damageItem = new ItemStack(Material.BOW);
-			} else if (trident) {
+			} else if (type == DamageType.TRIDENT) {
 				damageItem = new ItemStack(Material.TRIDENT);
-			} else if (explode) {
+			} else if (type == DamageType.CROSSBOW) {
+				damageItem = new ItemStack(Material.CROSSBOW);
+			} else if (type == DamageType.GHAST || type == DamageType.CREEPER) {
 				damageItem = new ItemStack(Material.GUNPOWDER);
+			} else if (type == DamageType.EVOKER) {
+				damageItem = new ItemStack(Material.TOTEM_OF_UNDYING);
+			} else if (type == DamageType.BLAZE) {
+				damageItem = new ItemStack(Material.BLAZE_POWDER);
 			} else {
 				damageItem = new ItemStack(Material.IRON_SWORD);
 			}
 		}
 
-
 		ItemMeta damageMeta = damageItem.getItemMeta();
 		damageMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 		List<String> lore = new ArrayList<>();
 
-		if (ranged && damage != 0) {
+		if (type == DamageType.RANGED && damage != 0) {
 			lore.add(ChatColor.DARK_GREEN + " " + damage + " Attack Damage");
 			lore.add(ChatColor.DARK_GREEN + " " + bowDamage + " Projectile Damage");
-		} else if (ranged) {
+		} else if (type == DamageType.RANGED) {
 			lore.add(ChatColor.DARK_GREEN + " " + bowDamage + " Projectile Damage");
-		} else if (trident) {
-			lore.add(ChatColor.DARK_GREEN + " " + damage + "Thrown Damage");
-		} else if (explode) {
-			lore.add(ChatColor.DARK_GREEN + " " + explodePower + "Explosion Power");
-		} else {
+		} else if (type == DamageType.TRIDENT) {
+			if (handDamage > 0) {
+				lore.add(ChatColor.DARK_GREEN + " " + (handDamage + 1) + " Thrown Damage");
+			} else {
+				lore.add(ChatColor.DARK_GREEN + " 8 Thrown Damage");
+			}
+		} else if (type == DamageType.CROSSBOW) {
+			if (handDamage > 0) {
+				lore.add(ChatColor.DARK_GREEN + " " + (handDamage + 1) + " Projectile Damage");
+			} else {
+				lore.add(ChatColor.DARK_GREEN + " 4 Projectile Damage");
+			}
+		} else if (type == DamageType.EVOKER) {
+			if (handDamage > 0) {
+				lore.add(ChatColor.DARK_GREEN + " " + (handDamage + 1) + " Fang Damage");
+			} else {
+				lore.add(ChatColor.DARK_GREEN + " 6 Fang Damage");
+			}
+		} else if (type == DamageType.BLAZE) {
+			if (horseJumpPower > 0) {
+				lore.add(ChatColor.DARK_GREEN + " " + (horseJumpPower + 1) + " Fireball Damage");
+			} else {
+				lore.add(ChatColor.DARK_GREEN + " 5 Fireball Damage");
+			}
+		} else if (type == DamageType.CREEPER || type == DamageType.GHAST) {
+			lore.add(ChatColor.DARK_GREEN + " " + explodePower + " Explosion Power");
+		} else if (type == DamageType.MELEE) {
 			lore.add(ChatColor.DARK_GREEN + " " + damage + " Attack Damage");
 		}
 
