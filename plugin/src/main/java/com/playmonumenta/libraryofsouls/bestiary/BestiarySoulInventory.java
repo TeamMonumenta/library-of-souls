@@ -251,7 +251,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
-		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();;
+		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();
 
 
 		double armor = 0;
@@ -270,7 +270,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		//Stuff to throw errors before everything
 		if (mDefaultHealth.get(entityNBT.getEntityType()) != null && health == 0.0) {
 			health += mDefaultHealth.get(entityNBT.getEntityType());
-		} else if (health == 0){
+		} else if (health == 0) {
 			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entityNBT.getEntityType());
 		}
 
@@ -365,13 +365,13 @@ public class BestiarySoulInventory extends CustomInventory {
 				explodePower = 1;
 			}
 		} else if (entityNBT.getVariable("ExplosionRadius") != null) {
-			if (entityNBT.getVariable("ExplosionRadius").get() == null || entityNBT.getVariable("ExplosionRadius").get().isBlank()) {
+			if (entityNBT.getVariable("ExplosionRadius").get() == null || entityNBT.getVariable("ExplosionRadius").get().isEmpty()) {
 				explodePower = 3;
 			} else if (entityNBT.getVariable("ExplosionRadius").get() != null) {
 				explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
 			}
 			type = DamageType.CREEPER;
-			if (entityNBT.getVariable("Powered") != null && entityNBT.getVariable("Powered").get() != null && !entityNBT.getVariable("Powered").get().isBlank()) {
+			if (entityNBT.getVariable("Powered") != null && entityNBT.getVariable("Powered").get() != null && !entityNBT.getVariable("Powered").get().isEmpty()) {
 				explodePower = Boolean.parseBoolean(entityNBT.getVariable("Powered").get()) ? explodePower * 2 : explodePower;
 			}
 		} else if (entityNBT.getEntityType() == EntityType.BLAZE) {
