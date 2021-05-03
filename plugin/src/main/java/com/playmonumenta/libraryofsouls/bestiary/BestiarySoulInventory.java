@@ -357,7 +357,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		// Does the mob attack primarily through explosions?
 		if (entityNBT.getEntityType() == EntityType.GHAST) {
-			if (entityNBT.getVariable("ExplosionPower") != null && entityNBT.getVariable("ExplosionPower").get() != null && !entityNBT.getVariable("ExplosionPower").get().isBlank()) {
+			if (entityNBT.getVariable("ExplosionPower") != null && entityNBT.getVariable("ExplosionPower").get() != null && !entityNBT.getVariable("ExplosionPower").get().isEmpty()) {
 				type = DamageType.GHAST;
 				explodePower = Float.valueOf(entityNBT.getVariable("ExplosionPower").get());
 			} else {
