@@ -2,10 +2,6 @@ package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.List;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.mylib.utils.UtilsMc;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,6 +9,10 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.mylib.utils.UtilsMc;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -23,13 +23,29 @@ public class BestiaryAreaInventory extends CustomInventory {
 	public static final Material EMPTY_MAT = Material.BLUE_STAINED_GLASS_PANE;
 	public static final Material GO_BACK_MAT = Material.RED_STAINED_GLASS_PANE;
 	public static final Material CHANGE_PAGE_MAT = Material.GREEN_STAINED_GLASS_PANE;
+	public static final Material CHANGE_ENTRY_MAT = Material.LIME_STAINED_GLASS_PANE;
 
 	public static final ItemStack GO_BACK_ITEM = new ItemStack(GO_BACK_MAT);
+	public static final ItemStack MOVE_ENTRY_PREV_ITEM = new ItemStack(CHANGE_ENTRY_MAT);
+	public static final ItemStack MOVE_ENTRY_NEXT_ITEM = new ItemStack(CHANGE_ENTRY_MAT);
+	public static final ItemStack EMPTY_ITEM = new ItemStack(EMPTY_MAT);
 
 	static {
 		ItemMeta meta = GO_BACK_ITEM.getItemMeta();
 		meta.displayName(Component.text("Go Back", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
 		GO_BACK_ITEM.setItemMeta(meta);
+
+		meta = MOVE_ENTRY_PREV_ITEM.getItemMeta();
+		meta.displayName(Component.text("Previous Entry", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
+		MOVE_ENTRY_PREV_ITEM.setItemMeta(meta);
+
+		meta = MOVE_ENTRY_NEXT_ITEM.getItemMeta();
+		meta.displayName(Component.text("Next Entry", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
+		MOVE_ENTRY_NEXT_ITEM.setItemMeta(meta);
+
+		meta = EMPTY_ITEM.getItemMeta();
+		meta.displayName(Component.text("", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+		EMPTY_ITEM.setItemMeta(meta);
 	}
 
 	private final int mOffset;
@@ -46,12 +62,12 @@ public class BestiaryAreaInventory extends CustomInventory {
 			if (i < mChildren.size()) {
 				_inventory.setItem(i - mOffset, mChildren.get(i).getBestiaryItem(player));
 			} else {
-				_inventory.setItem(i - mOffset, new ItemStack(EMPTY_MAT));
+				_inventory.setItem(i - mOffset, EMPTY_ITEM);
 			}
 		}
 
 		for (int i = 27; i < 36; i++) {
-			_inventory.setItem(i, new ItemStack(EMPTY_MAT));
+			_inventory.setItem(i, EMPTY_ITEM);
 		}
 
         if (mOffset > 0) {
