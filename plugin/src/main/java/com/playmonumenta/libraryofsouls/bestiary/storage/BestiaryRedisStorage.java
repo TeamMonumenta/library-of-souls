@@ -182,7 +182,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		final Integer kills = playerKills.get(soul);
 		if (kills == null) {
 			playerKills.put(soul, 1);
-		} else  {
+		} else {
 			playerKills.put(soul, kills + 1);
 		}
 	}

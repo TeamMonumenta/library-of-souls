@@ -70,7 +70,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			_inventory.setItem(i, EMPTY_ITEM);
 		}
 
-        if (mOffset > 0) {
+		if (mOffset > 0) {
 			_inventory.setItem(27, UtilsMc.newSingleItemStack(CHANGE_PAGE_MAT, "[" + Integer.toString(mOffset / 27) + "] Previous Page"));
 		}
 
