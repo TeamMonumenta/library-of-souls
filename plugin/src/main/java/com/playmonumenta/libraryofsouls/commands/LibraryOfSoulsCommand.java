@@ -42,9 +42,9 @@ public class LibraryOfSoulsCommand {
 			.withPermission(CommandPermission.fromString("los.open"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-                Player player = getPlayer(sender);
-                (new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), ""))
-                    .openInventory(player, LibraryOfSouls.getInstance());
+				Player player = getPlayer(sender);
+				(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), ""))
+					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
 
@@ -56,11 +56,11 @@ public class LibraryOfSoulsCommand {
 			.withPermission(CommandPermission.fromString("los.get"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-                PlayerInventory inv = getPlayer(sender).getInventory();
-                if (inv.firstEmpty() == -1) {
-                    CommandAPI.fail("Your inventory is full!");
-                }
-                inv.addItem(getSoul((String)args[1]).getBoS());
+				PlayerInventory inv = getPlayer(sender).getInventory();
+				if (inv.firstEmpty() == -1) {
+					CommandAPI.fail("Your inventory is full!");
+				}
+				inv.addItem(getSoul((String)args[1]).getBoS());
 			})
 			.register();
 
