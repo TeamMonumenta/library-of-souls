@@ -37,6 +37,7 @@ import com.playmonumenta.libraryofsouls.SoulEntry;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
@@ -210,7 +211,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 	}
 
-	private static String formatWell(String in) {
+	public static String formatWell(String in) {
 		in = in.replaceAll("\"", "");
 		String sub = "";
 		if (in.contains("_")) {
@@ -232,16 +233,22 @@ public class BestiarySoulInventory extends CustomInventory {
 		return sub;
 	}
 
+	private static Component blackIfWhite(Component comp) {
+		if (comp.color().asHexString().equals("#ffffff")) {
+			comp = comp.color(TextColor.color(0, 0, 0));
+		}
+		return comp;
+	}
+
 	private final SoulEntry mSoul;
 	private final BestiaryArea mParent;
-	/* TODO: Use these to provide previous / next buttons */
 	private final List<BestiaryEntryInterface> mPeers;
 	private final int mPeerIndex;
 	private int mPrevEntry = -1;
-	private int mNextEntry = 4000;
+	private int mNextEntry = 40000;
 
 	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
-		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
+		super(player, 36, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getDisplayName())));
 
 		mSoul = soul;
 		mParent = parent;
@@ -265,17 +272,21 @@ public class BestiarySoulInventory extends CustomInventory {
 		double explodePower = 0;
 		double horseJumpPower = 0;
 		double handDamage = 0;
+		EntityType entType = entityNBT.getEntityType();
 		DamageType type = null;
 
+		Double defHealth = mDefaultHealth.get(entType);
+		Double defDamage = mDefaultDamage.get(entType);
+
 		//Stuff to throw errors before everything
-		if (mDefaultHealth.get(entityNBT.getEntityType()) != null && health == 0.0) {
-			health += mDefaultHealth.get(entityNBT.getEntityType());
+		if (defHealth != null && health == 0.0) {
+			health += defHealth;
 		} else if (health == 0) {
 			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entityNBT.getEntityType());
 		}
 
-		if (mDefaultDamage.get(entityNBT.getEntityType()) != null && damage == 0.0) {
-			damage += mDefaultDamage.get(entityNBT.getEntityType());
+		if (defDamage != null && damage == 0.0) {
+			damage += defDamage;
 		} else if (damage == 0.0) {
 			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the damage map: " + entityNBT.getEntityType());
 		}
@@ -312,16 +323,22 @@ public class BestiarySoulInventory extends CustomInventory {
 				i++;
 				if (item != null && item.hasItemMeta()) {
 					EquipmentSlot slot = i == 1 ? EquipmentSlot.HAND : EquipmentSlot.OFF_HAND;
-					if (item.getType().equals(Material.BOW) && slot == EquipmentSlot.HAND) {
+					Material itemMat = item.getType();
+					if (itemMat == Material.BOW && slot == EquipmentSlot.HAND) {
 						type = DamageType.RANGED;
 						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
 					}
 
-					if (item.getType().equals(Material.CROSSBOW) && slot == EquipmentSlot.HAND) {
+					if (bowDamage == 0 && itemMat == Material.BOW && slot == EquipmentSlot.HAND) {
+						type = DamageType.RANGED;
+						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
+					}
+
+					if (itemMat == Material.CROSSBOW && slot == EquipmentSlot.HAND) {
 						type = DamageType.CROSSBOW;
 					}
 
-					if (item.getType().equals(Material.TRIDENT) && slot == EquipmentSlot.HAND) {
+					if (itemMat == Material.TRIDENT && slot == EquipmentSlot.HAND) {
 						type = DamageType.TRIDENT;
 					}
 
@@ -346,44 +363,54 @@ public class BestiarySoulInventory extends CustomInventory {
 					speedScalar += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, ADD, slot);
 					speedPercent += getAttributeNumber(item, Attribute.GENERIC_MOVEMENT_SPEED, SCALAR, slot);
 					damage += getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot);
-				} else if (item != null && item.getType() == Material.BOW) {
-					if (handItems[0] != null && handItems[0].equals(item)) {
-						type = DamageType.RANGED;
-						bowDamage += getBowDamage(item.getEnchantmentLevel(Enchantment.ARROW_DAMAGE));
-					}
 				}
 			}
 		}
 
 		// Does the mob attack primarily through explosions?
-		if (entityNBT.getEntityType() == EntityType.GHAST) {
-			if (entityNBT.getVariable("ExplosionPower") != null && entityNBT.getVariable("ExplosionPower").get() != null && !entityNBT.getVariable("ExplosionPower").get().isEmpty()) {
-				type = DamageType.GHAST;
-				explodePower = Float.valueOf(entityNBT.getVariable("ExplosionPower").get());
+		if (entType == EntityType.GHAST) {
+			NBTVariable NBTVar = entityNBT.getVariable("ExplosionPower");
+			if (NBTVar != null) {
+				String get = NBTVar.get();
+				if (get != null && get.isEmpty()) {
+					type = DamageType.GHAST;
+					explodePower = Float.valueOf(NBTVar.get());
+				} else {
+					type = DamageType.GHAST;
+					explodePower = 1;
+				}
 			} else {
 				type = DamageType.GHAST;
 				explodePower = 1;
 			}
-		} else if (entityNBT.getVariable("ExplosionRadius") != null) {
-			if (entityNBT.getVariable("ExplosionRadius").get() == null || entityNBT.getVariable("ExplosionRadius").get().isEmpty()) {
+		} else if (entType == EntityType.CREEPER) {
+			NBTVariable NBTVar = entityNBT.getVariable("ExplosionRadius");
+			if (NBTVar == null) {
 				explodePower = 3;
-			} else if (entityNBT.getVariable("ExplosionRadius").get() != null) {
-				explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
+			} else {
+				String get = NBTVar.get();
+				if (get != null) {
+					explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
+				}
+				type = DamageType.CREEPER;
+				NBTVariable powered = entityNBT.getVariable("Powered");
+				if (powered != null) {
+					get = powered.get();
+					if (get != null && !get.isEmpty()) {
+						explodePower = Boolean.parseBoolean(get) ? explodePower * 2 : explodePower;
+					}
+				}
 			}
-			type = DamageType.CREEPER;
-			if (entityNBT.getVariable("Powered") != null && entityNBT.getVariable("Powered").get() != null && !entityNBT.getVariable("Powered").get().isEmpty()) {
-				explodePower = Boolean.parseBoolean(entityNBT.getVariable("Powered").get()) ? explodePower * 2 : explodePower;
-			}
-		} else if (entityNBT.getEntityType() == EntityType.BLAZE) {
+		} else if (entType == EntityType.BLAZE) {
 			type = DamageType.BLAZE;
-		} else if (entityNBT.getEntityType() == EntityType.EVOKER) {
+		} else if (entType == EntityType.EVOKER) {
 			type = DamageType.EVOKER;
 		} else if (type == null) {
 			type = DamageType.MELEE;
 		}
 
 		// Mojang.
-		if (entityNBT.getEntityType() == EntityType.ZOMBIE || entityNBT.getEntityType() == EntityType.ZOMBIE_VILLAGER) {
+		if (entType == EntityType.ZOMBIE || entType == EntityType.ZOMBIE_VILLAGER) {
 			armor += 2;
 		}
 		//This logic is in other methods, not because it repeats, but because its much easier to parse

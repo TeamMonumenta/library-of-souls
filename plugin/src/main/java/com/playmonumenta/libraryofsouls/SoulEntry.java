@@ -161,10 +161,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			ItemMeta meta = item.getItemMeta();
 			List<Component> lore = new ArrayList<>();
 
-			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+			lore.add(Component.text(BestiarySoulInventory.formatWell(getId().getKey()), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
 			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
 			if (info.allowsAccessTo(InfoTier.STATS)) {
-				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC));
+				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
 			}
 
 			meta.lore(lore);
