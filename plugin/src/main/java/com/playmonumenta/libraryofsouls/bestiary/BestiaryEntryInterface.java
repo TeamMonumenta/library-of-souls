@@ -1,5 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import java.util.List;
+
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -19,5 +21,5 @@ public interface BestiaryEntryInterface {
 	 * Note that parent must be provided here so a mob bestiary page can get
 	 * back to the index page that accessed it
 	 */
-	void openBestiary(Player player, BestiaryArea parent);
+	void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex);
 }

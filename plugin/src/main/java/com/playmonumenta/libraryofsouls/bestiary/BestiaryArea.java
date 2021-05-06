@@ -5,12 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -18,6 +12,12 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.SoulsDatabase;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -134,8 +134,9 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent) {
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
 		/* Note this ignores the provided parent - the inventory will know to call getBestiaryParent() */
+		/* Maybe someday could use peers and peerIndex to go back and forth between areas too? */
 		new BestiaryAreaInventory(player, this, 0).openInventory(player, LibraryOfSouls.getInstance());
 	}
 

@@ -6,6 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -15,14 +23,6 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -72,22 +72,27 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 * Soul Interface
 	 */
 
+	@Override
 	public NBTTagCompound getNBT() {
 		return mHistory.get(0).getNBT();
 	}
 
+	@Override
 	public long getModifiedOn() {
 		return mHistory.get(0).getModifiedOn();
 	}
 
+	@Override
 	public String getModifiedBy() {
 		return mHistory.get(0).getModifiedBy();
 	}
 
+	@Override
 	public ItemStack getPlaceholder() {
 		return mHistory.get(0).getPlaceholder();
 	}
 
+	@Override
 	public ItemStack getBoS() {
 		return mHistory.get(0).getBoS();
 	}
@@ -97,26 +102,32 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).getId();
 	}
 
+	@Override
 	public Component getName() {
 		return mHistory.get(0).getName();
 	}
 
+	@Override
 	public Component getDisplayName() {
 		return mHistory.get(0).getDisplayName();
 	}
 
+	@Override
 	public boolean isBoss() {
 		return mHistory.get(0).isBoss();
 	}
 
+	@Override
 	public boolean isElite() {
 		return mHistory.get(0).isElite();
 	}
 
+	@Override
 	public String getLabel() {
 		return mHistory.get(0).getLabel();
 	}
 
+	@Override
 	public Entity summon(Location loc) {
 		return mHistory.get(0).summon(loc);
 	}
@@ -150,10 +161,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			ItemMeta meta = item.getItemMeta();
 			List<Component> lore = new ArrayList<>();
 
-			lore.add(Component.text(getId().getKey(), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
+			lore.add(Component.text(BestiarySoulInventory.formatWell(getId().getKey()), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
 			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
 			if (info.allowsAccessTo(InfoTier.STATS)) {
-				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE, TextDecoration.ITALIC));
+				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
 			}
 
 			meta.lore(lore);
@@ -164,8 +175,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent) {
-		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING)).openInventory(player, LibraryOfSouls.getInstance());
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
+		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
 	/*
@@ -189,7 +200,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 	}
 
-	private InfoTier getInfoTier(Player player) {
+	public InfoTier getInfoTier(Player player) {
 		if (player.hasPermission("los.bestiary.viewall")) {
 			return InfoTier.EVERYTHING;
 		}
@@ -284,6 +295,5 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 		return obj;
 	}
-
 }
 

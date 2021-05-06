@@ -74,7 +74,7 @@ public class BestiaryCommand {
 					if (bestiary == null) {
 						player.sendMessage(ChatColor.RED + "Bestiary not loaded");
 					} else {
-						bestiary.openBestiary(player, null);
+						bestiary.openBestiary(player, null, null, -1);
 					}
 				}))
 			.withSubcommand(new CommandAPICommand("open")
@@ -86,7 +86,7 @@ public class BestiaryCommand {
 					if (bestiary == null) {
 						player.sendMessage(ChatColor.RED + "Bestiary not loaded");
 					} else {
-						bestiary.openBestiary(player, null);
+						bestiary.openBestiary(player, null, null, -1);
 					}
 				}))
 			.register();
