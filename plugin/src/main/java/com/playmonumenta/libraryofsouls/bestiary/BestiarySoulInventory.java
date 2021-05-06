@@ -390,7 +390,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			} else {
 				String get = nbtVar.get();
 				if (get != null) {
-					explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
+					explodePower = Double.valueOf(get);
 				}
 				type = DamageType.CREEPER;
 				NBTVariable powered = entityNBT.getVariable("Powered");
