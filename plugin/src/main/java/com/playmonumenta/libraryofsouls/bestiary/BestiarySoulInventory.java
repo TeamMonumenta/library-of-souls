@@ -369,12 +369,12 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		// Does the mob attack primarily through explosions?
 		if (entType == EntityType.GHAST) {
-			NBTVariable NBTVar = entityNBT.getVariable("ExplosionPower");
-			if (NBTVar != null) {
-				String get = NBTVar.get();
+			NBTVariable nbtVar = entityNBT.getVariable("ExplosionPower");
+			if (nbtVar != null) {
+				String get = nbtVar.get();
 				if (get != null && get.isEmpty()) {
 					type = DamageType.GHAST;
-					explodePower = Float.valueOf(NBTVar.get());
+					explodePower = Float.valueOf(nbtVar.get());
 				} else {
 					type = DamageType.GHAST;
 					explodePower = 1;
@@ -384,11 +384,11 @@ public class BestiarySoulInventory extends CustomInventory {
 				explodePower = 1;
 			}
 		} else if (entType == EntityType.CREEPER) {
-			NBTVariable NBTVar = entityNBT.getVariable("ExplosionRadius");
-			if (NBTVar == null) {
+			NBTVariable nbtVar = entityNBT.getVariable("ExplosionRadius");
+			if (nbtVar == null) {
 				explodePower = 3;
 			} else {
-				String get = NBTVar.get();
+				String get = nbtVar.get();
 				if (get != null) {
 					explodePower = Double.valueOf(entityNBT.getVariable("ExplosionRadius").get());
 				}
@@ -617,7 +617,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			}
 		} else if (type == DamageType.EVOKER) {
 			if (handDamage > 0) {
-				lore.add(Component.text(" " + (handDamage + 1) + " Fang Damage",NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
+				lore.add(Component.text(" " + (handDamage + 1) + " Fang Damage", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
 			} else {
 				lore.add(Component.text(" 6 Fang Damage", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
 			}
