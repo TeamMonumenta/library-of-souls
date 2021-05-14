@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.mylib.utils.UtilsMc;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 
 import net.kyori.adventure.text.Component;
@@ -71,11 +70,19 @@ public class BestiaryAreaInventory extends CustomInventory {
 		}
 
 		if (mOffset > 0) {
-			_inventory.setItem(27, UtilsMc.newSingleItemStack(CHANGE_PAGE_MAT, "[" + Integer.toString(mOffset / 27) + "] Previous Page"));
+			ItemStack item = new ItemStack(CHANGE_PAGE_MAT);
+			ItemMeta meta = item.getItemMeta();
+			meta.displayName(Component.text("Previous Page", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+			item.setItemMeta(meta);
+			_inventory.setItem(27, item);
 		}
 
 		if (27 + mOffset < mChildren.size()) {
-			_inventory.setItem(35, UtilsMc.newSingleItemStack(CHANGE_PAGE_MAT, "[" + Integer.toString(mOffset / 27) + "] Next Page"));
+			ItemStack item = new ItemStack(CHANGE_PAGE_MAT);
+			ItemMeta meta = item.getItemMeta();
+			meta.displayName(Component.text("Next Page", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+			item.setItemMeta(meta);
+			_inventory.setItem(35, item);
 		}
 
 		if (area.getBestiaryParent() != null) {
