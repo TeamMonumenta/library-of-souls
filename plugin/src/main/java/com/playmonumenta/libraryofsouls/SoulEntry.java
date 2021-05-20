@@ -218,7 +218,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 				return this.mSecondTier;
 			} else if (tier == InfoTier.STATS) {
 				return this.mSecondTier;
-			} else if (tier == InfoTier.MINIMAL){
+			} else if (tier == InfoTier.MINIMAL) {
 				return this.mFirstTier;
 			} else {
 				return 1;
