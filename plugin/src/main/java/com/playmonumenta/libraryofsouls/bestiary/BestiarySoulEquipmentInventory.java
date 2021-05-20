@@ -37,7 +37,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private int mNextEntry = 40000;
 
 	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
-		super(player, 36, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()) + "'s Equipment");
+		super(player, 54, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()) + "'s Equipment");
 		mSoul = soul;
 		mSoulsParent = soulsParent;
 		mSoulPeers = soulPeers;
@@ -49,28 +49,28 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		ItemStack[] armorItems = ((ItemsVariable)itemsVar.bind(entityNBT.getData())).getItems();
 		ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
 
-		for (int i = 0; i < 36; i++) {
+		for (int i = 0; i < 54; i++) {
 			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
 		}
 
 		for (int i = 0; i < 4; i++) {
 			ItemStack armorItem = armorItems[i];
 			if (armorItem == null || armorItem.getType() == Material.AIR) {
-				_inventory.setItem(13 - i, NULL_ITEM);
+				_inventory.setItem(22 - i, NULL_ITEM);
 				continue;
 			}
 
-			_inventory.setItem(13 - i, armorItem);
+			_inventory.setItem(22 - i, armorItem);
 		}
 
 		for (int i = 0; i < 2; i++) {
 			ItemStack handItem = handItems[i];
 			if (handItem == null || handItem.getType() == Material.AIR) {
-				_inventory.setItem(15 + i, NULL_ITEM);
+				_inventory.setItem(24 + i, NULL_ITEM);
 				continue;
 			}
 
-			_inventory.setItem(15 + i, handItem);
+			_inventory.setItem(24 + i, handItem);
 		}
 
 		for (int i = mSoulPeerIndex - 1; i >= 0; i--) {
@@ -88,14 +88,14 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		}
 
 		if (mPrevEntry >= 0) {
-			_inventory.setItem(27, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
+			_inventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
 		}
 
 		if (mNextEntry < mSoulPeers.size()) {
-			_inventory.setItem(35, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
+			_inventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
 		}
 
-		_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
+		_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 	}
 
 	@Override
@@ -108,12 +108,12 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 			return;
 		}
 
-		if (event.getRawSlot() == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
+		if (event.getRawSlot() == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back */
 			mSoul.openBestiary((Player)event.getWhoClicked(), mSoulsParent, mSoulPeers, mSoulPeerIndex);
-		} else if (event.getRawSlot() == 27 && mPrevEntry >= 0 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.CHANGE_ENTRY_MAT) && mSoulPeers.get(mPrevEntry).canOpenBestiary((Player)event.getWhoClicked())) {
+		} else if (event.getRawSlot() == 45 && mPrevEntry >= 0 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.CHANGE_ENTRY_MAT) && mSoulPeers.get(mPrevEntry).canOpenBestiary((Player)event.getWhoClicked())) {
 			new BestiarySoulEquipmentInventory((Player)event.getWhoClicked(), (SoulEntry)mSoulPeers.get(mPrevEntry), mSoulsParent, mSoulPeers, mPrevEntry).openInventory((Player)event.getWhoClicked(), LibraryOfSouls.getInstance());
-		} else if (event.getRawSlot() == 35 && mNextEntry < mSoulPeers.size() && event.getCurrentItem().getType().equals(BestiaryAreaInventory.CHANGE_ENTRY_MAT) && mSoulPeers.get(mNextEntry).canOpenBestiary((Player)event.getWhoClicked())) {
+		} else if (event.getRawSlot() == 53 && mNextEntry < mSoulPeers.size() && event.getCurrentItem().getType().equals(BestiaryAreaInventory.CHANGE_ENTRY_MAT) && mSoulPeers.get(mNextEntry).canOpenBestiary((Player)event.getWhoClicked())) {
 			new BestiarySoulEquipmentInventory((Player)event.getWhoClicked(), (SoulEntry)mSoulPeers.get(mNextEntry), mSoulsParent, mSoulPeers, mNextEntry).openInventory((Player)event.getWhoClicked(), LibraryOfSouls.getInstance());
 		}
 	}

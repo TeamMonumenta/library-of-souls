@@ -200,6 +200,32 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 	}
 
+	public enum MobType {
+		BOSS(1, 2),
+		ELITE(5, 10),
+		NORMAL(30, 60);
+
+		private final int mFirstTier;
+		private final int mSecondTier;
+
+		MobType(int firstTier, int secondTier) {
+			this.mFirstTier = firstTier;
+			this.mSecondTier = secondTier;
+		}
+
+		public int getNeededKills(InfoTier tier) {
+			if (tier == InfoTier.EVERYTHING) {
+				return this.mSecondTier;
+			} else if (tier == InfoTier.STATS) {
+				return this.mSecondTier;
+			} else if (tier == InfoTier.MINIMAL) {
+				return this.mFirstTier;
+			} else {
+				return 1;
+			}
+		}
+	}
+
 	public InfoTier getInfoTier(Player player) {
 		if (player.hasPermission("los.bestiary.viewall")) {
 			return InfoTier.EVERYTHING;
@@ -207,12 +233,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 		Integer kills = BestiaryManager.getKillsForMob(player, this);
 		if (kills != null && kills >= 1) {
-			if (kills >= 10
-				|| (isElite() && kills >= 5)
+			if (kills >= 60
+				|| (isElite() && kills >= 10)
 				|| (isBoss() && kills >= 2)) {
 				return InfoTier.EVERYTHING;
-			} else if (kills >= 5
-			           || (isElite() && kills >= 3)
+			} else if (kills >= 30
+			           || (isElite() && kills >= 5)
 					   || (isBoss() && kills >= 1)) {
 				return InfoTier.STATS;
 			} else {
@@ -222,6 +248,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return InfoTier.NOTHING;
 	}
 
+	public MobType getMobType() {
+		if (this.isBoss()) {
+			return MobType.BOSS;
+		} else if (this.isElite()) {
+			return MobType.ELITE;
+		} else {
+			return MobType.NORMAL;
+		}
+	}
 
 	public List<Soul> getHistory() {
 		return new ArrayList<Soul>(mHistory);
