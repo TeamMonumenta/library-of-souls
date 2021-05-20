@@ -169,7 +169,15 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultItemDamage.put(Material.STONE_SWORD, 5.0);
 		mDefaultItemDamage.put(Material.IRON_SWORD, 6.0);
 		mDefaultItemDamage.put(Material.DIAMOND_SWORD, 7.0);
+		mDefaultItemDamage.put(Material.NETHERITE_SWORD, 8.0);
+		mDefaultItemDamage.put(Material.WOODEN_AXE, 7.0);
+		mDefaultItemDamage.put(Material.GOLDEN_AXE, 7.0);
+		mDefaultItemDamage.put(Material.STONE_AXE, 9.0);
+		mDefaultItemDamage.put(Material.IRON_AXE, 9.0);
+		mDefaultItemDamage.put(Material.DIAMOND_AXE, 9.0);
+		mDefaultItemDamage.put(Material.NETHERITE_AXE, 10.0);
 
+		mDefaultSpeed.put(EntityType.STRIDER, 0.125);
 		mDefaultSpeed.put(EntityType.SNOWMAN, 0.2);
 		mDefaultSpeed.put(EntityType.BLAZE, 0.23);
 		mDefaultSpeed.put(EntityType.DROWNED, 0.23);
@@ -186,6 +194,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultSpeed.put(EntityType.STRAY, 0.25);
 		mDefaultSpeed.put(EntityType.WITCH, 0.25);
 		mDefaultSpeed.put(EntityType.WITHER_SKELETON, 0.25);
+		mDefaultSpeed.put(EntityType.BEE, 0.3);
 		mDefaultSpeed.put(EntityType.CAT, 0.3);
 		mDefaultSpeed.put(EntityType.CAVE_SPIDER, 0.3);
 		mDefaultSpeed.put(EntityType.ELDER_GUARDIAN, 0.3);
@@ -200,6 +209,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultSpeed.put(EntityType.EVOKER, 0.5);
 		mDefaultSpeed.put(EntityType.GUARDIAN, 0.5);
 		mDefaultSpeed.put(EntityType.ILLUSIONER, 0.5);
+		mDefaultSpeed.put(EntityType.PIGLIN, 0.5);
 		mDefaultSpeed.put(EntityType.WITHER, 0.6);
 		mDefaultSpeed.put(EntityType.GHAST, 0.7);
 		mDefaultSpeed.put(EntityType.PUFFERFISH, 0.7);
@@ -207,8 +217,6 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultSpeed.put(EntityType.DOLPHIN, 1.2);
 		mDefaultSpeed.put(EntityType.SQUID, 0.7);
 		mDefaultSpeed.put(EntityType.VEX, 0.7);
-
-
 	}
 
 	public static String formatWell(String in) {
@@ -248,7 +256,7 @@ public class BestiarySoulInventory extends CustomInventory {
 	private int mNextEntry = 40000;
 
 	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
-		super(player, 36, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getDisplayName())));
+		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getDisplayName())));
 
 		mSoul = soul;
 		mParent = parent;
@@ -259,7 +267,6 @@ public class BestiarySoulInventory extends CustomInventory {
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
 		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();
-
 
 		double armor = 0;
 		double armorToughness = 0;
@@ -295,11 +302,9 @@ public class BestiarySoulInventory extends CustomInventory {
 		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
 		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
 		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
-		NBTVariable tagsVar = entityNBT.getVariable("Tags");
 		// For each mob you want to work with:
 		ItemStack[] armorItems = ((ItemsVariable)itemsVar.bind(entityNBT.getData())).getItems();
 		ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
-		String tagString = tagsVar.bind(entityNBT.getData()).get();
 		if (armorItems != null) {
 			for (ItemStack item : armorItems) {
 				if (item != null && item.hasItemMeta()) {
@@ -372,7 +377,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			NBTVariable nbtVar = entityNBT.getVariable("ExplosionPower");
 			if (nbtVar != null) {
 				String get = nbtVar.get();
-				if (get != null && get.isEmpty()) {
+				if (get != null && !get.isEmpty()) {
 					type = DamageType.GHAST;
 					explodePower = Float.valueOf(nbtVar.get());
 				} else {
@@ -391,6 +396,8 @@ public class BestiarySoulInventory extends CustomInventory {
 				String get = nbtVar.get();
 				if (get != null) {
 					explodePower = Double.valueOf(get);
+				} else {
+					explodePower = 3;
 				}
 				type = DamageType.CREEPER;
 				NBTVariable powered = entityNBT.getVariable("Powered");
@@ -420,7 +427,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, horseJumpPower, handDamage, type);
 
-		for (int i = 0; i < 36; i++) {
+		for (int i = 0; i < 54; i++) {
 			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
 		}
 
@@ -441,19 +448,19 @@ public class BestiarySoulInventory extends CustomInventory {
 		}
 
 		if (mPrevEntry >= 0) {
-			_inventory.setItem(27, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
+			_inventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
 		}
 
 		if (mNextEntry < mPeers.size()) {
-			_inventory.setItem(35, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
+			_inventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
 		}
 
 		if (lowerInfoTier) {
 			// Lower tier of information
-			_inventory.setItem(11, healthItem);
-			_inventory.setItem(13, armorItem);
-			_inventory.setItem(15, damageItem);
-			_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
+			_inventory.setItem(20, healthItem);
+			_inventory.setItem(22, armorItem);
+			_inventory.setItem(24, damageItem);
+			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		} else {
 			// Higher tier of information
 			ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
@@ -461,21 +468,18 @@ public class BestiarySoulInventory extends CustomInventory {
 
 			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
 
-			ItemStack tagItem = getTagItem(tagString);
-
 			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
 			ItemMeta meta = equipmentPageItem.getItemMeta();
 			meta.displayName(Component.text("View Equipment Items", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
 			equipmentPageItem.setItemMeta(meta);
 
-			_inventory.setItem(2, healthItem);
-			_inventory.setItem(4, armorItem);
-			_inventory.setItem(6, damageItem);
-			_inventory.setItem(13, equipmentPageItem);
-			_inventory.setItem(20, speedItem);
-			_inventory.setItem(22, effectItem);
-			_inventory.setItem(24, tagItem);
-			_inventory.setItem(31, BestiaryAreaInventory.GO_BACK_ITEM);
+			_inventory.setItem(11, healthItem);
+			_inventory.setItem(13, armorItem);
+			_inventory.setItem(15, damageItem);
+			_inventory.setItem(22, equipmentPageItem);
+			_inventory.setItem(30, speedItem);
+			_inventory.setItem(32, effectItem);
+			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		}
 	}
 
@@ -492,17 +496,17 @@ public class BestiarySoulInventory extends CustomInventory {
 		Player player = (Player)event.getWhoClicked();
 		int slot = event.getRawSlot();
 
-		if (slot == 31 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
+		if (slot == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
 			/* Go Back
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
 			 */
 			mParent.openBestiary(player, null, null, -1);
-		} else if (slot == 13 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
+		} else if (slot == 22 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
 			new BestiarySoulEquipmentInventory(player, mSoul, mParent, mPeers, mPeerIndex).openInventory(player, LibraryOfSouls.getInstance());
-		} else if (slot == 27 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE) && mPrevEntry >= 0 && mPeers.get(mPrevEntry).canOpenBestiary(player)) {
+		} else if (slot == 45 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE) && mPrevEntry >= 0 && mPeers.get(mPrevEntry).canOpenBestiary(player)) {
 			mPeers.get(mPrevEntry).openBestiary(player, mParent, mPeers, mPrevEntry);
-		} else if (slot == 35 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE) && mNextEntry < mPeers.size() && mPeers.get(mNextEntry).canOpenBestiary(player)) {
+		} else if (slot == 53 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE) && mNextEntry < mPeers.size() && mPeers.get(mNextEntry).canOpenBestiary(player)) {
 			mPeers.get(mNextEntry).openBestiary(player, mParent, mPeers, mNextEntry);
 		}
 	}
@@ -710,30 +714,6 @@ public class BestiarySoulInventory extends CustomInventory {
 		speedItem.setItemMeta(speedMeta);
 
 		return speedItem;
-	}
-
-	private static ItemStack getTagItem(String tagString) {
-		ItemStack tagItem = new ItemStack(Material.NAME_TAG);
-		ItemMeta tagMeta = tagItem.getItemMeta();
-		List<Component> lore = new ArrayList<>();
-
-		if (tagString != null) {
-			List<String> tags = formatTags(tagString);
-			for (String tag : tags) {
-				lore.add(Component.text(tag, NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
-			}
-		} else {
-			lore.add(Component.text("No Tags!", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
-		}
-		tagMeta.lore(lore);
-		tagMeta.displayName(Component.text("Tags", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-
-		tagMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-		tagMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-
-		tagItem.setItemMeta(tagMeta);
-
-		return tagItem;
 	}
 
 	public static List<String> formatTags(String tag) {

@@ -10,6 +10,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
@@ -21,15 +30,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemFlag;
-import org.bukkit.inventory.ItemStack;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -212,14 +212,26 @@ public class SoulHistoryEntry implements Soul {
 		}
 
 		switch (entityNBT.getEntityType()) {
+			case ARMOR_STAND:
+				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
+				break;
 			case BLAZE:
 				mPlaceholder = new ItemStack(Material.BLAZE_POWDER);
+				break;
+			case BEE:
+				mPlaceholder = new ItemStack(Material.HONEYCOMB);
+				break;
+			case CAT:
+				mPlaceholder = new ItemStack(Material.STRING);
 				break;
 			case CAVE_SPIDER:
 				mPlaceholder = new ItemStack(Material.FERMENTED_SPIDER_EYE);
 				break;
 			case CHICKEN:
 				mPlaceholder = new ItemStack(Material.CHICKEN);
+				break;
+			case COD:
+				mPlaceholder = new ItemStack(Material.COD);
 				break;
 			case COW:
 				mPlaceholder = new ItemStack(Material.BEEF);
@@ -239,15 +251,28 @@ public class SoulHistoryEntry implements Soul {
 			case ENDERMAN:
 				mPlaceholder = new ItemStack(Material.ENDER_PEARL);
 				break;
+			case ENDERMITE:
+				mPlaceholder = new ItemStack(Material.ENDER_EYE);
+				break;
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
 			case GHAST:
 				mPlaceholder = new ItemStack(Material.GHAST_TEAR);
 				break;
+			case GIANT:
+				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
 			case GUARDIAN:
-				mPlaceholder = new ItemStack(Material.PUFFERFISH);
+				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
 				break;
+			case HOGLIN:
+				mPlaceholder = new ItemStack(Material.WARPED_FUNGUS);
+				break;
+			case ZOGLIN:
+				mPlaceholder = new ItemStack(Material.CRIMSON_FUNGUS);
+				break;
+			case HORSE:
+				mPlaceholder = new ItemStack(Material.SADDLE);
 			case HUSK:
 				mPlaceholder = new ItemStack(Material.ROTTEN_FLESH);
 				break;
@@ -260,12 +285,17 @@ public class SoulHistoryEntry implements Soul {
 			case MAGMA_CUBE:
 				mPlaceholder = new ItemStack(Material.MAGMA_CREAM);
 				break;
+			case MUSHROOM_COW:
+				mPlaceholder = new ItemStack(Material.RED_MUSHROOM);
+				break;
 			case OCELOT:
-				mPlaceholder = new ItemStack(Material.CHICKEN);
+				mPlaceholder = new ItemStack(Material.COOKED_CHICKEN);
 				break;
 			case PILLAGER:
 				mPlaceholder = new ItemStack(Material.CROSSBOW);
 				break;
+			case PIG:
+				mPlaceholder = new ItemStack(Material.PORKCHOP);
 			case PHANTOM:
 				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
 				break;
@@ -275,6 +305,17 @@ public class SoulHistoryEntry implements Soul {
 			case ZOMBIFIED_PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
 				break;
+			case PIGLIN:
+				mPlaceholder = new ItemStack(Material.GOLDEN_BOOTS);
+				break;
+			case RABBIT:
+				mPlaceholder = new ItemStack(Material.RABBIT_FOOT);
+				break;
+			case RAVAGER:
+				mPlaceholder = new ItemStack(Material.SHIELD);
+				break;
+			case SALMON:
+				mPlaceholder = new ItemStack(Material.SALMON);
 			case SHULKER:
 				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
 				break;
@@ -283,6 +324,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case SKELETON:
 				mPlaceholder = new ItemStack(Material.SKELETON_SKULL);
+				break;
+			case SKELETON_HORSE:
+				mPlaceholder = new ItemStack(Material.IRON_HORSE_ARMOR);
 				break;
 			case SLIME:
 				mPlaceholder = new ItemStack(Material.SLIME_BALL);
@@ -296,15 +340,21 @@ public class SoulHistoryEntry implements Soul {
 			case STRAY:
 				mPlaceholder = new ItemStack(Material.BOW);
 				break;
+			case STRIDER:
+				mPlaceholder = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
 			case SQUID:
 				mPlaceholder = new ItemStack(Material.INK_SAC);
 				break;
+			case TROPICAL_FISH:
+				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
 			case VEX:
 				mPlaceholder = new ItemStack(Material.IRON_SWORD);
 				break;
 			case VINDICATOR:
 				mPlaceholder = new ItemStack(Material.STONE_AXE);
 				break;
+			case VILLAGER:
+				mPlaceholder = new ItemStack(Material.EMERALD);
 			case WITCH:
 				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
 				break;
@@ -323,6 +373,8 @@ public class SoulHistoryEntry implements Soul {
 			case ZOMBIE_VILLAGER:
 				mPlaceholder = new ItemStack(Material.BELL);
 				break;
+			case ZOMBIE_HORSE:
+				mPlaceholder = new ItemStack(Material.LEATHER);
 			default:
 				mPlaceholder = mBoS.clone();
 				break;
