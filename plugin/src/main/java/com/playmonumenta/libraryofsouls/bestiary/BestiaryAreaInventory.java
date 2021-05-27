@@ -138,7 +138,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 
 		Player player = (Player)event.getWhoClicked();
 		int slot = event.getRawSlot();
-		int indexSlot = accountForOffset(slot, (Player)event.getWhoClicked());
+		int indexSlot = accountForOffset(slot);
 		if (indexSlot >= 0 && indexSlot < 29 && indexSlot + mOffset < mChildren.size()) {
 			/* Clicked a valid entry */
 			BestiaryEntryInterface clickedEntry = mChildren.get(indexSlot + mOffset);
@@ -160,11 +160,15 @@ public class BestiaryAreaInventory extends CustomInventory {
 		}
 	}
 
-	public int accountForOffset(int slot, Player player) {
+	public int accountForOffset(int slot) {
+		if (slot % 9 == 0 || slot % 9 == 8) {
+			return -1;
+		}
 		slot = slot - 10;
-		if (slot > 9 && slot < 18) {
+
+		if (slot >= 9 && slot < 18) {
 			return slot - 2;
-		} else if (slot > 18 && slot < 27) {
+		} else if (slot >= 18 && slot < 27) {
 			return slot - 4;
 		} else if (slot >= 27) {
 			return slot - 6;
