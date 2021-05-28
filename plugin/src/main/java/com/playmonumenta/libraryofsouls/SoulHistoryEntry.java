@@ -296,6 +296,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case PIG:
 				mPlaceholder = new ItemStack(Material.PORKCHOP);
+				break;
 			case PHANTOM:
 				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
 				break;
@@ -308,6 +309,9 @@ public class SoulHistoryEntry implements Soul {
 			case PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLDEN_BOOTS);
 				break;
+			case PUFFERFISH:
+				mPlaceholder = new ItemStack(Material.PUFFERFISH);
+				break;
 			case RABBIT:
 				mPlaceholder = new ItemStack(Material.RABBIT_FOOT);
 				break;
@@ -316,6 +320,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case SALMON:
 				mPlaceholder = new ItemStack(Material.SALMON);
+				break;
 			case SHULKER:
 				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
 				break;
@@ -342,6 +347,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case STRIDER:
 				mPlaceholder = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
+				break;
 			case SQUID:
 				mPlaceholder = new ItemStack(Material.INK_SAC);
 				break;
@@ -355,6 +361,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case VILLAGER:
 				mPlaceholder = new ItemStack(Material.EMERALD);
+				break;
 			case WITCH:
 				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
 				break;
@@ -375,6 +382,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case ZOMBIE_HORSE:
 				mPlaceholder = new ItemStack(Material.LEATHER);
+				break;
 			default:
 				mPlaceholder = mBoS.clone();
 				break;
