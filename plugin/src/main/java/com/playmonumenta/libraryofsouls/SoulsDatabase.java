@@ -52,12 +52,13 @@ public class SoulsDatabase {
 	 * This is an index based on locations.
 	 * A SoulEntry may appear here many times, or not at all
 	 */
-	private Map<String, List<SoulEntry>> mLocsIndex = new HashMap<>();
+	private final Map<String, List<SoulEntry>> mLocsIndex = new HashMap<>();
+	private final List<SoulEntry> mNoLocMobs = new ArrayList<>();
 	/*
 	 * This is an index based on mob ID (zombie, skeleton, etc.)
 	 * A SoulEntry may appear here many times
 	 */
-	private Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
+	private final Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin) throws Exception {
 		mPlugin = plugin;
@@ -88,7 +89,11 @@ public class SoulsDatabase {
 	}
 
 	public List<SoulEntry> getSoulsByLocation(String location) {
-		return mLocsIndex.get(location);
+		if (location == null) {
+			return mNoLocMobs;
+		} else {
+			return mLocsIndex.get(location);
+		}
 	}
 
 	public List<SoulEntry> getSoulsByType(String id) {
@@ -237,17 +242,23 @@ public class SoulsDatabase {
 	 *################################################################################*/
 
 	private void updateIndex() {
-		mLocsIndex = new HashMap<>();
-		mTypesIndex = new HashMap<>();
+		mLocsIndex.clear();
+		mNoLocMobs.clear();
+		mTypesIndex.clear();
 		for (SoulEntry soul : mSouls.values()) {
 			/* Update location index */
-			for (String tag : soul.getLocationNames()) {
-				List<SoulEntry> lst = mLocsIndex.get(tag);
-				if (lst == null) {
-					lst = new ArrayList<SoulEntry>();
-					mLocsIndex.put(tag, lst);
+			Set<String> locs = soul.getLocationNames();
+			if (locs == null || locs.isEmpty()) {
+				mNoLocMobs.add(soul);
+			} else {
+				for (String tag : locs) {
+					List<SoulEntry> lst = mLocsIndex.get(tag);
+					if (lst == null) {
+						lst = new ArrayList<SoulEntry>();
+						mLocsIndex.put(tag, lst);
+					}
+					lst.add(soul);
 				}
-				lst.add(soul);
 			}
 
 			/* Update type index */
