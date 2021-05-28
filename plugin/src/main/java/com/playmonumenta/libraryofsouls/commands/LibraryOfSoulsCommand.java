@@ -91,6 +91,20 @@ public class LibraryOfSoulsCommand {
 			})
 			.register();
 
+		/* los search */
+		arguments.clear();
+		arguments.add(new MultiLiteralArgument("search"));
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.search"))
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				Player player = getPlayer(sender);
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(null);
+				(new SoulsInventory(player, souls, "No Location"))
+					.openInventory(player, LibraryOfSouls.getInstance());
+			})
+			.register();
+
 		/* los search <area> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("search"));
