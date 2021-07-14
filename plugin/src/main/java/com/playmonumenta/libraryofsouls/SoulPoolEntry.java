@@ -7,18 +7,11 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
-import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
-import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
@@ -51,6 +44,10 @@ public class SoulPoolEntry implements SoulGroup {
 	/* Update this SoulPoolEntry so new soul is now current; preserve history */
 	public void update(Player player, String entryLabel, int weight) throws WrapperCommandSyntaxException {
 		mHistory.add(0, mHistory.get(0).changeWeight(player, entryLabel, weight));
+	}
+
+	public Map<String, Integer> getEntryWeights() {
+		return mHistory.get(0).getEntryWeights();
 	}
 
 	/*--------------------------------------------------------------------------------

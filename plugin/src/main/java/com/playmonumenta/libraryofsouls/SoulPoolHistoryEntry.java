@@ -9,7 +9,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
@@ -73,6 +72,10 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 			newEntryWeights.put(entryLabel, weight);
 		}
 		return new SoulPoolHistoryEntry(mLabel, Instant.now().getEpochSecond(), player.getName(), newEntryWeights);
+	}
+
+	public Map<String, Integer> getEntryWeights() {
+		return new HashMap<String, Integer>(mEntryWeights);
 	}
 
 	/*--------------------------------------------------------------------------------

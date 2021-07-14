@@ -46,6 +46,10 @@ public class SoulPartyEntry implements SoulGroup {
 		mHistory.add(0, mHistory.get(0).changeCount(player, entryLabel, count));
 	}
 
+	public Map<String, Integer> getEntryCounts() {
+		return mHistory.get(0).getEntryCounts();
+	}
+
 	/*--------------------------------------------------------------------------------
 	 * Soul Group Interface
 	 */
