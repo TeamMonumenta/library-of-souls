@@ -6,6 +6,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 public class LibraryOfSoulsAPI {
+	public static final String SOUL_PARTY_PREFIX = "#";
+	public static final String SOUL_POOL_PREFIX = "~";
+
 	public static Entity summon(Location loc, String soulName) {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		if (db == null) {

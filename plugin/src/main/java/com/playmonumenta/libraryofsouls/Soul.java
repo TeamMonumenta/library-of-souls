@@ -9,12 +9,8 @@ import org.bukkit.inventory.ItemStack;
 
 import net.kyori.adventure.text.Component;
 
-public interface Soul {
+public interface Soul extends SoulGroup {
 	NBTTagCompound getNBT();
-
-	long getModifiedOn();
-
-	String getModifiedBy();
 
 	ItemStack getPlaceholder();
 
@@ -34,9 +30,6 @@ public interface Soul {
 
 	/* Whether the mob has the tag "Elite" or not */
 	boolean isElite();
-
-	/* This is the label-ified name, with colors and spaces stripped */
-	String getLabel();
 
 	Entity summon(Location loc);
 }

@@ -4,9 +4,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -37,7 +40,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
-public class SoulHistoryEntry implements Soul {
+public class SoulHistoryEntry implements Soul, SoulGroup {
 	private static Gson gson = null;
 
 	private final NBTTagCompound mNBT;
@@ -70,13 +73,14 @@ public class SoulHistoryEntry implements Soul {
 		this(nbt, Instant.now().getEpochSecond(), player.getName(), new HashSet<String>());
 	}
 
+
 	/*--------------------------------------------------------------------------------
-	 * Soul Interface
+	 * Soul Group Interface
 	 */
 
 	@Override
-	public NBTTagCompound getNBT() {
-		return mNBT;
+	public String getLabel() {
+		return mLabel;
 	}
 
 	@Override
@@ -87,6 +91,47 @@ public class SoulHistoryEntry implements Soul {
 	@Override
 	public String getModifiedBy() {
 		return mModifiedBy;
+	}
+
+	@Override
+	public Set<Soul> getPossibleSouls() {
+		Set<Soul> result = new HashSet<>();
+		result.add(this);
+		return result;
+	}
+
+	@Override
+	public Set<String> getPossibleSoulGroupLabels() {
+		Set<String> result = new HashSet<>();
+		result.add(getLabel());
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomEntries(Random random) {
+		Map<Soul, Integer> result = new HashMap<>();
+		result.put(this, 1);
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Double> getAverageEntries() {
+		Map<Soul, Double> result = new HashMap<>();
+		result.put(this, 1.0);
+		return result;
+	}
+
+	/*
+	 * Soul Group Interface
+	 *--------------------------------------------------------------------------------*/
+
+	/*--------------------------------------------------------------------------------
+	 * Soul Interface
+	 */
+
+	@Override
+	public NBTTagCompound getNBT() {
+		return mNBT;
 	}
 
 	@Override
@@ -146,11 +191,6 @@ public class SoulHistoryEntry implements Soul {
 			}
 		}
 		return isElite;
-	}
-
-	@Override
-	public String getLabel() {
-		return mLabel;
 	}
 
 	@Override
