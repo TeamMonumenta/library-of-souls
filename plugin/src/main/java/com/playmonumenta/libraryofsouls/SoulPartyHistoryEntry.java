@@ -4,12 +4,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.time.Instant;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import com.google.gson.Gson;
