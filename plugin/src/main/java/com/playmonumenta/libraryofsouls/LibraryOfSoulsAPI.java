@@ -29,6 +29,30 @@ public class LibraryOfSoulsAPI {
 		return db.listMobNames();
 	}
 
+	public static Set<String> getSoulPartyNames() {
+		SoulsDatabase db = SoulsDatabase.getInstance();
+		if (db == null) {
+			return null;
+		}
+		return db.listSoulPartyNames();
+	}
+
+	public static Set<String> getSoulPoolNames() {
+		SoulsDatabase db = SoulsDatabase.getInstance();
+		if (db == null) {
+			return null;
+		}
+		return db.listSoulPoolNames();
+	}
+
+	public static Set<String> getSoulGroupNames() {
+		SoulsDatabase db = SoulsDatabase.getInstance();
+		if (db == null) {
+			return null;
+		}
+		return db.listSoulGroupNames();
+	}
+
 	public static Set<String> getSoulLocations() {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		if (db == null) {

@@ -514,7 +514,15 @@ public class SoulsDatabase {
 	}
 
 	public Set<String> listMobNames() {
-		return mSouls.keySet();
+		return new HashSet<>(mSouls.keySet());
+	}
+
+	public Set<String> listSoulPartyNames() {
+		return new HashSet<>(mSoulParties.keySet());
+	}
+
+	public Set<String> listSoulPoolNames() {
+		return new HashSet<>(mSoulPools.keySet());
 	}
 
 	public Set<String> listSoulGroupNames() {
