@@ -1,5 +1,8 @@
 package com.playmonumenta.libraryofsouls;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Location;
@@ -51,6 +54,18 @@ public class LibraryOfSoulsAPI {
 			return null;
 		}
 		return db.listSoulGroupNames();
+	}
+
+	public static Map<Soul, Integer> getRandomSouls(String label, Random random) {
+		SoulsDatabase db = SoulsDatabase.getInstance();
+		if (db == null) {
+			return new HashMap<>();
+		}
+		SoulGroup group = db.getSoulGroup(label);
+		if (group == null) {
+			return new HashMap<>();
+		}
+		return group.getRandomEntries(random);
 	}
 
 	public static Set<String> getSoulLocations() {
