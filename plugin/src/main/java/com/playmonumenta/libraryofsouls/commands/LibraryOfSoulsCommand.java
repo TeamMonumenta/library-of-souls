@@ -363,12 +363,12 @@ public class LibraryOfSoulsCommand {
 			})
 			.register();
 
-		/* los updatepool <poolLabel> <entryLabel> <count> */
+		/* los updatepool <poolLabel> <entryLabel> <weight> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("updatepool"));
 		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_POOLS_FUNCTION));
 		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_GROUPS_FUNCTION));
-		arguments.add(new IntegerArgument("count", 0));
+		arguments.add(new IntegerArgument("weight", 0));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updatepool"))
 			.withArguments(arguments)
