@@ -26,7 +26,7 @@ public class BestiaryCommand {
 			.withSubcommand(new CommandAPICommand("get")
 				.withPermission(CommandPermission.fromString("los.bestiary.get"))
 				.withArguments(new EntitySelectorArgument("player", EntitySelector.ONE_PLAYER))
-				.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.executes((sender, args) -> {
 					int kills = 0;
 					Soul soul = LibraryOfSoulsCommand.getSoul((String)args[1]);
@@ -47,7 +47,7 @@ public class BestiaryCommand {
 			.withSubcommand(new CommandAPICommand("set")
 				.withPermission(CommandPermission.fromString("los.bestiary.set"))
 				.withArguments(new EntitySelectorArgument("player", EntitySelector.ONE_PLAYER))
-				.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.withArguments(new IntegerArgument("amount"))
 				.executes((sender, args) -> {
 					BestiaryManager.setKillsForMob((Player)args[0], LibraryOfSoulsCommand.getSoul((String)args[1]), (Integer)args[2]);
@@ -55,7 +55,7 @@ public class BestiaryCommand {
 			.withSubcommand(new CommandAPICommand("add")
 				.withPermission(CommandPermission.fromString("los.bestiary.add"))
 				.withArguments(new EntitySelectorArgument("player", EntitySelector.ONE_PLAYER))
-				.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.withArguments(new IntegerArgument("amount"))
 				.executes((sender, args) -> {
 					int kills = 0;

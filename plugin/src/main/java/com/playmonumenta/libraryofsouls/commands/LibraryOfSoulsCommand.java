@@ -25,6 +25,7 @@ import org.bukkit.inventory.PlayerInventory;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.SuggestionInfo;
 import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.LocationArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
@@ -39,10 +40,10 @@ import net.kyori.adventure.text.event.ClickEvent;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
-	public static final Function<CommandSender, String[]> LIST_MOBS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listMobNames().stream().toArray(String[]::new);
-	public static final Function<CommandSender, String[]> LIST_SOUL_PARTIES_FUNCTION = (sender) -> SoulsDatabase.getInstance().listSoulPartyNames().stream().toArray(String[]::new);
-	public static final Function<CommandSender, String[]> LIST_SOUL_POOLS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listSoulPoolNames().stream().toArray(String[]::new);
-	public static final Function<CommandSender, String[]> LIST_SOUL_GROUPS_FUNCTION = (sender) -> SoulsDatabase.getInstance().listSoulGroupNames().stream().toArray(String[]::new);
+	public static final Function<SuggestionInfo, String[]> LIST_MOBS_FUNCTION = (info) -> SoulsDatabase.getInstance().listMobNames().stream().toArray(String[]::new);
+	public static final Function<SuggestionInfo, String[]> LIST_SOUL_PARTIES_FUNCTION = (info) -> SoulsDatabase.getInstance().listSoulPartyNames().stream().toArray(String[]::new);
+	public static final Function<SuggestionInfo, String[]> LIST_SOUL_POOLS_FUNCTION = (info) -> SoulsDatabase.getInstance().listSoulPoolNames().stream().toArray(String[]::new);
+	public static final Function<SuggestionInfo, String[]> LIST_SOUL_GROUPS_FUNCTION = (info) -> SoulsDatabase.getInstance().listSoulGroupNames().stream().toArray(String[]::new);
 	private static final String COMMAND = "los";
 	private static final Pattern VALID_SOUL_GROUP_LABEL = Pattern.compile("[0-9A-Za-z_]+");
 
@@ -64,7 +65,7 @@ public class LibraryOfSoulsCommand {
 		/* los get <name> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("get"));
-		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.get"))
 			.withArguments(arguments)
@@ -80,7 +81,7 @@ public class LibraryOfSoulsCommand {
 		/* los party <partyLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("party"));
-		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_PARTIES_FUNCTION));
+		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.party"))
 			.withArguments(arguments)
@@ -102,7 +103,7 @@ public class LibraryOfSoulsCommand {
 		/* los pool <poolLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("pool"));
-		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_POOLS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.pool"))
 			.withArguments(arguments)
@@ -128,7 +129,7 @@ public class LibraryOfSoulsCommand {
 		/* los averagegroup <groupLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("averagegroup"));
-		arguments.add(new ScoreHolderArgument("group", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("group", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.averagegroup"))
 			.withArguments(arguments)
@@ -147,7 +148,7 @@ public class LibraryOfSoulsCommand {
 		/* los history <name> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("history"));
-		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.history"))
 			.withArguments(arguments)
@@ -162,7 +163,7 @@ public class LibraryOfSoulsCommand {
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("summon"));
 		arguments.add(new LocationArgument("location"));
-		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.summon"))
 			.withArguments(arguments)
@@ -188,7 +189,7 @@ public class LibraryOfSoulsCommand {
 		/* los search <area> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("search"));
-		arguments.add(new StringArgument("area").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobLocations().stream().toArray(String[]::new)));
+		arguments.add(new StringArgument("area").replaceSuggestions((info) -> SoulsDatabase.getInstance().listMobLocations().stream().toArray(String[]::new)));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
@@ -207,7 +208,7 @@ public class LibraryOfSoulsCommand {
 		/* los searchtype <id> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("searchtype"));
-		arguments.add(new StringArgument("id").overrideSuggestions((sender) -> SoulsDatabase.getInstance().listMobTypes().stream().toArray(String[]::new)));
+		arguments.add(new StringArgument("id").replaceSuggestions((info) -> SoulsDatabase.getInstance().listMobTypes().stream().toArray(String[]::new)));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.search"))
 			.withArguments(arguments)
@@ -226,7 +227,7 @@ public class LibraryOfSoulsCommand {
 		/* los spawner <name> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("spawner"));
-		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.spawner"))
 			.withArguments(arguments)
@@ -278,7 +279,7 @@ public class LibraryOfSoulsCommand {
 		/* los del <name> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("del"));
-		arguments.add(new StringArgument("mobLabel").overrideSuggestions(LIST_MOBS_FUNCTION));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.del"))
 			.withArguments(arguments)
@@ -290,7 +291,7 @@ public class LibraryOfSoulsCommand {
 		/* los addparty <partyLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("addparty"));
-		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).overrideSuggestions(new String[0]));
+		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(info -> new String[0]));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.addparty"))
 			.withArguments(arguments)
@@ -312,8 +313,8 @@ public class LibraryOfSoulsCommand {
 		/* los updateparty <partyLabel> <entryLabel> <count> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("updateparty"));
-		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_PARTIES_FUNCTION));
-		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
+		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new IntegerArgument("count", 0));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updateparty"))
@@ -331,7 +332,7 @@ public class LibraryOfSoulsCommand {
 		/* los delparty <partyLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("delparty"));
-		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_PARTIES_FUNCTION));
+		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.delparty"))
 			.withArguments(arguments)
@@ -344,7 +345,7 @@ public class LibraryOfSoulsCommand {
 		/* los addpool <poolLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("addpool"));
-		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).overrideSuggestions(new String[0]));
+		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).replaceSuggestions(info -> new String[0]));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.addpool"))
 			.withArguments(arguments)
@@ -366,8 +367,8 @@ public class LibraryOfSoulsCommand {
 		/* los updatepool <poolLabel> <entryLabel> <weight> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("updatepool"));
-		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_POOLS_FUNCTION));
-		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new IntegerArgument("weight", 0));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updatepool"))
@@ -385,7 +386,7 @@ public class LibraryOfSoulsCommand {
 		/* los delpool <poolLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("delpool"));
-		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).overrideSuggestions(LIST_SOUL_POOLS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.delpool"))
 			.withArguments(arguments)
