@@ -115,21 +115,54 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Map<Soul, Integer> getRandomEntries(Random random) {
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
+		Map<SoulGroup, Integer> result = new HashMap<>();
+
+		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			int entryCount = entry.getValue();
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				result.put(group, entryCount);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public Map<SoulGroup, Double> getAverageEntries() {
+		Map<SoulGroup, Double> result = new HashMap<>();
+
+		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			double entryCount = (double) entry.getValue();
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				result.put(group, entryCount);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
 		Map<Soul, Integer> result = new HashMap<>();
 
 		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			int entryCount = entry.getValue();
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
 			if (group != null) {
-				for (Map.Entry<Soul, Integer> subEntry : group.getRandomEntries(random).entrySet()) {
-					Soul soul = subEntry.getKey();
-					Integer count = result.get(soul);
-					if (count == null) {
-						count = subEntry.getValue();
-					} else {
-						count += subEntry.getValue();
+				for (int entryIndex = 0; entryIndex < entryCount; ++entryIndex) {
+					for (Map.Entry<Soul, Integer> subEntry : group.getRandomSouls(random).entrySet()) {
+						Soul soul = subEntry.getKey();
+						Integer count = result.get(soul);
+						if (count == null) {
+							count = subEntry.getValue();
+						} else {
+							count += subEntry.getValue();
+						}
+						result.put(soul, count);
 					}
-					result.put(soul, count);
 				}
 			}
 		}
@@ -138,14 +171,14 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Map<Soul, Double> getAverageEntries() {
+	public Map<Soul, Double> getAverageSouls() {
 		Map<Soul, Double> result = new HashMap<>();
 
 		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
 			double entryCount = (double) entry.getValue();
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
 			if (group != null) {
-				for (Map.Entry<Soul, Double> subEntry : group.getAverageEntries().entrySet()) {
+				for (Map.Entry<Soul, Double> subEntry : group.getAverageSouls().entrySet()) {
 					Soul soul = subEntry.getKey();
 					double weightedAverage = entryCount * subEntry.getValue();
 					if (result.containsKey(soul)) {

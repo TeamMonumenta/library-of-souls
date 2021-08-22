@@ -137,7 +137,7 @@ public class LibraryOfSoulsCommand {
 				String groupLabel = (String)args[1];
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Pool weights:"));
-				for (Map.Entry<Soul, Double> entry : database.getSoulGroup(groupLabel).getAverageEntries().entrySet()) {
+				for (Map.Entry<Soul, Double> entry : database.getSoulGroup(groupLabel).getAverageSouls().entrySet()) {
 					Component name = entry.getKey().getName();
 					double aveCount = entry.getValue();
 					sender.sendMessage(Component.text("- " + String.format("%04.2f", aveCount) + "x ").append(name));

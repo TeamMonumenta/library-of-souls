@@ -128,7 +128,37 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Map<Soul, Integer> getRandomEntries(Random random) {
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
+		if (mTotalWeight == 0) {
+			return new HashMap<SoulGroup, Integer>();
+		}
+		long randomValue = random.nextLong() % mTotalWeight;
+		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
+		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
+		Map<SoulGroup, Integer> result = new HashMap<>();
+		if (selected != null) {
+			result.put(selected, 1);
+		}
+		return result;
+	}
+
+	@Override
+	public Map<SoulGroup, Double> getAverageEntries() {
+		Map<SoulGroup, Double> result = new HashMap<>();
+
+		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
+			double percentChance = ((double) entry.getValue()) / mTotalWeight;
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				result.put(group, percentChance);
+			}
+		}
+
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
 		if (mTotalWeight == 0) {
 			return new HashMap<Soul, Integer>();
 		}
@@ -136,21 +166,21 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
 		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
 		if (selected != null) {
-			return selected.getRandomEntries(random);
+			return selected.getRandomSouls(random);
 		} else {
 			return new HashMap<Soul, Integer>();
 		}
 	}
 
 	@Override
-	public Map<Soul, Double> getAverageEntries() {
+	public Map<Soul, Double> getAverageSouls() {
 		Map<Soul, Double> result = new HashMap<>();
 
 		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
 			double percentChance = ((double) entry.getValue()) / mTotalWeight;
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
 			if (group != null) {
-				for (Map.Entry<Soul, Double> subEntry : group.getAverageEntries().entrySet()) {
+				for (Map.Entry<Soul, Double> subEntry : group.getAverageSouls().entrySet()) {
 					Soul soul = subEntry.getKey();
 					double weightedAverage = percentChance * subEntry.getValue();
 					if (result.containsKey(soul)) {

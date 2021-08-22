@@ -16,7 +16,11 @@ public interface SoulGroup {
 
 	Set<String> getPossibleSoulGroupLabels();
 
-	Map<Soul, Integer> getRandomEntries(Random random);
+	Map<SoulGroup, Integer> getRandomEntries(Random random);
 
-	Map<Soul, Double> getAverageEntries();
+	Map<SoulGroup, Double> getAverageEntries();
+
+	Map<Soul, Integer> getRandomSouls(Random random);
+
+	Map<Soul, Double> getAverageSouls();
 }

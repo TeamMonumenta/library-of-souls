@@ -108,14 +108,28 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	}
 
 	@Override
-	public Map<Soul, Integer> getRandomEntries(Random random) {
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
+		Map<SoulGroup, Integer> result = new HashMap<>();
+		result.put(this, 1);
+		return result;
+	}
+
+	@Override
+	public Map<SoulGroup, Double> getAverageEntries() {
+		Map<SoulGroup, Double> result = new HashMap<>();
+		result.put(this, 1.0);
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
 		Map<Soul, Integer> result = new HashMap<>();
 		result.put(this, 1);
 		return result;
 	}
 
 	@Override
-	public Map<Soul, Double> getAverageEntries() {
+	public Map<Soul, Double> getAverageSouls() {
 		Map<Soul, Double> result = new HashMap<>();
 		result.put(this, 1.0);
 		return result;

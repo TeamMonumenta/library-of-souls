@@ -65,7 +65,7 @@ public class LibraryOfSoulsAPI {
 		if (group == null) {
 			return new HashMap<>();
 		}
-		return group.getRandomEntries(random);
+		return group.getRandomSouls(random);
 	}
 
 	public static Set<String> getSoulLocations() {

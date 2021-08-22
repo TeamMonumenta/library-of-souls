@@ -80,13 +80,23 @@ public class SoulPartyEntry implements SoulGroup {
 	}
 
 	@Override
-	public Map<Soul, Integer> getRandomEntries(Random random) {
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
 		return mHistory.get(0).getRandomEntries(random);
 	}
 
 	@Override
-	public Map<Soul, Double> getAverageEntries() {
+	public Map<SoulGroup, Double> getAverageEntries() {
 		return mHistory.get(0).getAverageEntries();
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
+		return mHistory.get(0).getRandomSouls(random);
+	}
+
+	@Override
+	public Map<Soul, Double> getAverageSouls() {
+		return mHistory.get(0).getAverageSouls();
 	}
 
 	/*
