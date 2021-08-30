@@ -148,7 +148,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		mDefaultHealth.put(EntityType.FOX, 10.0);
 		mDefaultHealth.put(EntityType.OCELOT, 10.0);
 		mDefaultHealth.put(EntityType.RAVAGER, 1000.0);
-		mDefaultHealth.put(EntityType.SPIDER, 160.0);
+		mDefaultHealth.put(EntityType.SPIDER, 16.0);
 		mDefaultHealth.put(EntityType.WOLF, 8.0);
 		mDefaultHealth.put(EntityType.PILLAGER, 24.0);
 		mDefaultHealth.put(EntityType.VINDICATOR, 24.0);
