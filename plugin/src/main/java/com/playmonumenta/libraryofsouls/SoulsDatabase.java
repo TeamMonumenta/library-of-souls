@@ -108,7 +108,7 @@ public class SoulsDatabase {
 	}
 
 	public void autoUpdate(CommandSender sender, Location loc) {
-		Bukkit.getScheduler().runTaskAsynchronously​(mPlugin, () -> {
+		Bukkit.getScheduler().runTaskAsynchronously(mPlugin, () -> {
 			for (Map.Entry<String, SoulEntry> entry : mSouls.entrySet()) {
 				String name = entry.getKey();
 				SoulEntry soulEntry = entry.getValue();
