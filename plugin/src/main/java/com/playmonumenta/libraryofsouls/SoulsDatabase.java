@@ -28,6 +28,7 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -104,6 +105,21 @@ public class SoulsDatabase {
 		}, 200, 200);
 
 		INSTANCE = this;
+	}
+
+	public void autoUpdate(CommandSender sender, Location loc) {
+		Bukkit.getScheduler().runTaskAsynchronously​(mPlugin, () -> {
+			for (Map.Entry<String, SoulEntry> entry : mSouls.entrySet()) {
+				String name = entry.getKey();
+				SoulEntry soulEntry = entry.getValue();
+				try {
+					soulEntry.autoUpdate(loc);
+				} catch (Exception ex) {
+					sender.sendMessage(ChatColor.RED + "Failed to auto-update " + name + ": " + ex.getMessage());
+				}
+			}
+			sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
+		});
 	}
 
 	public List<SoulEntry> getSoulsByLocation(String location) {

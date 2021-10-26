@@ -242,6 +242,19 @@ public class LibraryOfSoulsCommand {
 	public static void registerWriteAccessCommands() {
 		List<Argument> arguments = new ArrayList<>();
 
+		/* los autoupdate <location> */
+		arguments.clear();
+		arguments.add(new MultiLiteralArgument("autoupdate"));
+		arguments.add(new LocationArgument("summon location"));
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.autoupdate"))
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				Location spawnLocation = (Location)args[1];
+				SoulsDatabase.getInstance().autoUpdate(sender, spawnLocation);
+			})
+			.register();
+
 		/* los add */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("add"));

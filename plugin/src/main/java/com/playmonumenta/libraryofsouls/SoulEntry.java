@@ -70,6 +70,13 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		mHistory.add(0, new SoulHistoryEntry(player, nbt));
 	}
 
+	public void autoUpdate(Location loc) throws Exception {
+		SoulHistoryEntry latestEntry = mHistory.get(0);
+		if (latestEntry.requiresAutoUpdate()) {
+			mHistory.add(0, latestEntry.getAutoUpdate(loc));
+		}
+	}
+
 	/*--------------------------------------------------------------------------------
 	 * Soul Group Interface
 	 */

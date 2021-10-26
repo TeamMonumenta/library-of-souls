@@ -21,6 +21,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
@@ -43,6 +44,40 @@ import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 public class SoulHistoryEntry implements Soul, SoulGroup {
 	private static Gson gson = null;
 
+	private class HitboxSize {
+		private double mWidth;
+		private double mHeight;
+
+		public HitboxSize(Location origin, NBTTagCompound nbt) {
+			Entity entity = EntityNBT.fromEntityData(nbt).spawn(origin);
+			BoundingBox bb = getRecursiveBoundingBox(entity);
+
+			// TODO get width and height of bounding box relative to origin (ignore height below origin, because boats are whack)
+			mWidth = Math.max(Math.max(bb.getMaxX() - origin.getX(),
+			                           bb.getMaxZ() - origin.getZ()),
+			                  Math.max(origin.getX() - bb.getMinX(),
+			                           origin.getZ() - bb.getMinZ()));
+			mHeight = bb.getMaxY() - origin.getY();
+		}
+
+		private BoundingBox getRecursiveBoundingBox(Entity entity) {
+			BoundingBox bb = entity.getBoundingBox();
+			for (Entity passenger : entity.getPassengers()) {
+				bb.union(getRecursiveBoundingBox(passenger));
+			}
+			entity.remove();
+			return bb;
+		}
+
+		public double width() {
+			return mWidth;
+		}
+
+		public double height() {
+			return mHeight;
+		}
+	}
+
 	private final NBTTagCompound mNBT;
 	private final long mModifiedOn;
 	private final String mModifiedBy;
@@ -50,16 +85,20 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	private final String mLabel;
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
+	private final Double mWidth;
+	private final Double mHeight;
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, Double width, Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mWidth = width;
+		mHeight = height;
 
 		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
@@ -70,7 +109,37 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 
 	/* Create a new SoulHistoryEntry object from NBT */
 	public SoulHistoryEntry(Player player, NBTTagCompound nbt) throws Exception {
-		this(nbt, Instant.now().getEpochSecond(), player.getName(), new HashSet<String>());
+		Location loc = player.getLocation().clone();
+		loc.setY(loc.getWorld().getMaxHeight());
+		HitboxSize hitboxSize = new HitboxSize(loc, nbt);
+
+		mNBT = nbt;
+		mModifiedOn = Instant.now().getEpochSecond();
+		mModifiedBy = player.getName();
+		mLocs = new HashSet<String>();
+		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mWidth = hitboxSize.width();
+		mHeight = hitboxSize.height();
+
+		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
+		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
+		if (mLabel == null || mLabel.isEmpty()) {
+			throw new Exception("Refused to load Library of Souls mob with no name!");
+		}
+	}
+
+	public boolean requiresAutoUpdate() {
+		return (mWidth == null) || (mHeight == null);
+	}
+
+	public SoulHistoryEntry getAutoUpdate(Location loc) throws Exception {
+		HitboxSize hitboxSize = new HitboxSize(loc, mNBT);
+		return new SoulHistoryEntry(mNBT,
+		                            Instant.now().getEpochSecond(),
+		                            "AutoUpdate",
+		                            mLocs,
+		                            hitboxSize.width(),
+		                            hitboxSize.height());
 	}
 
 
@@ -565,7 +634,13 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		if (obj.has("modified_by")) {
 			modifiedBy = obj.get("modified_by").getAsString();
 		}
+		Double width = null;
+		Double height = null;
+		if (obj.has("width") && obj.has("height")) {
+			width = obj.get("width").getAsDouble();
+			height = obj.get("height").getAsDouble();
+		}
 
-		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations);
+		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, width, height);
 	}
 }
