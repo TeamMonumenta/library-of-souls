@@ -32,7 +32,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -109,22 +109,25 @@ public class SoulsDatabase {
 	}
 
 	public void autoUpdate(CommandSender sender, Location loc) {
-		Iterator<Map.Entry<String, SoulEntry>> it = mSouls.entrySet();
-		BukkitTask task = Bukkit.getScheduler().runTaskTimer(mPlugin, () -> {
-			if (it.hasNext()) {
-				Map.Entry<String, SoulEntry> entry = it.next();
-				String name = entry.getKey();
-				SoulEntry soulEntry = entry.getValue();
-				try {
-					soulEntry.autoUpdate(loc);
-				} catch (Exception ex) {
-					sender.sendMessage(ChatColor.RED + "Failed to auto-update " + name + ": " + ex.getMessage());
+		Iterator<Map.Entry<String, SoulEntry>> it = mSouls.entrySet().iterator();
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				if (it.hasNext()) {
+					Map.Entry<String, SoulEntry> entry = it.next();
+					String name = entry.getKey();
+					SoulEntry soulEntry = entry.getValue();
+					try {
+						soulEntry.autoUpdate(loc);
+					} catch (Exception ex) {
+						sender.sendMessage(ChatColor.RED + "Failed to auto-update " + name + ": " + ex.getMessage());
+					}
+				} else {
+					sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
+					cancel();
 				}
-			} else {
-				sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
-				task.cancel();
 			}
-		}, 1, 1);
+		}.runTaskTimer(mPlugin, 0L, 1L);
 	}
 
 	public List<SoulEntry> getSoulsByLocation(String location) {
