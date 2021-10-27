@@ -12,6 +12,7 @@ import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSoulsAPI;
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.SoulGroup;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
@@ -437,6 +438,16 @@ public class LibraryOfSoulsCommand {
 		}
 
 		CommandAPI.fail("Soul '" + name + "' not found");
+		return null;
+	}
+
+	public static SoulGroup getSoulGroup(String name) throws WrapperCommandSyntaxException {
+		SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(name);
+		if (group != null) {
+			return group;
+		}
+
+		CommandAPI.fail("Soul group '" + name + "' not found");
 		return null;
 	}
 
