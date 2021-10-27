@@ -32,6 +32,7 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -108,8 +109,10 @@ public class SoulsDatabase {
 	}
 
 	public void autoUpdate(CommandSender sender, Location loc) {
-		Bukkit.getScheduler().runTaskAsynchronously(mPlugin, () -> {
-			for (Map.Entry<String, SoulEntry> entry : mSouls.entrySet()) {
+		Iterator<Map.Entry<String, SoulEntry>> it = mSouls.entrySet();
+		BukkitTask task = Bukkit.getScheduler().runTaskTimer(mPlugin, () -> {
+			if (it.hasNext()) {
+				Map.Entry<String, SoulEntry> entry = it.next();
 				String name = entry.getKey();
 				SoulEntry soulEntry = entry.getValue();
 				try {
@@ -117,9 +120,11 @@ public class SoulsDatabase {
 				} catch (Exception ex) {
 					sender.sendMessage(ChatColor.RED + "Failed to auto-update " + name + ": " + ex.getMessage());
 				}
+			} else {
+				sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
+				task.cancel();
 			}
-			sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
-		});
+		}, 1, 1);
 	}
 
 	public List<SoulEntry> getSoulsByLocation(String location) {
