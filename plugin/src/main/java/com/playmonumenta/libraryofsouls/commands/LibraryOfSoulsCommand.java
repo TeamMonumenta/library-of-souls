@@ -3,6 +3,7 @@ package com.playmonumenta.libraryofsouls.commands;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -21,6 +22,7 @@ import org.bukkit.command.ProxiedCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.util.BoundingBox;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -169,6 +171,23 @@ public class LibraryOfSoulsCommand {
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				getSoul((String)args[2]).summon((Location)args[1]);
+			})
+			.register();
+
+		/* los summongroup <name> <pos1> <pos2> */
+		arguments.clear();
+		arguments.add(new MultiLiteralArgument("summongroup"));
+		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new LocationArgument("pos1"));
+		arguments.add(new LocationArgument("pos2"));
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.summongroup"))
+			.withArguments(arguments)
+			.executes((sender, args) -> {
+				Location pos1 = (Location)args[2];
+				Location pos2 = (Location)args[3];
+				BoundingBox bb = BoundingBox.of(pos1, pos2);
+				getSoulGroup((String)args[1]).summonGroup(new Random(), pos1.getWorld(), bb);
 			})
 			.register();
 
