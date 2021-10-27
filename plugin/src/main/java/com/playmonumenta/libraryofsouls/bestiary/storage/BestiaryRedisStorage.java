@@ -68,6 +68,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			mPlayerKills.put(uuid, new HashMap<>());
 			mPlayerOriginalData.put(uuid, new JsonObject());
 		} else {
+			mPlayerOriginalData.put(uuid, obj);
 			/*
 			 * This is a bit fancy.
 			 *
@@ -116,7 +117,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 					} else if (!iter.hasNext()) {
 						/* All done loading - make the player kills map accessible */
 						mPlayerKills.put(uuid, playerKills);
-						mPlayerOriginalData.put(uuid, obj);
 						this.cancel();
 						mLogger.fine("Data load complete, total time " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds");
 					}
@@ -138,16 +138,18 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		final UUID uuid = player.getUniqueId();
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(uuid);
 		final JsonObject originalData = mPlayerOriginalData.get(uuid);
-		if (playerKills == null || originalData == null) {
-			/* Nothing to do */
+		if (originalData == null) {
+			mLogger.severe("Got request to save bestiary data for player " + player.getName() + " before any data has been loaded");
 			return;
 		}
 
 		mLogger.fine("Started saving redis player data for " + uuid);
 		final Long startMainTime = System.currentTimeMillis();
 
-		for (final Map.Entry<SoulEntry, Integer> entry : playerKills.entrySet()) {
-			originalData.addProperty(nameToHex(entry.getKey().getLabel()), entry.getValue());
+		if (playerKills != null) {
+			for (final Map.Entry<SoulEntry, Integer> entry : playerKills.entrySet()) {
+				originalData.addProperty(nameToHex(entry.getKey().getLabel()), entry.getValue());
+			}
 		}
 
 		/* Save the data to Redis */
@@ -161,8 +163,8 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	public void playerQuitEvent(final PlayerQuitEvent event) {
 		Bukkit.getScheduler().runTaskLater(mPlugin, () -> {
 			final Player player = event.getPlayer();
-			if (!player.isOnline()) {
-				final UUID uuid = player.getUniqueId();
+			final UUID uuid = player.getUniqueId();
+			if (!player.isOnline() && Bukkit.getPlayer(uuid) == null) {
 				mPlayerOriginalData.remove(uuid);
 				mPlayerKills.remove(uuid);
 			}
