@@ -126,6 +126,16 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		return mHistory.get(0).getAverageSouls();
 	}
 
+	@Override
+	public Double getWidth() {
+		return mHistory.get(0).getWidth();
+	}
+
+	@Override
+	public Double getHeight() {
+		return mHistory.get(0).getHeight();
+	}
+
 	/*
 	 * Soul Group Interface
 	 *--------------------------------------------------------------------------------*/

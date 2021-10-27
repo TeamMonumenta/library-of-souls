@@ -192,6 +192,40 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 		return result;
 	}
 
+	@Override
+	public Double getWidth() {
+		Double result = null;
+		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				Double groupWidth = group.getWidth();
+				if (result == null) {
+					result = groupWidth;
+				} else if (groupWidth != null) {
+					result = Math.max(result, groupWidth);
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public Double getHeight() {
+		Double result = null;
+		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				Double groupHeight = group.getHeight();
+				if (result == null) {
+					result = groupHeight;
+				} else if (groupHeight != null) {
+					result = Math.max(result, groupHeight);
+				}
+			}
+		}
+		return result;
+	}
+
 	/*
 	 * Soul Group Interface
 	 *--------------------------------------------------------------------------------*/

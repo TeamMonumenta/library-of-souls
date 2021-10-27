@@ -23,4 +23,9 @@ public interface SoulGroup {
 	Map<Soul, Integer> getRandomSouls(Random random);
 
 	Map<Soul, Double> getAverageSouls();
+
+	/* Returns the minimum width/height of the group where they are set, otherwise null */
+	Double getWidth();
+
+	Double getHeight();
 }

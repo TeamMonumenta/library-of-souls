@@ -204,6 +204,14 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		return result;
 	}
 
+	public Double getWidth() {
+		return mWidth;
+	}
+
+	public Double getHeight() {
+		return mHeight;
+	}
+
 	/*
 	 * Soul Group Interface
 	 *--------------------------------------------------------------------------------*/

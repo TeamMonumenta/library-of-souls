@@ -194,6 +194,40 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		return result;
 	}
 
+	@Override
+	public Double getWidth() {
+		Double result = null;
+		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				Double groupWidth = group.getWidth();
+				if (result == null) {
+					result = groupWidth;
+				} else if (groupWidth != null) {
+					result = Math.min(result, groupWidth);
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public Double getHeight() {
+		Double result = null;
+		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				Double groupHeight = group.getHeight();
+				if (result == null) {
+					result = groupHeight;
+				} else if (groupHeight != null) {
+					result = Math.min(result, groupHeight);
+				}
+			}
+		}
+		return result;
+	}
+
 	/*
 	 * Soul Group Interface
 	 *--------------------------------------------------------------------------------*/
