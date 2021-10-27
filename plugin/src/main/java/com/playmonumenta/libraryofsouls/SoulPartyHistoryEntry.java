@@ -1,13 +1,18 @@
 package com.playmonumenta.libraryofsouls;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -223,6 +228,23 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 				}
 			}
 		}
+		return result;
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		List<Entity> result = new ArrayList<>();
+
+		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
+			int entryCount = entry.getValue();
+			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
+			if (group != null) {
+				for (int i = 0; i < entryCount; i++) {
+					result.addAll(group.summonGroup(random, world, spawnBb));
+				}
+			}
+		}
+
 		return result;
 	}
 

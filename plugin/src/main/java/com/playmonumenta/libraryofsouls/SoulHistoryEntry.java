@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -17,6 +18,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -204,12 +206,27 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		return result;
 	}
 
+	@Override
 	public Double getWidth() {
 		return mWidth;
 	}
 
+	@Override
 	public Double getHeight() {
 		return mHeight;
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		List<Entity> result = new ArrayList<>();
+		double x = spawnBb.getMinX() + random.nextDouble() * (spawnBb.getMaxX() - spawnBb.getMinX());
+		double y = spawnBb.getMinY() + random.nextDouble() * (spawnBb.getMaxY() - spawnBb.getMinY());
+		double z = spawnBb.getMinZ() + random.nextDouble() * (spawnBb.getMaxZ() - spawnBb.getMinZ());
+		Location loc = new Location(world, x, y, z);
+		if (!Utils.insideBlocks(loc, mWidth, mHeight)) {
+			result.add(summon(loc));
+		}
+		return result;
 	}
 
 	/*

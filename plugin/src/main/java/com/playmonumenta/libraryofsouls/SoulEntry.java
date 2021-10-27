@@ -11,10 +11,12 @@ import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.google.gson.Gson;
@@ -134,6 +136,11 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	@Override
 	public Double getHeight() {
 		return mHistory.get(0).getHeight();
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		return mHistory.get(0).summonGroup(random, world, spawnBb);
 	}
 
 	/*

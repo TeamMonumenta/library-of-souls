@@ -1,5 +1,10 @@
 package com.playmonumenta.libraryofsouls;
 
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.util.BoundingBox;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -28,4 +33,7 @@ public interface SoulGroup {
 	Double getWidth();
 
 	Double getHeight();
+
+	/* Attempt to summon the soul group; may summon fewer mobs if spawn conditions are not met */
+	List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb);
 }

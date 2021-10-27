@@ -1,15 +1,20 @@
 package com.playmonumenta.libraryofsouls;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -225,6 +230,23 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 				}
 			}
 		}
+		return result;
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		List<Entity> result = new ArrayList<>();
+
+		if (mTotalWeight == 0) {
+			return result;
+		}
+		long randomValue = random.nextLong() % mTotalWeight;
+		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
+		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
+		if (selected != null) {
+			result.addAll(selected.summonGroup(random, world, spawnBb));
+		}
+
 		return result;
 	}
 

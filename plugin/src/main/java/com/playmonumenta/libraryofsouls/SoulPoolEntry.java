@@ -6,7 +6,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -107,6 +110,11 @@ public class SoulPoolEntry implements SoulGroup {
 	@Override
 	public Double getHeight() {
 		return mHistory.get(0).getHeight();
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		return mHistory.get(0).summonGroup(random, world, spawnBb);
 	}
 
 	/*
