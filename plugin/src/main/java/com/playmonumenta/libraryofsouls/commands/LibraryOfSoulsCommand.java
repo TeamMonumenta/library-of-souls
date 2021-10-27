@@ -245,13 +245,14 @@ public class LibraryOfSoulsCommand {
 		/* los autoupdate <location> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("autoupdate"));
-		arguments.add(new LocationArgument("summon location"));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.autoupdate"))
 			.withArguments(arguments)
 			.executes((sender, args) -> {
-				Location spawnLocation = (Location)args[1];
-				SoulsDatabase.getInstance().autoUpdate(sender, spawnLocation);
+				if (!(sender instanceof Player)) {
+					CommandAPI.fail("autoupdate must be run by a player");
+				}
+				SoulsDatabase.getInstance().autoUpdate(sender, ((Player) sender).getLocation());
 			})
 			.register();
 
