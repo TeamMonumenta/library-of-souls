@@ -178,7 +178,7 @@ public class LibraryOfSoulsCommand {
 		/* los summongroup <name> <pos1> <pos2> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("summongroup"));
-		arguments.add(new StringArgument("mobLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new LocationArgument("pos1"));
 		arguments.add(new LocationArgument("pos2"));
 		new CommandAPICommand(COMMAND)

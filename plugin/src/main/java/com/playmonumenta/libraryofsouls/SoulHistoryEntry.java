@@ -219,6 +219,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	@Override
 	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
 		List<Entity> result = new ArrayList<>();
+		if (mWidth == null || mHeight == null) {
+			return result;
+		}
 		double x = spawnBb.getMinX() + random.nextDouble() * (spawnBb.getMaxX() - spawnBb.getMinX());
 		double y = spawnBb.getMinY() + random.nextDouble() * (spawnBb.getMaxY() - spawnBb.getMinY());
 		double z = spawnBb.getMinZ() + random.nextDouble() * (spawnBb.getMaxZ() - spawnBb.getMinZ());
@@ -639,9 +642,13 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 
-		obj.add("mojangson", new JsonPrimitive(mNBT.toString()));
-		obj.add("modified_on", new JsonPrimitive(mModifiedOn));
-		obj.add("modified_by", new JsonPrimitive(mModifiedBy));
+		obj.addProperty("mojangson", mNBT.toString());
+		obj.addProperty("modified_on", mModifiedOn);
+		obj.addProperty("modified_by", mModifiedBy);
+		if (mWidth != null && mHeight != null) {
+			obj.addProperty("width", mWidth);
+			obj.addProperty("height", mHeight);
+		}
 
 		return obj;
 	}
