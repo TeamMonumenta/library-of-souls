@@ -85,11 +85,9 @@ public class SoulsDatabase {
 			try {
 				mPlugin.getLogger().fine("Polling souls database file...");
 				long lastModMs = Files.getLastModifiedTime(mSoulsDatabasePath).toMillis();
-				long lastModMsParties = Files.getLastModifiedTime(mSoulPartiesDatabasePath).toMillis();
-				long lastModMsPools = Files.getLastModifiedTime(mSoulPoolsDatabasePath).toMillis();
-				if (lastModMs > mPreviousReloadMs
-				    || lastModMsParties > mPreviousReloadMs
-				    || lastModMsPools > mPreviousReloadMs) {
+				lastModMs = Math.max(lastModMs, Files.getLastModifiedTime(mSoulPartiesDatabasePath).toMillis());
+				lastModMs = Math.max(lastModMs, Files.getLastModifiedTime(mSoulPoolsDatabasePath).toMillis());
+				if (lastModMs > mPreviousReloadMs) {
 					/* File has changed since we read it */
 					if (!mIgnoreNextChange) {
 						/* This change wasn't expected - reload the database */
