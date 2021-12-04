@@ -405,7 +405,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case ENDERMITE:
 				mPlaceholder = new ItemStack(Material.ENDER_EYE);
 				break;
-			case END_CRYSTAL:
+			case ENDER_CRYSTAL:
 				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
 				break;
 			case EVOKER:
