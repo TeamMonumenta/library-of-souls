@@ -405,6 +405,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case ENDERMITE:
 				mPlaceholder = new ItemStack(Material.ENDER_EYE);
 				break;
+			case ENDER_CRYSTAL:
+				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
+				break;
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
@@ -413,6 +416,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case GIANT:
 				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
+				break;
 			case GUARDIAN:
 				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
 				break;
@@ -424,6 +428,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case HORSE:
 				mPlaceholder = new ItemStack(Material.SADDLE);
+				break;
 			case HUSK:
 				mPlaceholder = new ItemStack(Material.ROTTEN_FLESH);
 				break;
@@ -459,6 +464,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLDEN_BOOTS);
+				break;
+			case PIGLIN_BRUTE:
+				mPlaceholder = new ItemStack(Material.GOLDEN_AXE);
 				break;
 			case PUFFERFISH:
 				mPlaceholder = new ItemStack(Material.PUFFERFISH);
@@ -504,6 +512,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case TROPICAL_FISH:
 				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
+				break;
 			case VEX:
 				mPlaceholder = new ItemStack(Material.IRON_SWORD);
 				break;
