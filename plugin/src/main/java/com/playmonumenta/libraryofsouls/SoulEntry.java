@@ -33,15 +33,22 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
+	private String mLore;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, String lore) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
 			mLocs = new HashSet<String>();
 		} else {
 			mLocs = locationNames;
+		}
+
+		if (lore == null) {
+			mLore = "";
+		} else {
+			mLore = lore;
 		}
 
 		String refLabel = history.get(0).getLabel();
@@ -61,6 +68,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mLocs = new HashSet<String>();
 		mHistory = new ArrayList<SoulHistoryEntry>(1);
 		mHistory.add(newHist);
+		mLore = "";
 	}
 
 	/* Update this SoulEntry so new soul is now current; preserve history */
@@ -132,6 +140,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).summon(loc);
 	}
 
+	public void setLore(String lore, Player player) {
+		mLore = lore;
+		SoulsDatabase.getInstance().updateLore(this, player);
+	}
+
+	public String getLore() {
+		return mLore;
+	}
+
 	/*
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
@@ -184,6 +201,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 *--------------------------------------------------------------------------------*/
 
 	public enum InfoTier {
+		LORE(4),
 		EVERYTHING(3),
 		STATS(2),
 		MINIMAL(1),
@@ -201,20 +219,24 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	public enum MobType {
-		BOSS(1, 2),
-		ELITE(5, 10),
-		NORMAL(30, 60);
+		BOSS(1, 2, 5),
+		ELITE(5, 10, 25),
+		NORMAL(30, 60, 100);
 
 		private final int mFirstTier;
 		private final int mSecondTier;
+		private final int mLoreTier;
 
-		MobType(int firstTier, int secondTier) {
+		MobType(int firstTier, int secondTier, int loreTier) {
 			this.mFirstTier = firstTier;
 			this.mSecondTier = secondTier;
+			this.mLoreTier = loreTier;
 		}
 
 		public int getNeededKills(InfoTier tier) {
-			if (tier == InfoTier.EVERYTHING) {
+			if (tier == InfoTier.LORE) {
+				return this.mLoreTier;
+			} else if (tier == InfoTier.EVERYTHING) {
 				return this.mSecondTier;
 			} else if (tier == InfoTier.STATS) {
 				return this.mSecondTier;
@@ -291,6 +313,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
+		String lore = new String();
+		elem = obj.get("lore");
+		if (elem != null) {
+			lore = elem.getAsString();
+		}
+//		else {
+//			throw new Exception("Lore cannot be parsed as an object!");
+//		}
+
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -306,11 +337,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 					throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
 				}
 
-				history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs));
+				history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
 			}
 		}
 
-		return new SoulEntry(history, locs);
+		return new SoulEntry(history, locs, lore);
 	}
 
 	public JsonObject toJson() {
@@ -321,6 +352,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			histArray.add(hist.toJson());
 		}
 		obj.add("history", histArray);
+
+		obj.addProperty("lore", mLore);;
 
 		JsonArray locsArray = new JsonArray();
 		for (String location : mLocs) {

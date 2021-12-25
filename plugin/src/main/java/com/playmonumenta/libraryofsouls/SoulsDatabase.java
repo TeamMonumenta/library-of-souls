@@ -12,6 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.google.gson.Gson;
@@ -21,12 +27,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -173,6 +173,16 @@ public class SoulsDatabase {
 
 		sender.sendMessage(ChatColor.GREEN + "Updated " + soul.getLabel());
 		updateIndex();
+		save();
+	}
+
+	// This function is only called in updateLore, where by definition the soul exists - also the bos doesnt change internally, only on the outside but maybe that needs to happen?
+	public void updateLore(SoulEntry soul, Player sender) {
+		try {
+			soul.update(sender, soul.getNBT());
+		} catch (Exception ex) {
+			sender.sendMessage("Exception when updating lore: " + ex + " for " + soul.getDisplayName());
+		}
 		save();
 	}
 

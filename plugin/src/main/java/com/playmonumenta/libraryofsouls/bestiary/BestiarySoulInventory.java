@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -34,6 +35,7 @@ import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.SoulEntry.InfoTier;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -468,6 +470,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
 
+			ItemStack loreItem = getLoreItem(soul);
 			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
 			ItemMeta meta = equipmentPageItem.getItemMeta();
 			meta.displayName(Component.text("View Equipment Items", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
@@ -477,8 +480,14 @@ public class BestiarySoulInventory extends CustomInventory {
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
 			_inventory.setItem(22, equipmentPageItem);
-			_inventory.setItem(30, speedItem);
-			_inventory.setItem(32, effectItem);
+			if (soul.getInfoTier(player) == InfoTier.LORE || player.getGameMode() == GameMode.CREATIVE) {
+				_inventory.setItem(29, speedItem);
+				_inventory.setItem(31, effectItem);
+				_inventory.setItem(33, loreItem);
+			} else {
+				_inventory.setItem(30, speedItem);
+				_inventory.setItem(32, effectItem);
+			}
 			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		}
 	}
@@ -716,6 +725,37 @@ public class BestiarySoulInventory extends CustomInventory {
 		return speedItem;
 	}
 
+	public ItemStack getLoreItem(SoulEntry soul) {
+		String lore = soul.getLore();
+
+		ItemStack loreItem = new ItemStack(Material.BOOK);
+		ItemMeta meta = loreItem.getItemMeta();
+		meta.displayName(Component.text("Lore", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true));
+
+		if (lore == null || lore.equals("")) {
+			List<Component> itemLore = new ArrayList<>();
+			itemLore.add(Component.text("No Information Available", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+
+			meta.lore(itemLore);
+			loreItem.setItemMeta(meta);
+			return loreItem;
+		}
+
+		List<Component> itemLore = new ArrayList<>();
+
+		String[] loreArray = lore.split("~~~");
+
+		for (String a : loreArray) {
+			itemLore.add(Component.text(a, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+		}
+
+		meta.lore(itemLore);
+		loreItem.setItemMeta(meta);
+
+		return loreItem;
+	}
+
+	//Legacy function, will be edited once the new boss tags system is implemented
 	public static List<String> formatTags(String tag) {
 		List<String> ret = new ArrayList<>();
 
@@ -741,6 +781,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		return ret;
 	}
 
+	//If anyone has a better equation for however mojang calculates bow damage, I'm all ears
 	public static double getBowDamage(int powerLevel) {
 		int adjust = 0;
 

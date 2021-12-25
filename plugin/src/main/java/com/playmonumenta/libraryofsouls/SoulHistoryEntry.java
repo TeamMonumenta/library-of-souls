@@ -47,16 +47,18 @@ public class SoulHistoryEntry implements Soul {
 	private final String mLabel;
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
+	private final String mLore;
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mLore = lore;
 
 		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
@@ -67,7 +69,7 @@ public class SoulHistoryEntry implements Soul {
 
 	/* Create a new SoulHistoryEntry object from NBT */
 	public SoulHistoryEntry(Player player, NBTTagCompound nbt) throws Exception {
-		this(nbt, Instant.now().getEpochSecond(), player.getName(), new HashSet<String>());
+		this(nbt, Instant.now().getEpochSecond(), player.getName(), new HashSet<String>(), "");
 	}
 
 	/*--------------------------------------------------------------------------------
@@ -262,6 +264,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case GIANT:
 				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
+				break;
 			case GUARDIAN:
 				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
 				break;
@@ -353,6 +356,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case TROPICAL_FISH:
 				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
+				break;
 			case VEX:
 				mPlaceholder = new ItemStack(Material.IRON_SWORD);
 				break;
@@ -440,6 +444,13 @@ public class SoulHistoryEntry implements Soul {
 			}
 		}
 
+		if (mLore != null && !mLore.equals("")) {
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(mLore, null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(mLore, null);
+		}
+
 		/* If the item has been modified, list when */
 		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
 			/* Relative time on the placeholder item */
@@ -498,7 +509,7 @@ public class SoulHistoryEntry implements Soul {
 		return obj;
 	}
 
-	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations) throws Exception {
+	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, String lore) throws Exception {
 		if (gson == null) {
 			gson = new Gson();
 		}
@@ -512,6 +523,6 @@ public class SoulHistoryEntry implements Soul {
 			modifiedBy = obj.get("modified_by").getAsString();
 		}
 
-		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations);
+		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore);
 	}
 }
