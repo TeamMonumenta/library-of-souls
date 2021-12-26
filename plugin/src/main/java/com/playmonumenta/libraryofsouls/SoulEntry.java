@@ -381,8 +381,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		elem = obj.get("lore");
 		if (elem != null) {
 			lore = elem.getAsString();
-		}
-		else {
+		} else {
 			lore = "";
 		}
 
