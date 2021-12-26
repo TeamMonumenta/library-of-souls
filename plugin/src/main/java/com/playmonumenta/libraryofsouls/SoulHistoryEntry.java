@@ -155,6 +155,7 @@ public class SoulHistoryEntry implements Soul {
 		return mLabel;
 	}
 
+
 	@Override
 	public Entity summon(Location loc) {
 		return EntityNBT.fromEntityData(mNBT).spawn(loc);

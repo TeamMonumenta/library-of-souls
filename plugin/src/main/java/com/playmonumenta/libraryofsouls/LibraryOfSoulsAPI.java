@@ -18,7 +18,7 @@ public class LibraryOfSoulsAPI {
 		return soul.summon(loc);
 	}
 
-	public static Set<String> getSoulNames() {
+	public Set<String> getSoulNames() throws IllegalStateException {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		if (db == null) {
 			return null;
@@ -26,7 +26,7 @@ public class LibraryOfSoulsAPI {
 		return db.listMobNames();
 	}
 
-	public static Set<String> getSoulLocations() {
+	public Set<String> getSoulLocations() {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		if (db == null) {
 			return null;

@@ -135,11 +135,6 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).getLabel();
 	}
 
-	@Override
-	public Entity summon(Location loc) {
-		return mHistory.get(0).summon(loc);
-	}
-
 	public void setLore(String lore, Player player) {
 		mLore = lore;
 		SoulsDatabase.getInstance().updateLore(this, player);
@@ -147,6 +142,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 	public String getLore() {
 		return mLore;
+	}
+
+	@Override
+	public Entity summon(Location loc) {
+		return mHistory.get(0).summon(loc);
 	}
 
 	/*
