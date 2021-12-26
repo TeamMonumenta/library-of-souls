@@ -1,6 +1,9 @@
 package com.playmonumenta.libraryofsouls.utils;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.util.BoundingBox;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -92,5 +95,33 @@ public class Utils {
 			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
 		}
 		return label;
+	}
+
+	public static boolean insideBlocks(Location feetLoc, double width, double height) {
+		BoundingBox bb = new BoundingBox(feetLoc.getX() - width/2.0,
+		                                 feetLoc.getY(),
+		                                 feetLoc.getZ() - width/2.0,
+		                                 feetLoc.getX() + width/2.0,
+		                                 feetLoc.getY() + height,
+		                                 feetLoc.getZ() + width/2.0);
+
+		int minX = (int) Math.floor(bb.getMinX());
+		int minY = (int) Math.floor(bb.getMinY());
+		int minZ = (int) Math.floor(bb.getMinZ());
+		int maxX = (int) Math.ceil(bb.getMaxX());
+		int maxY = (int) Math.ceil(bb.getMaxY());
+		int maxZ = (int) Math.ceil(bb.getMaxZ());
+
+		World world = feetLoc.getWorld();
+		for (int z = minZ; z <= maxZ; z++) {
+			for (int x = minX; x <= maxX; x++) {
+				for (int y = minY; y < maxY; y++) {
+					if (world.getBlockAt(x, y, z).getBoundingBox().overlaps(bb)) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 }

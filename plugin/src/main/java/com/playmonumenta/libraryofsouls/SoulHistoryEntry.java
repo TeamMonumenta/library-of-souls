@@ -4,9 +4,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -14,10 +18,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
@@ -37,8 +43,42 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
-public class SoulHistoryEntry implements Soul {
+public class SoulHistoryEntry implements Soul, SoulGroup {
 	private static Gson gson = null;
+
+	private class HitboxSize {
+		private double mWidth;
+		private double mHeight;
+
+		public HitboxSize(Location origin, NBTTagCompound nbt) {
+			Entity entity = EntityNBT.fromEntityData(nbt).spawn(origin);
+			BoundingBox bb = getRecursiveBoundingBox(entity);
+
+			// TODO get width and height of bounding box relative to origin (ignore height below origin, because boats are whack)
+			mWidth = Math.max(Math.max(bb.getMaxX() - origin.getX(),
+			                           bb.getMaxZ() - origin.getZ()),
+			                  Math.max(origin.getX() - bb.getMinX(),
+			                           origin.getZ() - bb.getMinZ()));
+			mHeight = bb.getMaxY() - origin.getY();
+		}
+
+		private BoundingBox getRecursiveBoundingBox(Entity entity) {
+			BoundingBox bb = entity.getBoundingBox();
+			for (Entity passenger : entity.getPassengers()) {
+				bb.union(getRecursiveBoundingBox(passenger));
+			}
+			entity.remove();
+			return bb;
+		}
+
+		public double width() {
+			return mWidth;
+		}
+
+		public double height() {
+			return mHeight;
+		}
+	}
 
 	private final NBTTagCompound mNBT;
 	private final long mModifiedOn;
@@ -48,17 +88,21 @@ public class SoulHistoryEntry implements Soul {
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
 	private final String mLore;
+	private final Double mWidth;
+	private final Double mHeight;
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore, Double width, Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 		mLore = lore;
+		mWidth = width;
+		mHeight = height;
 
 		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
@@ -69,16 +113,48 @@ public class SoulHistoryEntry implements Soul {
 
 	/* Create a new SoulHistoryEntry object from NBT */
 	public SoulHistoryEntry(Player player, NBTTagCompound nbt) throws Exception {
-		this(nbt, Instant.now().getEpochSecond(), player.getName(), new HashSet<String>(), "");
+		Location loc = player.getLocation().clone();
+		loc.setY(loc.getWorld().getMaxHeight());
+		HitboxSize hitboxSize = new HitboxSize(loc, nbt);
+
+		mNBT = nbt;
+		mModifiedOn = Instant.now().getEpochSecond();
+		mModifiedBy = player.getName();
+		mLocs = new HashSet<String>();
+		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+    mLore = "";
+		mWidth = hitboxSize.width();
+		mHeight = hitboxSize.height();
+
+		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
+		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
+		if (mLabel == null || mLabel.isEmpty()) {
+			throw new Exception("Refused to load Library of Souls mob with no name!");
+		}
 	}
 
+	public boolean requiresAutoUpdate() {
+		return (mWidth == null) || (mHeight == null);
+	}
+
+	public SoulHistoryEntry getAutoUpdate(Location loc) throws Exception {
+		HitboxSize hitboxSize = new HitboxSize(loc, mNBT);
+		return new SoulHistoryEntry(mNBT,
+		                            Instant.now().getEpochSecond(),
+		                            "AutoUpdate",
+		                            mLocs,
+		                            hitboxSize.width(),
+		                            hitboxSize.height());
+	}
+
+
 	/*--------------------------------------------------------------------------------
-	 * Soul Interface
+	 * Soul Group Interface
 	 */
 
 	@Override
-	public NBTTagCompound getNBT() {
-		return mNBT;
+	public String getLabel() {
+		return mLabel;
 	}
 
 	@Override
@@ -89,6 +165,87 @@ public class SoulHistoryEntry implements Soul {
 	@Override
 	public String getModifiedBy() {
 		return mModifiedBy;
+	}
+
+	@Override
+	public Set<Soul> getPossibleSouls() {
+		Set<Soul> result = new HashSet<>();
+		result.add(this);
+		return result;
+	}
+
+	@Override
+	public Set<String> getPossibleSoulGroupLabels() {
+		Set<String> result = new HashSet<>();
+		result.add(getLabel());
+		return result;
+	}
+
+	@Override
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
+		Map<SoulGroup, Integer> result = new HashMap<>();
+		result.put(this, 1);
+		return result;
+	}
+
+	@Override
+	public Map<SoulGroup, Double> getAverageEntries() {
+		Map<SoulGroup, Double> result = new HashMap<>();
+		result.put(this, 1.0);
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
+		Map<Soul, Integer> result = new HashMap<>();
+		result.put(this, 1);
+		return result;
+	}
+
+	@Override
+	public Map<Soul, Double> getAverageSouls() {
+		Map<Soul, Double> result = new HashMap<>();
+		result.put(this, 1.0);
+		return result;
+	}
+
+	@Override
+	public Double getWidth() {
+		return mWidth;
+	}
+
+	@Override
+	public Double getHeight() {
+		return mHeight;
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		List<Entity> result = new ArrayList<>();
+		if (mWidth == null || mHeight == null) {
+			return result;
+		}
+		double x = spawnBb.getMinX() + random.nextDouble() * (spawnBb.getMaxX() - spawnBb.getMinX());
+		double y = spawnBb.getMinY() + random.nextDouble() * (spawnBb.getMaxY() - spawnBb.getMinY());
+		double z = spawnBb.getMinZ() + random.nextDouble() * (spawnBb.getMaxZ() - spawnBb.getMinZ());
+		Location loc = new Location(world, x, y, z);
+		if (!Utils.insideBlocks(loc, mWidth, mHeight)) {
+			result.add(summon(loc));
+		}
+		return result;
+	}
+
+	/*
+	 * Soul Group Interface
+	 *--------------------------------------------------------------------------------*/
+
+	/*--------------------------------------------------------------------------------
+	 * Soul Interface
+	 */
+
+	@Override
+	public NBTTagCompound getNBT() {
+		return mNBT;
 	}
 
 	@Override
@@ -148,11 +305,6 @@ public class SoulHistoryEntry implements Soul {
 			}
 		}
 		return isElite;
-	}
-
-	@Override
-	public String getLabel() {
-		return mLabel;
 	}
 
 	@Override
@@ -256,8 +408,14 @@ public class SoulHistoryEntry implements Soul {
 			case ENDERMITE:
 				mPlaceholder = new ItemStack(Material.ENDER_EYE);
 				break;
+			case ENDER_CRYSTAL:
+				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
+				break;
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
+				break;
+			case FOX:
+				mPlaceholder = new ItemStack(Material.SWEET_BERRIES);
 				break;
 			case GHAST:
 				mPlaceholder = new ItemStack(Material.GHAST_TEAR);
@@ -276,6 +434,7 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case HORSE:
 				mPlaceholder = new ItemStack(Material.SADDLE);
+				break;
 			case HUSK:
 				mPlaceholder = new ItemStack(Material.ROTTEN_FLESH);
 				break;
@@ -311,6 +470,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLDEN_BOOTS);
+				break;
+			case PIGLIN_BRUTE:
+				mPlaceholder = new ItemStack(Material.GOLDEN_AXE);
 				break;
 			case PUFFERFISH:
 				mPlaceholder = new ItemStack(Material.PUFFERFISH);
@@ -502,9 +664,13 @@ public class SoulHistoryEntry implements Soul {
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 
-		obj.add("mojangson", new JsonPrimitive(mNBT.toString()));
-		obj.add("modified_on", new JsonPrimitive(mModifiedOn));
-		obj.add("modified_by", new JsonPrimitive(mModifiedBy));
+		obj.addProperty("mojangson", mNBT.toString());
+		obj.addProperty("modified_on", mModifiedOn);
+		obj.addProperty("modified_by", mModifiedBy);
+		if (mWidth != null && mHeight != null) {
+			obj.addProperty("width", mWidth);
+			obj.addProperty("height", mHeight);
+		}
 
 		return obj;
 	}
@@ -522,7 +688,13 @@ public class SoulHistoryEntry implements Soul {
 		if (obj.has("modified_by")) {
 			modifiedBy = obj.get("modified_by").getAsString();
 		}
+		Double width = null;
+		Double height = null;
+		if (obj.has("width") && obj.has("height")) {
+			width = obj.get("width").getAsDouble();
+			height = obj.get("height").getAsDouble();
+		}
 
-		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore);
+		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore, width, height);
 	}
 }
