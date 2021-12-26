@@ -382,9 +382,9 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		if (elem != null) {
 			lore = elem.getAsString();
 		}
-//		else {
-//			throw new Exception("Lore cannot be parsed as an object!");
-//		}
+		else {
+			lore = "";
+		}
 
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
 		elem = obj.get("history");
@@ -417,7 +417,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		}
 		obj.add("history", histArray);
 
-		obj.addProperty("lore", mLore);;
+		obj.addProperty("lore", mLore);
 
 		JsonArray locsArray = new JsonArray();
 		for (String location : mLocs) {

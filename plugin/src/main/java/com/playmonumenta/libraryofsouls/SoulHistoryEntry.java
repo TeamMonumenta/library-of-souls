@@ -121,7 +121,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		mModifiedBy = player.getName();
 		mLocs = new HashSet<String>();
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
-    mLore = "";
+		mLore = "";
 		mWidth = hitboxSize.width();
 		mHeight = hitboxSize.height();
 
