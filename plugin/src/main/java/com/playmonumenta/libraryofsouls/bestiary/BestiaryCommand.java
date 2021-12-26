@@ -93,7 +93,7 @@ public class BestiaryCommand {
 				}))
 			.withSubcommand(new CommandAPICommand("lore")
 					.withPermission(CommandPermission.fromString("los.bestiary.lore"))
-					.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+					.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 					.withArguments(new TextArgument("lore"))
 					.executes((sender, args) -> {
 						if (!(sender instanceof Player)) {
@@ -104,7 +104,7 @@ public class BestiaryCommand {
 			.withSubcommand(new CommandAPICommand("lore")
 				.withSubcommand(new CommandAPICommand("clear")
 				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
-				.withArguments(new StringArgument("mobLabel").overrideSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.executes((sender, args) -> {
 					if (!(sender instanceof Player)) {
 						sender.sendMessage("Gotta do this as a player until I remember how to make this work in command blocks. If you need that much for lore tell me.");
