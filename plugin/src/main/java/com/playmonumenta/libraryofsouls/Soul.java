@@ -9,12 +9,8 @@ import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 
 import net.kyori.adventure.text.Component;
 
-public interface Soul {
+public interface Soul extends SoulGroup {
 	NBTTagCompound getNBT();
-
-	long getModifiedOn();
-
-	String getModifiedBy();
 
 	ItemStack getPlaceholder();
 
@@ -36,7 +32,8 @@ public interface Soul {
 	boolean isElite();
 
 	/* This is the label-ified name, with colors and spaces stripped */
+	@Override
 	String getLabel();
 
-	public Entity summon(Location loc);
+	Entity summon(Location loc);
 }

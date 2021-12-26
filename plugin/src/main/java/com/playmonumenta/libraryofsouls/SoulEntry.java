@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.google.gson.Gson;
@@ -28,7 +32,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 
-public class SoulEntry implements Soul, BestiaryEntryInterface {
+public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	private static Gson gson = null;
 
 	private final Set<String> mLocs;
@@ -76,13 +80,20 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mHistory.add(0, new SoulHistoryEntry(player, nbt));
 	}
 
+	public void autoUpdate(Location loc) throws Exception {
+		SoulHistoryEntry latestEntry = mHistory.get(0);
+		if (latestEntry.requiresAutoUpdate()) {
+			mHistory.add(0, latestEntry.getAutoUpdate(loc));
+		}
+	}
+
 	/*--------------------------------------------------------------------------------
-	 * Soul Interface
+	 * Soul Group Interface
 	 */
 
 	@Override
-	public NBTTagCompound getNBT() {
-		return mHistory.get(0).getNBT();
+	public String getLabel() {
+		return mHistory.get(0).getLabel();
 	}
 
 	@Override
@@ -93,6 +104,64 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	@Override
 	public String getModifiedBy() {
 		return mHistory.get(0).getModifiedBy();
+	}
+
+	@Override
+	public Set<Soul> getPossibleSouls() {
+		return mHistory.get(0).getPossibleSouls();
+	}
+
+	@Override
+	public Set<String> getPossibleSoulGroupLabels() {
+		return mHistory.get(0).getPossibleSoulGroupLabels();
+	}
+
+	@Override
+	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
+		return mHistory.get(0).getRandomEntries(random);
+	}
+
+	@Override
+	public Map<SoulGroup, Double> getAverageEntries() {
+		return mHistory.get(0).getAverageEntries();
+	}
+
+	@Override
+	public Map<Soul, Integer> getRandomSouls(Random random) {
+		return mHistory.get(0).getRandomSouls(random);
+	}
+
+	@Override
+	public Map<Soul, Double> getAverageSouls() {
+		return mHistory.get(0).getAverageSouls();
+	}
+
+	@Override
+	public Double getWidth() {
+		return mHistory.get(0).getWidth();
+	}
+
+	@Override
+	public Double getHeight() {
+		return mHistory.get(0).getHeight();
+	}
+
+	@Override
+	public List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb) {
+		return mHistory.get(0).summonGroup(random, world, spawnBb);
+	}
+
+	/*
+	 * Soul Group Interface
+	 *--------------------------------------------------------------------------------*/
+
+	/*--------------------------------------------------------------------------------
+	 * Soul Interface
+	 */
+
+	@Override
+	public NBTTagCompound getNBT() {
+		return mHistory.get(0).getNBT();
 	}
 
 	@Override
@@ -131,8 +200,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public String getLabel() {
-		return mHistory.get(0).getLabel();
+	public Entity summon(Location loc) {
+		return mHistory.get(0).summon(loc);
 	}
 
 	public void setLore(String lore, Player player) {
@@ -142,11 +211,6 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 	public String getLore() {
 		return mLore;
-	}
-
-	@Override
-	public Entity summon(Location loc) {
-		return mHistory.get(0).summon(loc);
 	}
 
 	/*
@@ -364,4 +428,3 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return obj;
 	}
 }
-
