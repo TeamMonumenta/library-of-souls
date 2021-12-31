@@ -16,9 +16,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -283,24 +289,20 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	}
 
 	public enum MobType {
-		BOSS(1, 2, 5),
-		ELITE(5, 10, 25),
-		NORMAL(30, 60, 100);
+		BOSS(1, 2),
+		ELITE(5, 10),
+		NORMAL(30, 60);
 
 		private final int mFirstTier;
 		private final int mSecondTier;
-		private final int mLoreTier;
 
-		MobType(int firstTier, int secondTier, int loreTier) {
+		MobType(int firstTier, int secondTier) {
 			this.mFirstTier = firstTier;
 			this.mSecondTier = secondTier;
-			this.mLoreTier = loreTier;
 		}
 
 		public int getNeededKills(InfoTier tier) {
-			if (tier == InfoTier.LORE) {
-				return this.mLoreTier;
-			} else if (tier == InfoTier.EVERYTHING) {
+			if (tier == InfoTier.EVERYTHING) {
 				return this.mSecondTier;
 			} else if (tier == InfoTier.STATS) {
 				return this.mSecondTier;
@@ -313,7 +315,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	}
 
 	public InfoTier getInfoTier(Player player) {
-		if (player.hasPermission("los.bestiary.viewall")) {
+		if (player.hasPermission("los.bestiary.viewall") || this.isInvulnerable()) {
 			return InfoTier.EVERYTHING;
 		}
 
@@ -332,6 +334,29 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 			}
 		}
 		return InfoTier.NOTHING;
+	}
+
+	//Checks if the mob is invlunerable, for bestiary purposes
+	public boolean isInvulnerable() {
+		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
+		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		boolean override = false;
+		BooleanVariable booVar = new BooleanVariable("Invulnerable");
+
+		String ret = ((BooleanVariable)booVar.bind(entityNBT.getData())).get();
+		override = ret != null ? ret.toLowerCase().equals("true") : false;
+
+		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
+		if (effectItem != null && effectItem.hasItemMeta()) {
+			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
+			for (PotionEffect effect : potionMeta.getCustomEffects()) {
+				if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && effect.getAmplifier() >= 4) {
+					override = true;
+				}
+			}
+		}
+
+		return override;
 	}
 
 	public MobType getMobType() {

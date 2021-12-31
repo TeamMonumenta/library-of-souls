@@ -76,7 +76,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 				if (entry instanceof BestiaryArea) {
 					BestiaryArea progressArea = (BestiaryArea)entry;
 					double total = getTotal(progressArea, player);
-					double discovered = totalDiscovered(progressArea, player);
+					double discovered = totalDiscovered(progressArea, player, progressArea);
 					int bars = (int)Math.floor((discovered / total) * 20);
 
 					if (bars < 0) {
@@ -177,11 +177,12 @@ public class BestiaryAreaInventory extends CustomInventory {
 		}
 	}
 
-	public double totalDiscovered(BestiaryEntryInterface entry, Player player) {
+	//Workaround because it needs what the previous entry was to smash a bug
+	public double totalDiscovered(BestiaryEntryInterface entry, Player player, BestiaryEntryInterface lastChecked) {
 		if (entry instanceof SoulEntry) {
 			SoulEntry soul = (SoulEntry)entry;
 			double kills = BestiaryManager.getKillsForMob(player, soul);
-			if (kills >= 1) {
+			if ((kills >= 1 || soul.isInvulnerable()) && lastChecked.canOpenBestiary(player)) {
 				return 1;
 			} else {
 				return 0;
@@ -191,7 +192,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			double discovered = 0;
 			List<BestiaryEntryInterface> children = area.getBestiaryChildren();
 			for (BestiaryEntryInterface face : children) {
-				discovered += totalDiscovered(face, player);
+				discovered += totalDiscovered(face, player, entry);
 			}
 			return discovered;
 		} else {

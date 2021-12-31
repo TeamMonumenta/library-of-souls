@@ -31,9 +31,5 @@ public interface Soul extends SoulGroup {
 	/* Whether the mob has the tag "Elite" or not */
 	boolean isElite();
 
-	/* This is the label-ified name, with colors and spaces stripped */
-	@Override
-	String getLabel();
-
 	Entity summon(Location loc);
 }

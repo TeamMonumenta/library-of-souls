@@ -467,7 +467,6 @@ public class BestiarySoulInventory extends CustomInventory {
 			// Higher tier of information
 			ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
 			effectItem = getEffectItem(effectItem);
-
 			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
 
 			ItemStack loreItem = getLoreItem(soul);

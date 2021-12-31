@@ -95,21 +95,15 @@ public class BestiaryCommand {
 					.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 					.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 					.withArguments(new TextArgument("lore"))
-					.executes((sender, args) -> {
-						if (!(sender instanceof Player)) {
-							sender.sendMessage("Gotta do this as a player until I remember how to make this work in command blocks. If you need that much for lore tell me.");
-						}
-						SoulsDatabase.getInstance().getSoul((String)args[0]).setLore((String)args[1], (Player)sender);
+					.executesPlayer((sender, args) -> {
+						SoulsDatabase.getInstance().getSoul((String)args[0]).setLore((String)args[1], sender);
 					}))
 			.withSubcommand(new CommandAPICommand("lore")
 				.withSubcommand(new CommandAPICommand("clear")
 				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
-				.executes((sender, args) -> {
-					if (!(sender instanceof Player)) {
-						sender.sendMessage("Gotta do this as a player until I remember how to make this work in command blocks. If you need that much for lore tell me.");
-					}
-					SoulsDatabase.getInstance().getSoul((String)args[0]).setLore("", (Player)sender);
+				.executesPlayer((sender, args) -> {
+					SoulsDatabase.getInstance().getSoul((String)args[0]).setLore("", sender);
 				})))
 			.register();
 	}
