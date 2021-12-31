@@ -17,7 +17,7 @@ Recommended Minecraft Version: 1.16.5+ (older versions may work too, but are not
         <dependency>
             <groupId>com.playmonumenta</groupId>
             <artifactId>libraryofsouls</artifactId>
-            <version>4.1</version>
+            <version>4.3</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
