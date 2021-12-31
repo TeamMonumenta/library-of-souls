@@ -34,7 +34,6 @@ import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 
 import net.kyori.adventure.text.Component;
@@ -87,18 +86,20 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	private final String mLabel;
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
+	private final String mLore;
 	private final Double mWidth;
 	private final Double mHeight;
 	private ItemStack mPlaceholder = null;
 	private ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, Double width, Double height) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore, Double width, Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mLore = lore;
 		mWidth = width;
 		mHeight = height;
 
@@ -120,6 +121,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		mModifiedBy = player.getName();
 		mLocs = new HashSet<String>();
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mLore = "";
 		mWidth = hitboxSize.width();
 		mHeight = hitboxSize.height();
 
@@ -140,6 +142,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		                            Instant.now().getEpochSecond(),
 		                            "AutoUpdate",
 		                            mLocs,
+		                            mLore,
 		                            hitboxSize.width(),
 		                            hitboxSize.height());
 	}
@@ -603,6 +606,13 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			}
 		}
 
+		if (mLore != null && !mLore.equals("")) {
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(mLore, null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(mLore, null);
+		}
+
 		/* If the item has been modified, list when */
 		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
 			/* Relative time on the placeholder item */
@@ -665,7 +675,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		return obj;
 	}
 
-	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations) throws Exception {
+	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, String lore) throws Exception {
 		if (gson == null) {
 			gson = new Gson();
 		}
@@ -685,6 +695,6 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			height = obj.get("height").getAsDouble();
 		}
 
-		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, width, height);
+		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore, width, height);
 	}
 }

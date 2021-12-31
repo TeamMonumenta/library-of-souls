@@ -16,9 +16,15 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -37,15 +43,22 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
+	private String mLore;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, String lore) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
 			mLocs = new HashSet<String>();
 		} else {
 			mLocs = locationNames;
+		}
+
+		if (lore == null) {
+			mLore = "";
+		} else {
+			mLore = lore;
 		}
 
 		String refLabel = history.get(0).getLabel();
@@ -65,6 +78,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		mLocs = new HashSet<String>();
 		mHistory = new ArrayList<SoulHistoryEntry>(1);
 		mHistory.add(newHist);
+		mLore = "";
 	}
 
 	/* Update this SoulEntry so new soul is now current; preserve history */
@@ -196,6 +210,15 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		return mHistory.get(0).summon(loc);
 	}
 
+	public void setLore(String lore, Player player) {
+		mLore = lore;
+		SoulsDatabase.getInstance().updateLore(this, player);
+	}
+
+	public String getLore() {
+		return mLore;
+	}
+
 	/*
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
@@ -291,7 +314,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	}
 
 	public InfoTier getInfoTier(Player player) {
-		if (player.hasPermission("los.bestiary.viewall")) {
+		if (player.hasPermission("los.bestiary.viewall") || this.isInvulnerable()) {
 			return InfoTier.EVERYTHING;
 		}
 
@@ -310,6 +333,29 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 			}
 		}
 		return InfoTier.NOTHING;
+	}
+
+	//Checks if the mob is invlunerable, for bestiary purposes
+	public boolean isInvulnerable() {
+		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
+		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		boolean override = false;
+		BooleanVariable booVar = new BooleanVariable("Invulnerable");
+
+		String ret = ((BooleanVariable)booVar.bind(entityNBT.getData())).get();
+		override = (ret != null && ret.toLowerCase().equals("true"));
+
+		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
+		if (effectItem != null && effectItem.hasItemMeta()) {
+			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
+			for (PotionEffect effect : potionMeta.getCustomEffects()) {
+				if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && effect.getAmplifier() >= 4) {
+					override = true;
+				}
+			}
+		}
+
+		return override;
 	}
 
 	public MobType getMobType() {
@@ -355,6 +401,14 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 			}
 		}
 
+		String lore = new String();
+		elem = obj.get("lore");
+		if (elem != null) {
+			lore = elem.getAsString();
+		} else {
+			lore = "";
+		}
+
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -370,11 +424,11 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 					throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
 				}
 
-				history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs));
+				history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
 			}
 		}
 
-		return new SoulEntry(history, locs);
+		return new SoulEntry(history, locs, lore);
 	}
 
 	public JsonObject toJson() {
@@ -385,6 +439,8 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 			histArray.add(hist.toJson());
 		}
 		obj.add("history", histArray);
+
+		obj.addProperty("lore", mLore);
 
 		JsonArray locsArray = new JsonArray();
 		for (String location : mLocs) {

@@ -32,6 +32,7 @@ public class LibraryOfSoulsAPI {
 		return db.listMobNames();
 	}
 
+
 	public static Set<String> getSoulPartyNames() {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		if (db == null) {
