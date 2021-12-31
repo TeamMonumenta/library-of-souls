@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -35,7 +34,6 @@ import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulEntry.InfoTier;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -479,7 +477,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
 			_inventory.setItem(22, equipmentPageItem);
-			if (soul.getInfoTier(player) == InfoTier.LORE || player.getGameMode() == GameMode.CREATIVE) {
+			if (!soul.getLore().equals("")) {
 				_inventory.setItem(29, speedItem);
 				_inventory.setItem(31, effectItem);
 				_inventory.setItem(33, loreItem);
@@ -733,7 +731,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		if (lore == null || lore.equals("")) {
 			List<Component> itemLore = new ArrayList<>();
-			itemLore.add(Component.text("No Information Available", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+			itemLore.add(Component.text("This is a bug. Or at the very least, should be.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
 
 			meta.lore(itemLore);
 			loreItem.setItemMeta(meta);

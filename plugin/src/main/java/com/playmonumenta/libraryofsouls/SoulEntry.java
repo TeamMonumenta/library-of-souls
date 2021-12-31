@@ -271,7 +271,6 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	 *--------------------------------------------------------------------------------*/
 
 	public enum InfoTier {
-		LORE(4),
 		EVERYTHING(3),
 		STATS(2),
 		MINIMAL(1),
@@ -344,7 +343,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		BooleanVariable booVar = new BooleanVariable("Invulnerable");
 
 		String ret = ((BooleanVariable)booVar.bind(entityNBT.getData())).get();
-		override = ret != null ? ret.toLowerCase().equals("true") : false;
+		override = (ret != null && ret.toLowerCase().equals("true"));
 
 		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
 		if (effectItem != null && effectItem.hasItemMeta()) {
