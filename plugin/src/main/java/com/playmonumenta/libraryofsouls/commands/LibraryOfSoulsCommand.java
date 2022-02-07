@@ -132,7 +132,7 @@ public class LibraryOfSoulsCommand {
 		/* los averagegroup <groupLabel> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("averagegroup"));
-		arguments.add(new ScoreHolderArgument("group", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("groupLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.averagegroup"))
 			.withArguments(arguments)
@@ -140,7 +140,7 @@ public class LibraryOfSoulsCommand {
 				String groupLabel = (String)args[1];
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Pool weights:"));
-				for (Map.Entry<Soul, Double> entry : database.getSoulGroup(groupLabel).getAverageSouls().entrySet()) {
+				for (Map.Entry<Soul, Double> entry : getSoulGroup(groupLabel).getAverageSouls().entrySet()) {
 					Component name = entry.getKey().getName();
 					double aveCount = entry.getValue();
 					sender.sendMessage(Component.text("- " + String.format("%04.2f", aveCount) + "x ").append(name));
@@ -178,7 +178,7 @@ public class LibraryOfSoulsCommand {
 		/* los summongroup <name> <pos1> <pos2> */
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("summongroup"));
-		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("groupLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new LocationArgument("pos1"));
 		arguments.add(new LocationArgument("pos2"));
 		new CommandAPICommand(COMMAND)
@@ -348,7 +348,7 @@ public class LibraryOfSoulsCommand {
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("updateparty"));
 		arguments.add(new ScoreHolderArgument("partyLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
-		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("groupLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new IntegerArgument("count", 0));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updateparty"))
@@ -402,7 +402,7 @@ public class LibraryOfSoulsCommand {
 		arguments.clear();
 		arguments.add(new MultiLiteralArgument("updatepool"));
 		arguments.add(new ScoreHolderArgument("poolLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
-		arguments.add(new ScoreHolderArgument("entryLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
+		arguments.add(new ScoreHolderArgument("groupLabel", ScoreHolderType.SINGLE).replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 		arguments.add(new IntegerArgument("weight", 0));
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updatepool"))
