@@ -376,7 +376,7 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 		return mLocs;
 	}
 
-	public static SoulEntry fromJson(JsonObject obj) throws Exception {
+	public static SoulEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
 		if (gson == null) {
 			gson = new Gson();
 		}
@@ -417,14 +417,23 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 				throw new Exception("Failed to parse history as JSON array");
 			}
 
-			Iterator<JsonElement> iter = array.iterator();
-			while (iter.hasNext()) {
-				JsonElement historyElement = iter.next();
-				if (!historyElement.isJsonObject()) {
-					throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
-				}
+			if (loadHistory) {
+				for (JsonElement historyElement : array) {
+					if (!historyElement.isJsonObject()) {
+						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
+					}
 
-				history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
+					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
+				}
+			} else {
+				if (array.size() >= 1) {
+					JsonElement historyElement = array.get(0);
+					if (!historyElement.isJsonObject()) {
+						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
+					}
+
+					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
+				}
 			}
 		}
 
