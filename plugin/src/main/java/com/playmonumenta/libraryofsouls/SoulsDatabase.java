@@ -51,6 +51,7 @@ public class SoulsDatabase {
 	};
 
 	private final Plugin mPlugin;
+	private final boolean mLoadHistory;
 	private final Path mSoulsDatabasePath;
 	private final Path mSoulPartiesDatabasePath;
 	private final Path mSoulPoolsDatabasePath;
@@ -76,8 +77,9 @@ public class SoulsDatabase {
 	 */
 	private final Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
 
-	public SoulsDatabase(Plugin plugin) throws Exception {
+	public SoulsDatabase(Plugin plugin, boolean loadHistory) throws Exception {
 		mPlugin = plugin;
+		mLoadHistory = loadHistory;
 		mSoulsDatabasePath = Paths.get(mPlugin.getDataFolder().getPath(), SOULS_DATABASE_FILE);
 		mSoulPartiesDatabasePath = Paths.get(mPlugin.getDataFolder().getPath(), SOUL_PARTIES_DATABASE_FILE);
 		mSoulPoolsDatabasePath = Paths.get(mPlugin.getDataFolder().getPath(), SOUL_POOLS_DATABASE_FILE);
@@ -392,7 +394,7 @@ public class SoulsDatabase {
 		for (JsonElement entry : soulsArray) {
 			JsonObject obj = entry.getAsJsonObject();
 
-			SoulEntry soul = SoulEntry.fromJson(obj);
+			SoulEntry soul = SoulEntry.fromJson(obj, mLoadHistory);
 			String label = soul.getLabel();
 
 			if (newSouls.get(label) != null) {
@@ -412,7 +414,7 @@ public class SoulsDatabase {
 		for (JsonElement entry : soulPartiesArray) {
 			JsonObject obj = entry.getAsJsonObject();
 
-			SoulPartyEntry soulParty = SoulPartyEntry.fromJson(obj);
+			SoulPartyEntry soulParty = SoulPartyEntry.fromJson(obj, mLoadHistory);
 			String label = soulParty.getLabel();
 
 			if (newSoulParties.get(label) != null) {
@@ -432,7 +434,7 @@ public class SoulsDatabase {
 		for (JsonElement entry : soulPoolsArray) {
 			JsonObject obj = entry.getAsJsonObject();
 
-			SoulPoolEntry soulPool = SoulPoolEntry.fromJson(obj);
+			SoulPoolEntry soulPool = SoulPoolEntry.fromJson(obj, mLoadHistory);
 			String label = soulPool.getLabel();
 
 			if (newSoulPools.get(label) != null) {

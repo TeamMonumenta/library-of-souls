@@ -99,7 +99,7 @@ public class LibraryOfSouls extends JavaPlugin {
 				LibraryOfSoulsCommand.registerWriteAccessCommands();
 			}
 
-			new SoulsDatabase(this);
+			new SoulsDatabase(this, !Config.isReadOnly());
 		} catch (Exception e) {
 			getLogger().severe("Failed to load souls database! This plugin will not function");
 			e.printStackTrace();

@@ -125,7 +125,7 @@ public class SoulPoolEntry implements SoulGroup {
 		return new ArrayList<SoulGroup>(mHistory);
 	}
 
-	public static SoulPoolEntry fromJson(JsonObject obj) throws Exception {
+	public static SoulPoolEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
 		if (gson == null) {
 			gson = new Gson();
 		}
@@ -136,12 +136,23 @@ public class SoulPoolEntry implements SoulGroup {
 			throw new Exception("Failed to parse history as JSON array");
 		}
 
-		for (JsonElement historyElement : array) {
-			if (!historyElement.isJsonObject()) {
-				throw new Exception("history entry for '" + history.toString() + "' is not an object!");
-			}
+		if (loadHistory) {
+			for (JsonElement historyElement : array) {
+				if (!historyElement.isJsonObject()) {
+					throw new Exception("history entry for '" + history.toString() + "' is not an object!");
+				}
 
-			history.add(SoulPoolHistoryEntry.fromJson(historyElement.getAsJsonObject()));
+				history.add(SoulPoolHistoryEntry.fromJson(historyElement.getAsJsonObject()));
+			}
+		} else {
+			if (array.size() >= 1) {
+				JsonElement historyElement = array.get(0);
+				if (!historyElement.isJsonObject()) {
+					throw new Exception("history entry for '" + history.toString() + "' is not an object!");
+				}
+
+				history.add(SoulPoolHistoryEntry.fromJson(historyElement.getAsJsonObject()));
+			}
 		}
 
 		return new SoulPoolEntry(history);
