@@ -2,11 +2,13 @@ package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
@@ -33,7 +35,20 @@ public class BestiaryManager implements Listener {
 
 	private final BestiaryStorage mStorage;
 	private final Logger mLogger;
-	private final Map<Entity, Set<Player>> mDamageTracker = new HashMap<>();
+
+	private static final int MAX_BOSS_TRACK_ENTRIES = 30;
+
+	/*
+	 * A least-recently-used (LRU) map to keep track of which players damage which bosses
+	 * Entity UUID key, Player UUID Set
+	 * The size here is automatically managed by removing the oldest entries as the map fills up
+	 */
+	private final Map<UUID, Set<UUID>> mDamageTracker = new LinkedHashMap<>(MAX_BOSS_TRACK_ENTRIES + 1, .75F, true) {
+		// This method is called just after a new entry has been added
+		public boolean removeEldestEntry(Map.Entry<UUID, Set<UUID>> eldest) {
+			return size() > MAX_BOSS_TRACK_ENTRIES;
+		}
+	};
 
 	public BestiaryManager(Plugin plugin) {
 		INSTANCE = this;
@@ -50,19 +65,6 @@ public class BestiaryManager implements Listener {
 			mStorage = new BestiaryScoreboardStorage();
 			mLogger.info("Using scoreboard for bestiary storage");
 		}
-
-		// Schedule a slow-ticking task to clean stale junk out of the map periodically
-		Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-			Iterator<Map.Entry<Entity, Set<Player>>> iter = mDamageTracker.entrySet().iterator();
-			while (iter.hasNext()) {
-				if (!iter.next().getKey().isValid()) {
-					iter.remove();
-				}
-			}
-			if (mDamageTracker.size() > 50) {
-				mLogger.warning("There are " + mDamageTracker.size() + " entries in the damage tracker which is abnormally high. Maybe a bug?");
-			}
-		}, 1150, 1150);
 	}
 
 	public BestiaryManager getInstance() {
@@ -122,15 +124,15 @@ public class BestiaryManager implements Listener {
 					// Damaged entity has the Boss tag
 
 					// Keep track of all players that damage this mob
-					Set<Player> damagers = mDamageTracker.get(entity);
+					Set<UUID> damagers = mDamageTracker.get(entity.getUniqueId());
 					if (damagers == null) {
 						// Hasn't been damaged yet - create new set of damaging players
 						damagers = new HashSet<>();
-						damagers.add((Player)damager);
-						mDamageTracker.put(entity, damagers);
+						damagers.add(damager.getUniqueId());
+						mDamageTracker.put(entity.getUniqueId(), damagers);
 					} else {
 						// Has been damaged already - add player to set
-						damagers.add((Player)damager);
+						damagers.add(damager.getUniqueId());
 					}
 				}
 			}
@@ -156,17 +158,17 @@ public class BestiaryManager implements Listener {
 								// A soul entry exists for this mob
 
 								// Check if this was a boss with multiple tracked damagers
-								Set<Player> damagers = mDamageTracker.remove(entity);
+								Set<UUID> damagers = mDamageTracker.remove(entity.getUniqueId());
 								if (damagers != null) {
 									// A boss, record kill for everyone who damaged the mob (including the killer)
-									damagers.add(player);
-									for (Player damager : damagers) {
+									damagers.add(player.getUniqueId());
+									damagers.stream().map((damagerUUID) -> Bukkit.getPlayer(damagerUUID)).filter(Objects::nonNull).forEach((damager) -> {
 										try {
 											mStorage.recordKill(damager, soul);
 										} catch (Exception ex) {
 											mLogger.warning(ex.getMessage());
 										}
-									}
+									});
 								} else {
 									// Not a boss, just record kill for the killer
 									try {
