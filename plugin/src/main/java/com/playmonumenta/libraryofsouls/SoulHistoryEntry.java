@@ -414,6 +414,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
+			case EVOKER_FANGS:
+				mPlaceholder = new ItemStack(Material.DEAD_FIRE_CORAL_FAN);
+				break;
 			case FOX:
 				mPlaceholder = new ItemStack(Material.SWEET_BERRIES);
 				break;
@@ -518,6 +521,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case TROPICAL_FISH:
 				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
+				break;
+			case TURTLE:
+				mPlaceholder = new ItemStack(Material.TURTLE_HELMET);
 				break;
 			case VEX:
 				mPlaceholder = new ItemStack(Material.IRON_SWORD);
