@@ -227,7 +227,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			return 0;
 		}
 
-		amount = playerKills.get(soul) + amount;
+		amount = playerKills.getOrDefault(soul, 0) + amount;
 		playerKills.put(soul, amount);
 		mPlayerKills.put(player.getUniqueId(), playerKills);
 		return amount;
