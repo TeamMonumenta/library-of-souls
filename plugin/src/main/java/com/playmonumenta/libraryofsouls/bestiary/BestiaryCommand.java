@@ -62,7 +62,7 @@ public class BestiaryCommand {
 				.executes((sender, args) -> {
 					int kills = 0;
 					try {
-						kills = BestiaryManager.addKillsToMob((Player)args[1], LibraryOfSoulsCommand.getSoul((String)args[2]), (Integer)args[3]);
+						kills = BestiaryManager.addKillsToMob((Player)args[0], LibraryOfSoulsCommand.getSoul((String)args[1]), (Integer)args[2]);
 					} catch (Exception ex) {
 						CommandAPI.fail(ex.getMessage());
 					}
