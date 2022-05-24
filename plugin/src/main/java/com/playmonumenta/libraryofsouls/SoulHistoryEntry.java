@@ -596,9 +596,17 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
 			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
 
+			int index = 0;
 			for (String str : stringifyWrapList("  ", 50, tags.getAsArray())) {
-				((ListVariable)placeholderWrap.getVariable("Lore")).add(str, null);
-				((ListVariable)bosWrap.getVariable("Lore")).add(str, null);
+				index = 0;
+				while (str.length() - index >= 40) {
+					((ListVariable)placeholderWrap.getVariable("Lore")).add(str.substring(index, index + 40), null);
+					((ListVariable)bosWrap.getVariable("Lore")).add(str.substring(index, index + 40), null);
+					index += 40;
+				}
+
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(str.substring(index), null);
+				((ListVariable)bosWrap.getVariable("Lore")).add(str.substring(index), null);
 			}
 		}
 
