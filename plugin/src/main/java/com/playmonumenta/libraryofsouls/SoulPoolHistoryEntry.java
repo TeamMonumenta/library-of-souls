@@ -30,8 +30,8 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	private final long mModifiedOn;
 	private final String mModifiedBy;
 	private final Map<String, Integer> mEntryWeights;
-	private final NavigableMap<Long, String> mNavigableMap;
-	private final long mTotalWeight;
+	private final NavigableMap<Integer, String> mNavigableMap;
+	private final int mTotalWeight;
 
 	/* Create a SoulPoolHistoryEntry object with existing history */
 	public SoulPoolHistoryEntry(String label, long modifiedOn, String modifiedBy, Map<String, Integer> entryWeights) {
@@ -43,11 +43,13 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		mModifiedBy = modifiedBy;
 		mEntryWeights = entryWeights;
 
-		long totalWeight = 0;
-		NavigableMap<Long, String> navigableMap = new TreeMap<>();
+		int totalWeight = 0;
+		NavigableMap<Integer, String> navigableMap = new TreeMap<>();
 		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
-			totalWeight += (long) entry.getValue();
-			navigableMap.put(totalWeight, entry.getKey());
+			if (entry.getValue() != 0) {
+				totalWeight += entry.getValue();
+				navigableMap.put(totalWeight, entry.getKey());
+			}
 		}
 		mNavigableMap = navigableMap;
 		mTotalWeight = totalWeight;
@@ -137,7 +139,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		if (mTotalWeight == 0) {
 			return new HashMap<SoulGroup, Integer>();
 		}
-		long randomValue = random.nextLong() % mTotalWeight;
+		int randomValue = random.nextInt(mTotalWeight);
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
 		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
 		Map<SoulGroup, Integer> result = new HashMap<>();
@@ -167,7 +169,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		if (mTotalWeight == 0) {
 			return new HashMap<Soul, Integer>();
 		}
-		long randomValue = random.nextLong() % mTotalWeight;
+		int randomValue = random.nextInt(mTotalWeight);
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
 		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
 		if (selected != null) {
@@ -240,7 +242,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		if (mTotalWeight == 0) {
 			return result;
 		}
-		long randomValue = random.nextLong() % mTotalWeight;
+		int randomValue = random.nextInt(mTotalWeight);
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
 		SoulGroup selected = SoulsDatabase.getInstance().getSoulGroup(selectedLabel);
 		if (selected != null) {
