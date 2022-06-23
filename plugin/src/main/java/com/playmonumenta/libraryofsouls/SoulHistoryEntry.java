@@ -456,6 +456,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case OCELOT:
 				mPlaceholder = new ItemStack(Material.COOKED_CHICKEN);
 				break;
+			case PARROT:
+				mPlaceholder = new ItemStack(Material.FEATHER);
+				break;
 			case PILLAGER:
 				mPlaceholder = new ItemStack(Material.CROSSBOW);
 				break;
@@ -467,6 +470,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case POLAR_BEAR:
 				mPlaceholder = new ItemStack(Material.SNOW);
+				break;
+			case POTION:
+				mPlaceholder = new ItemStack(Material.GLASS_BOTTLE);
 				break;
 			case ZOMBIFIED_PIGLIN:
 				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
