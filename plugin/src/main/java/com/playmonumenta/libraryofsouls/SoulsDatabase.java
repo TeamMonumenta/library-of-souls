@@ -299,7 +299,7 @@ public class SoulsDatabase {
 		}
 
 		SoulGroup soulGroup = getSoulGroup(entryLabel);
-		if (soulGroup == null) {
+		if (soulGroup == null && count <= 0) {
 			CommandAPI.fail("Soul group '" + entryLabel + "' does not exist!");
 		}
 
@@ -333,7 +333,7 @@ public class SoulsDatabase {
 		}
 
 		SoulGroup soulGroup = getSoulGroup(entryLabel);
-		if (soulGroup == null) {
+		if (soulGroup == null && weight <= 0) {
 			CommandAPI.fail("Soul group '" + entryLabel + "' does not exist!");
 		}
 
