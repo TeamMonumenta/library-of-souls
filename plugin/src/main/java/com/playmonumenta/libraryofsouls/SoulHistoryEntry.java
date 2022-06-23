@@ -471,7 +471,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case POLAR_BEAR:
 				mPlaceholder = new ItemStack(Material.SNOW);
 				break;
-			case POTION:
+			case SPLASH_POTION:
 				mPlaceholder = new ItemStack(Material.GLASS_BOTTLE);
 				break;
 			case ZOMBIFIED_PIGLIN:
