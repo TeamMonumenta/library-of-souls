@@ -23,6 +23,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
 
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
@@ -567,8 +568,17 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		}
 
 		mPlaceholder = mPlaceholder.ensureServerConversions();
+		ItemMeta placeholderMeta = mPlaceholder.getItemMeta();
+		placeholderMeta.displayName(Component.text(""));
+		placeholderMeta.lore(List.of());
+		mPlaceholder.setItemMeta(placeholderMeta);
 		mPlaceholder.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+
 		mBoS = mBoS.ensureServerConversions();
+		ItemMeta bosMeta = mBoS.getItemMeta();
+		bosMeta.displayName(Component.text(""));
+		bosMeta.lore(List.of());
+		mBoS.setItemMeta(bosMeta);
 
 		ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
 		ItemStackNBTWrapper bosWrap = new ItemStackNBTWrapper(mBoS);
