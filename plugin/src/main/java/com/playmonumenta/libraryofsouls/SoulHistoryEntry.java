@@ -415,6 +415,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case ENDER_CRYSTAL:
 				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
 				break;
+			case ENDER_DRAGON:
+				mPlaceholder = new ItemStack(Material.DRAGON_HEAD);
+				break;
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
@@ -432,6 +435,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case GIANT:
 				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
+				break;
+			case GLOW_SQUID:
+				mPlaceholder = new ItemStack(Material.GLOW_INK_SAC);
 				break;
 			case GUARDIAN:
 				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
@@ -462,6 +468,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case OCELOT:
 				mPlaceholder = new ItemStack(Material.COOKED_CHICKEN);
+				break;
+			case PANDA:
+				mPlaceholder = new ItemStack(Material.BAMBOO);
 				break;
 			case PARROT:
 				mPlaceholder = new ItemStack(Material.FEATHER);
