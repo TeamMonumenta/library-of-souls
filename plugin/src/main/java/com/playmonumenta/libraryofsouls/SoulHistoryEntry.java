@@ -368,6 +368,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 
 		switch (entityNBT.getEntityType()) {
 			case ARMOR_STAND:
+				mPlaceholder = new ItemStack(Material.AXOLOTL_BUCKET);
+				break;
+			case AXOLOTL:
 				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
 				break;
 			case BLAZE:
@@ -412,11 +415,17 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 			case ENDER_CRYSTAL:
 				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
 				break;
+			case ENDER_DRAGON:
+				mPlaceholder = new ItemStack(Material.DRAGON_HEAD);
+				break;
 			case EVOKER:
 				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
 				break;
 			case EVOKER_FANGS:
 				mPlaceholder = new ItemStack(Material.DEAD_FIRE_CORAL_FAN);
+				break;
+			case FALLING_BLOCK:
+				mPlaceholder = new ItemStack(Material.SAND);
 				break;
 			case FOX:
 				mPlaceholder = new ItemStack(Material.SWEET_BERRIES);
@@ -426,6 +435,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case GIANT:
 				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
+				break;
+			case GLOW_SQUID:
+				mPlaceholder = new ItemStack(Material.GLOW_INK_SAC);
 				break;
 			case GUARDIAN:
 				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
@@ -456,6 +468,9 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 				break;
 			case OCELOT:
 				mPlaceholder = new ItemStack(Material.COOKED_CHICKEN);
+				break;
+			case PANDA:
+				mPlaceholder = new ItemStack(Material.BAMBOO);
 				break;
 			case PARROT:
 				mPlaceholder = new ItemStack(Material.FEATHER);
