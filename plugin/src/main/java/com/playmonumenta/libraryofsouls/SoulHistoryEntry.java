@@ -368,10 +368,10 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 
 		switch (entityNBT.getEntityType()) {
 			case ARMOR_STAND:
-				mPlaceholder = new ItemStack(Material.AXOLOTL_BUCKET);
+				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
 				break;
 			case AXOLOTL:
-				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
+				mPlaceholder = new ItemStack(Material.AXOLOTL_BUCKET);
 				break;
 			case BLAZE:
 				mPlaceholder = new ItemStack(Material.BLAZE_POWDER);
