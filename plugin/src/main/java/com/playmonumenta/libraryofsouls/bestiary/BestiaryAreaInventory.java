@@ -75,7 +75,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 				ItemStack item = entry.getBestiaryItem(player).clone();
 				if (entry instanceof BestiaryArea) {
 					BestiaryArea progressArea = (BestiaryArea)entry;
-					double total = getTotal(progressArea, player);
+					double total = getTotal(progressArea);
 					double discovered = totalDiscovered(progressArea, player, progressArea);
 					int bars = (int)Math.floor((discovered / total) * 20);
 
@@ -200,15 +200,19 @@ public class BestiaryAreaInventory extends CustomInventory {
 		}
 	}
 
-	public double getTotal(BestiaryEntryInterface entry, Player player) {
+	public double getTotal(BestiaryEntryInterface entry) {
 		BestiaryArea area = (BestiaryArea)entry;
 		List<BestiaryEntryInterface> children = area.getBestiaryChildren();
-		if (children != null && children.get(0) instanceof SoulEntry) {
+		if (children == null) {
+			return -1;
+		} else if (children.isEmpty()) {
+			return 0;
+		} else if (children.get(0) instanceof SoulEntry) {
 			return children.size();
-		} else if (children != null && children.get(0) instanceof BestiaryArea) {
+		} else if (children.get(0) instanceof BestiaryArea) {
 			double total = 0;
 			for (BestiaryEntryInterface face : children) {
-				total += getTotal(face, player);
+				total += getTotal(face);
 			}
 			return total;
 		} else {
