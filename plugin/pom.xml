@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
-        <minecraft.server.version>1.16.5-R0.1-SNAPSHOT</minecraft.server.version>
+        <minecraft.server.version>1.18.2-R0.1-SNAPSHOT</minecraft.server.version>
     </properties>
 
     <distributionManagement>
@@ -58,7 +58,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
+            <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>${minecraft.server.version}</version>
             <scope>provided</scope>
