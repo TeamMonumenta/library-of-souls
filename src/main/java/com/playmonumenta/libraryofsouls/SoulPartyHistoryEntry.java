@@ -1,6 +1,5 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.jorel.commandapi.CommandAPI;
@@ -17,10 +16,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public class SoulPartyHistoryEntry implements SoulGroup {
-	private static Gson gson = null;
-
 	private final String mLabel;
 	private final long mModifiedOn;
 	private final String mModifiedBy;
@@ -195,7 +193,7 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Double getWidth() {
+	public @Nullable Double getWidth() {
 		Double result = null;
 		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
@@ -212,7 +210,7 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Double getHeight() {
+	public @Nullable Double getHeight() {
 		Double result = null;
 		for (Map.Entry<String, Integer> entry : mEntryCounts.entrySet()) {
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
@@ -266,10 +264,6 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	public static SoulPartyHistoryEntry fromJson(JsonObject obj) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
-		}
-
 		String label = obj.get("label").getAsString();
 		long modifiedOn = obj.get("modified_on").getAsLong();
 		String modifiedBy = obj.get("modified_by").getAsString();

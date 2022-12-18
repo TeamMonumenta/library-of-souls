@@ -410,7 +410,8 @@ public class BestiarySoulInventory extends CustomInventory {
 			type = DamageType.BLAZE;
 		} else if (entType == EntityType.EVOKER) {
 			type = DamageType.EVOKER;
-		} else if (type == null) {
+		}
+		if (type == null) {
 			type = DamageType.MELEE;
 		}
 

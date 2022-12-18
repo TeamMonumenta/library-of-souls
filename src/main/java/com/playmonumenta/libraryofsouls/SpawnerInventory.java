@@ -7,6 +7,7 @@ import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -25,9 +26,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 public class SpawnerInventory extends CustomInventory {
-	private final SoulsInventory mGoBackInventory;
+	private final @Nullable SoulsInventory mGoBackInventory;
 
-	public SpawnerInventory(Player owner, Soul soul, ItemStack spawner, SoulsInventory previous) {
+	public SpawnerInventory(Player owner, Soul soul, ItemStack spawner, @Nullable SoulsInventory previous) {
 		super(owner, 9, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
 
 		mGoBackInventory = previous;
@@ -87,7 +88,7 @@ public class SpawnerInventory extends CustomInventory {
 		}
 	}
 
-	public static void openSpawnerInventory(Soul soul, Player player, SoulsInventory previous) {
+	public static void openSpawnerInventory(Soul soul, Player player, @Nullable SoulsInventory previous) {
 		BookOfSouls book = BookOfSouls.getFromBook(soul.getBoS());
 		EntityNBT nbt = book.getEntityNBT();
 
@@ -144,26 +145,25 @@ public class SpawnerInventory extends CustomInventory {
 		new SpawnerInventory(player, soul, item, previous).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
+	/* Suppresses an error internal to Adventure in TextReplacementConfig.builder() */
+	@SuppressWarnings("NullAway")
 	public static void updateSpawnerItemDisplay(ItemStack item, CreatureSpawner spawner) {
-		List<String> loreString = new ArrayList<>();
+		List<Component> loreString = new ArrayList<>();
 
-		loreString.add(ChatColor.WHITE + "MinSpawnDelay: " + spawner.getMinSpawnDelay());
-		loreString.add(ChatColor.WHITE + "MaxSpawnDelay: " + spawner.getMaxSpawnDelay());
-		loreString.add(ChatColor.WHITE + "Spawn Count: " + spawner.getSpawnCount());
-		loreString.add(ChatColor.WHITE + "Spawn Range: " + spawner.getSpawnRange());
+		loreString.add(Component.text("MinSpawnDelay: " + spawner.getMinSpawnDelay()).color(NamedTextColor.WHITE));
+		loreString.add(Component.text("MaxSpawnDelay: " + spawner.getMaxSpawnDelay()).color(NamedTextColor.WHITE));
+		loreString.add(Component.text("Spawn Count: " + spawner.getSpawnCount()).color(NamedTextColor.WHITE));
+		loreString.add(Component.text("Spawn Range: " + spawner.getSpawnRange()).color(NamedTextColor.WHITE));
 
 		ItemMeta meta = item.getItemMeta();
 
 		// Append the radius to the item name
-		String name = meta.getDisplayName();
-		int idx = name.lastIndexOf(ChatColor.GREEN + " r=");
-		if (idx > 0) {
-			name = name.substring(0, idx);
-		}
-		name += ChatColor.GREEN + " r=" + Integer.toString(spawner.getRequiredPlayerRange());
+		Component name = meta.displayName();
+		name = name.replaceText(TextReplacementConfig.builder().match(" r=").replacement(Component.empty()).build());
+		name = name.append(Component.text(" r=" + Integer.toString(spawner.getRequiredPlayerRange())).color(NamedTextColor.GREEN));
 
-		meta.setDisplayName(name);
-		meta.setLore(loreString);
+		meta.displayName(name);
+		meta.lore(loreString);
 		item.setItemMeta(meta);
 	}
 

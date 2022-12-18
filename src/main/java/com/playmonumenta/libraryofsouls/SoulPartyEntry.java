@@ -1,6 +1,5 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -14,10 +13,9 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public class SoulPartyEntry implements SoulGroup {
-	private static Gson gson = null;
-
 	private final List<SoulPartyHistoryEntry> mHistory;
 
 	/* Create a SoulPartyEntry object with existing history */
@@ -100,12 +98,12 @@ public class SoulPartyEntry implements SoulGroup {
 	}
 
 	@Override
-	public Double getWidth() {
+	public @Nullable Double getWidth() {
 		return mHistory.get(0).getWidth();
 	}
 
 	@Override
-	public Double getHeight() {
+	public @Nullable Double getHeight() {
 		return mHistory.get(0).getHeight();
 	}
 
@@ -123,10 +121,6 @@ public class SoulPartyEntry implements SoulGroup {
 	}
 
 	public static SoulPartyEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
-		}
-
 		List<SoulPartyHistoryEntry> history = new ArrayList<SoulPartyHistoryEntry>();
 		JsonArray array = obj.getAsJsonArray("history");
 		if (array == null) {

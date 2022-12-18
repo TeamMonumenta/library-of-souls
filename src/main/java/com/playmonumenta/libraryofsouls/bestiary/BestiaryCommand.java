@@ -131,9 +131,8 @@ public class BestiaryCommand {
 						SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
 						if (soul == null) {
 							throw CommandAPI.failWithString("Mob '" + name + "' not found");
-						} else {
-							soul.setLore((String)args[1], player);
 						}
+						soul.setLore((String)args[1], player);
 					} else {
 						throw CommandAPI.failWithString("Callee must be instance of Player");
 					}
@@ -143,7 +142,12 @@ public class BestiaryCommand {
 				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.executesPlayer((sender, args) -> {
-					SoulsDatabase.getInstance().getSoul((String)args[0]).setLore("", sender);
+					String name = (String)args[0];
+					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+					if (soul == null) {
+						throw CommandAPI.failWithString("Mob '" + name + "' not found");
+					}
+					soul.setLore("", sender);
 				})))
 			.register();
 	}

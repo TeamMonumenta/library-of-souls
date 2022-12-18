@@ -36,6 +36,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public class SoulHistoryEntry implements Soul {
 	private static class HitboxSize {
@@ -80,13 +81,13 @@ public class SoulHistoryEntry implements Soul {
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
 	private final String mLore;
-	private final Double mWidth;
-	private final Double mHeight;
-	private ItemStack mPlaceholder = null;
-	private ItemStack mBoS = null;
+	private final @Nullable Double mWidth;
+	private final @Nullable Double mHeight;
+	private @Nullable ItemStack mPlaceholder = null;
+	private @Nullable ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore, Double width, Double height) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore, @Nullable Double width, @Nullable Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
@@ -203,12 +204,12 @@ public class SoulHistoryEntry implements Soul {
 	}
 
 	@Override
-	public Double getWidth() {
+	public @Nullable Double getWidth() {
 		return mWidth;
 	}
 
 	@Override
-	public Double getHeight() {
+	public @Nullable Double getHeight() {
 		return mHeight;
 	}
 
@@ -246,6 +247,9 @@ public class SoulHistoryEntry implements Soul {
 		if (mPlaceholder == null) {
 			regenerateItems();
 		}
+		if (mPlaceholder == null) {
+			throw new RuntimeException("Placeholder is null despite regeneration");
+		}
 		return mPlaceholder;
 	}
 
@@ -253,6 +257,9 @@ public class SoulHistoryEntry implements Soul {
 	public ItemStack getBoS() {
 		if (mBoS == null) {
 			regenerateItems();
+		}
+		if (mBoS == null) {
+			throw new RuntimeException("BoS is null despite regeneration");
 		}
 		return mBoS;
 	}

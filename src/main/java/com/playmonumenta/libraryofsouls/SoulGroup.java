@@ -7,6 +7,7 @@ import java.util.Set;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public interface SoulGroup {
 	/* This is the label-ified name, with colors and spaces stripped */
@@ -29,9 +30,9 @@ public interface SoulGroup {
 	Map<Soul, Double> getAverageSouls();
 
 	/* Returns the minimum width/height of the group where they are set, otherwise null */
-	Double getWidth();
+	@Nullable Double getWidth();
 
-	Double getHeight();
+	@Nullable Double getHeight();
 
 	/* Attempt to summon the soul group; may summon fewer mobs if spawn conditions are not met */
 	List<Entity> summonGroup(Random random, World world, BoundingBox spawnBb);

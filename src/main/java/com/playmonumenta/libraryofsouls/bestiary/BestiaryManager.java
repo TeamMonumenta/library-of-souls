@@ -1,6 +1,5 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
@@ -8,7 +7,6 @@ import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryScoreboardStora
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryStorage;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -26,9 +25,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 public class BestiaryManager implements Listener {
-	private static BestiaryManager INSTANCE = null;
+	private static @Nullable BestiaryManager INSTANCE = null;
 
 	private final BestiaryStorage mStorage;
 	private final Logger mLogger;
@@ -66,13 +66,15 @@ public class BestiaryManager implements Listener {
 	}
 
 	public BestiaryManager getInstance() {
+		if (INSTANCE == null) {
+			throw new RuntimeException("Bestiary Manager not initialized");
+		}
 		return INSTANCE;
 	}
 
 	public static Map<SoulEntry, Integer> getAllKilledMobs(Player player, Collection<SoulEntry> searchSouls) {
 		if (INSTANCE == null) {
-			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
-			return Collections.emptyMap();
+			throw new RuntimeException("Bestiary Manager not initialized");
 		}
 
 		return INSTANCE.mStorage.getAllKilledMobs(player, searchSouls);
@@ -80,8 +82,7 @@ public class BestiaryManager implements Listener {
 
 	public static int getKillsForMob(Player player, SoulEntry soul) {
 		if (INSTANCE == null) {
-			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
-			return 0;
+			throw new RuntimeException("Bestiary Manager not initialized");
 		}
 
 		return INSTANCE.mStorage.getKillsForMob(player, soul);
@@ -89,8 +90,7 @@ public class BestiaryManager implements Listener {
 
 	public static void setKillsForMob(Player player, SoulEntry soul, int amount) {
 		if (INSTANCE == null) {
-			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
-			return;
+			throw new RuntimeException("Bestiary Manager not initialized");
 		}
 
 		INSTANCE.mStorage.setKillsForMob(player, soul, amount);
@@ -98,8 +98,7 @@ public class BestiaryManager implements Listener {
 
 	public static int addKillsToMob(Player player, SoulEntry soul, int amount) {
 		if (INSTANCE == null) {
-			LibraryOfSouls.getInstance().getLogger().severe("BestiaryManager not initialized!");
-			return 0;
+			throw new RuntimeException("Bestiary Manager not initialized");
 		}
 
 		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);
@@ -113,8 +112,7 @@ public class BestiaryManager implements Listener {
 		    !(entity instanceof Player) && damager instanceof Player) {
 			// Non-player living entity was damaged by player
 
-			String name = entity.getCustomName();
-			if (name != null && !name.isEmpty()) {
+			if (entity.customName() != null) {
 				// Damaged entity had a non-empty name
 
 				Set<String> tags = entity.getScoreboardTags();
@@ -141,8 +139,8 @@ public class BestiaryManager implements Listener {
 	public void entityDeathEvent(EntityDeathEvent event) {
 		Entity entity = event.getEntity();
 		if (entity instanceof LivingEntity) {
-			String name = entity.getCustomName();
-			if (name != null && !name.isEmpty()) {
+			Component name = entity.customName();
+			if (name != null) {
 				LivingEntity livingEntity = (LivingEntity)entity;
 				Player player = livingEntity.getKiller();
 				if (player != null) {

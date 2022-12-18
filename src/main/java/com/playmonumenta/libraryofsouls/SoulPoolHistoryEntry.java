@@ -18,6 +18,7 @@ import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public class SoulPoolHistoryEntry implements SoulGroup {
 	private final String mLabel;
@@ -196,7 +197,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Double getWidth() {
+	public @Nullable Double getWidth() {
 		Double result = null;
 		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());
@@ -213,7 +214,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	}
 
 	@Override
-	public Double getHeight() {
+	public @Nullable Double getHeight() {
 		Double result = null;
 		for (Map.Entry<String, Integer> entry : mEntryWeights.entrySet()) {
 			SoulGroup group = SoulsDatabase.getInstance().getSoulGroup(entry.getKey());

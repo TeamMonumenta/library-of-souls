@@ -33,6 +33,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
 
 public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private final Set<String> mLocs;
@@ -137,12 +138,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public Double getWidth() {
+	public @Nullable Double getWidth() {
 		return mHistory.get(0).getWidth();
 	}
 
 	@Override
-	public Double getHeight() {
+	public @Nullable Double getHeight() {
 		return mHistory.get(0).getHeight();
 	}
 

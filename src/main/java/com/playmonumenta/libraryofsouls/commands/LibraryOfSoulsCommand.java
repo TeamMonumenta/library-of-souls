@@ -6,6 +6,8 @@ import com.playmonumenta.libraryofsouls.LibraryOfSoulsAPI;
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulGroup;
+import com.playmonumenta.libraryofsouls.SoulPartyEntry;
+import com.playmonumenta.libraryofsouls.SoulPoolEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
@@ -77,7 +79,11 @@ public class LibraryOfSoulsCommand {
 				String partyLabel = (String)args[1];
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Party counts:"));
-				for (Map.Entry<String, Integer> entry : database.getSoulParty(partyLabel).getEntryCounts().entrySet()) {
+				SoulPartyEntry party = database.getSoulParty(partyLabel);
+				if (party == null) {
+					throw CommandAPI.failWithString("Party '" + partyLabel + "' does not exist");
+				}
+				for (Map.Entry<String, Integer> entry : party.getEntryCounts().entrySet()) {
 					String entryLabel = entry.getKey();
 					String entryCount = Integer.toString(entry.getValue());
 					String entryCommand = "/los updateparty " + partyLabel + " " + entryLabel + " " + entryCount;
@@ -98,7 +104,11 @@ public class LibraryOfSoulsCommand {
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Pool weights:"));
 				long totalWeight = 0;
-				for (Map.Entry<String, Integer> entry : database.getSoulPool(poolLabel).getEntryWeights().entrySet()) {
+				SoulPoolEntry pool = database.getSoulPool(poolLabel);
+				if (pool == null) {
+					throw CommandAPI.failWithString("Pool '" + poolLabel + "' does not exist");
+				}
+				for (Map.Entry<String, Integer> entry : pool.getEntryWeights().entrySet()) {
 					String entryLabel = entry.getKey();
 					int weight = entry.getValue();
 					totalWeight += weight;
@@ -173,6 +183,9 @@ public class LibraryOfSoulsCommand {
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
 				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(null);
+				if (souls == null) {
+					throw CommandAPI.failWithString("Empty area not found - this is a code bug, should not be possible to get here");
+				}
 				new SoulsInventory(player, souls, "No Location")
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
@@ -219,7 +232,11 @@ public class LibraryOfSoulsCommand {
 			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				Soul soul = SoulsDatabase.getInstance().getSoul((String)args[1]);
+				String name = (String)args[1];
+				Soul soul = SoulsDatabase.getInstance().getSoul(name);
+				if (soul == null) {
+					throw CommandAPI.failWithString("Soul '" + name + "' not found");
+				}
 				SpawnerInventory.openSpawnerInventory(soul, player, null);
 			})
 			.register();

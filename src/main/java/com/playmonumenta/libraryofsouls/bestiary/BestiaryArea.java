@@ -24,10 +24,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 
 public class BestiaryArea implements BestiaryEntryInterface {
-	private final BestiaryArea mParent;
+	private final @Nullable BestiaryArea mParent;
 	private final Component mName;
-	private final String mLocation;
-	private final NamespacedKey mAdvancementKey;
+	private final @Nullable String mLocation;
+	private final @Nullable NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
 	private final List<BestiaryEntryInterface> mChildren;
 
@@ -143,7 +143,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	 *--------------------------------------------------------------------------------*/
 
 	/* Note that this is *not* in the interface - because there's no way for a regular mob to know what its parent is */
-	public BestiaryArea getBestiaryParent() {
+	public @Nullable BestiaryArea getBestiaryParent() {
 		return mParent;
 	}
 

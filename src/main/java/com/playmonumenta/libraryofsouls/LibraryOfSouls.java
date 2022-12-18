@@ -43,7 +43,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 			/* Bestiary config file */
 			configFile = new File(dataFolder, "bestiary_config.yml");
-			if (configFile.exists() && configFile.isFile() && SoulsDatabase.getInstance() != null) {
+			if (configFile.exists() && configFile.isFile()) {
 				try {
 					FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
 

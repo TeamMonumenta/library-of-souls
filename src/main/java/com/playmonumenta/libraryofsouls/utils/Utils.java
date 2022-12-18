@@ -1,52 +1,25 @@
 package com.playmonumenta.libraryofsouls.utils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
 
 public class Utils {
-	private static final Gson GSON = new GsonBuilder().setLenient().create();
+	public static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
+	public static final PlainTextComponentSerializer PLAIN_SERIALIZER = PlainTextComponentSerializer.plainText();
 
-	/*
-	 * Valid examples:
-	 *   §6Master Scavenger
-	 *   "§6Master Scavenger"
-	 *   "{\"text\":\"§6Master Scavenger\"}"
-	 */
-	public static String stripColorsAndJSON(String str) {
-		if (str == null || str.isEmpty()) {
-			return str;
-		}
-
-		try {
-			JsonElement element = GSON.fromJson(str, JsonElement.class);
-			return stripColorsAndJSON(element);
-		} catch (Exception ex) {
-			// Not JSON...
-			return ChatColor.stripColor(str);
-		}
+	public static String plainText(Component formattedText) {
+		// This is only legacy text because we have a bunch of section symbols lying around that need to be updated.
+		String legacyText = PLAIN_SERIALIZER.serialize(formattedText);
+		return plainFromLegacy(legacyText);
 	}
 
-	public static String stripColorsAndJSON(JsonElement element) {
-		String str = "";
-		if (element.isJsonObject()) {
-			JsonElement textElement = element.getAsJsonObject().get("text");
-			if (textElement != null) {
-				str = textElement.getAsString();
-			}
-		} else if (element.isJsonArray()) {
-			str = "";
-			for (JsonElement arrayElement : element.getAsJsonArray()) {
-				str += stripColorsAndJSON(arrayElement);
-			}
-		} else {
-			str = element.getAsString();
-		}
-		return ChatColor.stripColor(str);
+	public static String plainFromLegacy(String legacyText) {
+		return PLAIN_SERIALIZER.serialize(LEGACY_SERIALIZER.deserialize(legacyText));
 	}
 
 	public static String hashColor(String in) {
@@ -81,10 +54,21 @@ public class Utils {
 		}
 	}
 
+	public static String getLabelFromName(Component name) throws Exception {
+		String label = null;
+		try {
+			label = plainText(name).replaceAll("[^A-Za-z]", "");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
+		}
+		return label;
+	}
+
 	public static String getLabelFromName(String name) throws Exception {
 		String label = null;
 		try {
-			label = Utils.stripColorsAndJSON(name).replaceAll("[^A-Za-z]", "");
+			label = plainFromLegacy(name).replaceAll("[^A-Za-z]", "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
