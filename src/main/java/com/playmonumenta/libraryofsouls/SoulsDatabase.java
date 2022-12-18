@@ -292,12 +292,12 @@ public class SoulsDatabase {
 	public void updateParty(Player player, String label, String entryLabel, int count) throws WrapperCommandSyntaxException {
 		SoulPartyEntry soulParty = getSoulParty(label);
 		if (soulParty == null) {
-			CommandAPI.fail("Soul party '" + label + "' does not exist!");
+			throw CommandAPI.failWithString("Soul party '" + label + "' does not exist!");
 		}
 
 		SoulGroup soulGroup = getSoulGroup(entryLabel);
 		if (soulGroup == null && count <= 0) {
-			CommandAPI.fail("Soul group '" + entryLabel + "' does not exist!");
+			throw CommandAPI.failWithString("Soul group '" + entryLabel + "' does not exist!");
 		}
 
 		soulParty.update(player, entryLabel, count);
@@ -326,12 +326,12 @@ public class SoulsDatabase {
 	public void updatePool(Player player, String label, String entryLabel, int weight) throws WrapperCommandSyntaxException {
 		SoulPoolEntry soulPool = getSoulPool(label);
 		if (soulPool == null) {
-			CommandAPI.fail("Soul Pool '" + label + "' does not exist!");
+			throw CommandAPI.failWithString("Soul Pool '" + label + "' does not exist!");
 		}
 
 		SoulGroup soulGroup = getSoulGroup(entryLabel);
 		if (soulGroup == null && weight <= 0) {
-			CommandAPI.fail("Soul group '" + entryLabel + "' does not exist!");
+			throw CommandAPI.failWithString("Soul group '" + entryLabel + "' does not exist!");
 		}
 
 		soulPool.update(player, entryLabel, weight);

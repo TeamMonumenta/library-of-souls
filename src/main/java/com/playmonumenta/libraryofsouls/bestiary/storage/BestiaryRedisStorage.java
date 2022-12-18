@@ -7,7 +7,6 @@ import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
 import com.playmonumenta.redissync.event.PlayerSaveEvent;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -237,7 +236,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		if (playerKills == null) {
 			/* TODO: Instead of throwing an exception, should force complete this on the main thread */
 			mLogger.severe("Attempted to get all killed mobs but bestiary data hasn't finished loading yet");
-			return Collections.emptyMap();
+			return new HashMap<>();
 		}
 
 		final Map<SoulEntry, Integer> map = new HashMap<>();

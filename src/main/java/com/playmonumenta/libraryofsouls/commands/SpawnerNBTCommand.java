@@ -4,12 +4,9 @@ import com.playmonumenta.libraryofsouls.SpawnerInventory;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
@@ -21,14 +18,12 @@ public class SpawnerNBTCommand {
 
 	public static void registerType(String method) {
 		CommandPermission perms = CommandPermission.fromString("los.nbtheldspawner");
-		List<Argument> arguments = new ArrayList<>();
 
-		arguments.add(new MultiLiteralArgument(method));
-		arguments.add(new IntegerArgument("value"));
 
 		new CommandAPICommand("nbtheldspawner")
 			.withPermission(perms)
-			.withArguments(arguments)
+			.withArguments(new MultiLiteralArgument(method))
+			.withArguments(new IntegerArgument("value"))
 			.executes((sender, args) -> {
 				changeSpawnerNBT(method, (Integer)args[1], (Player)sender);
 			})
@@ -53,15 +48,13 @@ public class SpawnerNBTCommand {
 		switch (method) {
 		case "MaxSpawnDelay":
 			if (argument < spawner.getMinSpawnDelay()) {
-				CommandAPI.fail("Maximum Spawn Delay cannot be smaller than Minimum Spawn Delay!");
-				return;
+				throw CommandAPI.failWithString("Maximum Spawn Delay cannot be smaller than Minimum Spawn Delay!");
 			}
 			spawner.setMaxSpawnDelay(argument);
 			break;
 		case "MinSpawnDelay":
 			if (argument > spawner.getMaxSpawnDelay()) {
-				CommandAPI.fail("Minimum Spawn Delay cannot be larger than Maximum Spawn Delay!");
-				return;
+				throw CommandAPI.failWithString("Minimum Spawn Delay cannot be larger than Maximum Spawn Delay!");
 			}
 			spawner.setMinSpawnDelay(argument);
 			break;

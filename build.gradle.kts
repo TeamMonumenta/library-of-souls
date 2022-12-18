@@ -50,7 +50,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly("dev.jorel.CommandAPI:commandapi-core:6.0.0")
+    compileOnly("dev.jorel.CommandAPI:commandapi-core:8.7.0")
     compileOnly("com.goncalomb.bukkit:nbteditor:3.3-SNAPSHOT")
     compileOnly("com.playmonumenta:redissync:3.0")
     compileOnly("com.google.code.gson:gson:2.8.5")

@@ -59,16 +59,16 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		Map<String, Integer> newEntryWeights = new HashMap<>(mEntryWeights);
 		if (weight <= 0) {
 			if (!newEntryWeights.containsKey(entryLabel)) {
-				CommandAPI.fail(getLabel() + " does not contain " + entryLabel);
+				throw CommandAPI.failWithString(getLabel() + " does not contain " + entryLabel);
 			}
 			newEntryWeights.remove(entryLabel);
 		} else {
 			SoulGroup entry = SoulsDatabase.getInstance().getSoulGroup(entryLabel);
 			if (entry == null) {
-				CommandAPI.fail(entryLabel + " does not exist.");
+				throw CommandAPI.failWithString(entryLabel + " does not exist.");
 			}
 			if (entry.getPossibleSoulGroupLabels().contains(getLabel())) {
-				CommandAPI.fail(entryLabel + " contains " + getLabel());
+				throw CommandAPI.failWithString(entryLabel + " contains " + getLabel());
 			}
 			newEntryWeights.put(entryLabel, weight);
 		}

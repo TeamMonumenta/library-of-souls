@@ -47,16 +47,16 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 		Map<String, Integer> newEntryCounts = new HashMap<>(mEntryCounts);
 		if (count <= 0) {
 			if (!newEntryCounts.containsKey(entryLabel)) {
-				CommandAPI.fail(getLabel() + " does not contain " + entryLabel);
+				throw CommandAPI.failWithString(getLabel() + " does not contain " + entryLabel);
 			}
 			newEntryCounts.remove(entryLabel);
 		} else {
 			SoulGroup entry = SoulsDatabase.getInstance().getSoulGroup(entryLabel);
 			if (entry == null) {
-				CommandAPI.fail(entryLabel + " does not exist.");
+				throw CommandAPI.failWithString(entryLabel + " does not exist.");
 			}
 			if (entry.getPossibleSoulGroupLabels().contains(getLabel())) {
-				CommandAPI.fail(entryLabel + " contains " + getLabel());
+				throw CommandAPI.failWithString(entryLabel + " contains " + getLabel());
 			}
 			newEntryCounts.put(entryLabel, count);
 		}
