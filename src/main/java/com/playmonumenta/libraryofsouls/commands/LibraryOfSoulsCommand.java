@@ -1,12 +1,5 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSoulsAPI;
@@ -16,7 +9,26 @@ import com.playmonumenta.libraryofsouls.SoulGroup;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
-
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.CommandPermission;
+import dev.jorel.commandapi.SuggestionInfo;
+import dev.jorel.commandapi.arguments.Argument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.LocationArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
+import dev.jorel.commandapi.arguments.ScoreHolderArgument;
+import dev.jorel.commandapi.arguments.ScoreHolderArgument.ScoreHolderType;
+import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ProxiedCommandSender;
@@ -24,22 +36,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.BoundingBox;
-
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.SuggestionInfo;
-import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.LocationArgument;
-import dev.jorel.commandapi.arguments.IntegerArgument;
-import dev.jorel.commandapi.arguments.MultiLiteralArgument;
-import dev.jorel.commandapi.arguments.ScoreHolderArgument;
-import dev.jorel.commandapi.arguments.ScoreHolderArgument.ScoreHolderType;
-import dev.jorel.commandapi.arguments.StringArgument;
-import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.ClickEvent;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */

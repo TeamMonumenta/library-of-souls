@@ -1,5 +1,11 @@
 package com.playmonumenta.libraryofsouls.bestiary.storage;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.SoulsDatabase;
+import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
+import com.playmonumenta.redissync.event.PlayerSaveEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,14 +13,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.SoulsDatabase;
-import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
-import com.playmonumenta.redissync.event.PlayerSaveEvent;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

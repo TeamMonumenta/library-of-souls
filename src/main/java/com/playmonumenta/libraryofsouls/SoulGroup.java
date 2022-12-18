@@ -1,13 +1,12 @@
 package com.playmonumenta.libraryofsouls;
 
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.util.BoundingBox;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.util.BoundingBox;
 
 public interface SoulGroup {
 	/* This is the label-ified name, with colors and spaces stripped */

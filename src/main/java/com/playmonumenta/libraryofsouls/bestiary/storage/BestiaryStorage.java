@@ -1,10 +1,8 @@
 package com.playmonumenta.libraryofsouls.bestiary.storage;
 
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import java.util.Collection;
 import java.util.Map;
-
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
 import org.bukkit.entity.Player;
 
 public interface BestiaryStorage {

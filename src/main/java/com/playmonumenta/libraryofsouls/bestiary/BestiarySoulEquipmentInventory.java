@@ -1,24 +1,21 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import java.util.List;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private static final ItemStack NULL_ITEM = new ItemStack(Material.BARRIER);

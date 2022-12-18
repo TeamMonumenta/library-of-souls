@@ -1,15 +1,10 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
-
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -18,12 +13,13 @@ import dev.jorel.commandapi.arguments.EntitySelectorArgument.EntitySelector;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.arguments.TextArgument;
-
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

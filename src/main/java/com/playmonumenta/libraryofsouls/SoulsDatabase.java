@@ -1,5 +1,16 @@
 package com.playmonumenta.libraryofsouls;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.utils.FileUtils;
+import com.playmonumenta.libraryofsouls.utils.Utils;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -20,19 +30,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.utils.FileUtils;
-import com.playmonumenta.libraryofsouls.utils.Utils;
-
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 
 

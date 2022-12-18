@@ -1,13 +1,15 @@
 package com.playmonumenta.libraryofsouls;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
-
+import java.util.ArrayList;
+import java.util.List;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,11 +22,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class SpawnerInventory extends CustomInventory {
 	private final SoulsInventory mGoBackInventory;

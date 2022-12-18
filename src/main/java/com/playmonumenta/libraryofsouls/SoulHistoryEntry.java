@@ -1,5 +1,15 @@
 package com.playmonumenta.libraryofsouls;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
+import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.ItemStackNBTWrapper;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -13,7 +23,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,23 +39,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
-
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.ItemStackNBTWrapper;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.playmonumenta.libraryofsouls.utils.Utils;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 public class SoulHistoryEntry implements Soul, SoulGroup {
 	private static Gson gson = null;

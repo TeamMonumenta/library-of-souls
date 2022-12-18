@@ -1,11 +1,9 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import java.util.List;
-
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-
-import net.kyori.adventure.text.Component;
 
 public interface BestiaryEntryInterface {
 	/* Name of this bestiary entry for display purposes */

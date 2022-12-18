@@ -1,17 +1,6 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
-
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.CreatureSpawner;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
-
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -19,6 +8,14 @@ import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.block.CreatureSpawner;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
 public class SpawnerNBTCommand {
 

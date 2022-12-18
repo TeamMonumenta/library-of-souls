@@ -1,20 +1,17 @@
 package com.playmonumenta.libraryofsouls.bestiary.storage;
 
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 
 public class BestiaryScoreboardStorage implements BestiaryStorage {
 	@Override

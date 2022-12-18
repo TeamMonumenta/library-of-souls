@@ -1,11 +1,26 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.MobNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -22,24 +37,6 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
-
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.MobNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
-import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 public class BestiarySoulInventory extends CustomInventory {
 	private static EnumMap<Material, Double> mDefaultArmor = new EnumMap<>(Material.class);

@@ -1,27 +1,24 @@
 package com.playmonumenta.libraryofsouls;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 
 public class SoulPoolHistoryEntry implements SoulGroup {
 	private static Gson gson = null;

@@ -1,26 +1,5 @@
 package com.playmonumenta.libraryofsouls;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.BoundingBox;
-
 import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
@@ -33,10 +12,28 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
-
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.BoundingBox;
 
 public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	private static Gson gson = null;

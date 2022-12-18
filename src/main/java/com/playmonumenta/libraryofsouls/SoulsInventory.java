@@ -1,11 +1,9 @@
 package com.playmonumenta.libraryofsouls;
 
-import java.util.List;
-
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.goncalomb.bukkit.mylib.utils.UtilsMc;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

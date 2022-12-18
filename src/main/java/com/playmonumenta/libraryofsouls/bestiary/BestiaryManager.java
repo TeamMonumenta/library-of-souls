@@ -1,16 +1,5 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-import java.util.logging.Logger;
-
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
@@ -18,7 +7,15 @@ import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryScoreboardStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryStorage;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;

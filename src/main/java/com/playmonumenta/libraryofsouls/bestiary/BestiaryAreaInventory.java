@@ -1,8 +1,14 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.goncalomb.bukkit.mylib.utils.CustomInventory;
+import com.playmonumenta.libraryofsouls.LibraryOfSouls;
+import com.playmonumenta.libraryofsouls.SoulEntry;
 import java.util.ArrayList;
 import java.util.List;
-
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,15 +16,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.SoulEntry;
-
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 public class BestiaryAreaInventory extends CustomInventory {
 	public static final Material EMPTY_MAT = Material.BLUE_STAINED_GLASS_PANE;

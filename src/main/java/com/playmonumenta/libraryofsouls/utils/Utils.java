@@ -1,13 +1,12 @@
 package com.playmonumenta.libraryofsouls.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 
 public class Utils {
 	private static final Gson GSON = new GsonBuilder().setLenient().create();
