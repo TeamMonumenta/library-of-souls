@@ -5,6 +5,7 @@ import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
+import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +14,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -21,6 +21,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 public class BestiaryArea implements BestiaryEntryInterface {
 	private final BestiaryArea mParent;
@@ -38,17 +39,17 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		NOT_FOUND_ITEM.setItemMeta(meta);
 	}
 
-	public BestiaryArea(BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
+	public BestiaryArea(@Nullable BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
-		mName = MiniMessage.get().parse(name).decoration(TextDecoration.ITALIC, false);
+		mName = MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false);
 
 		if (config.contains("location_tag") && config.contains("children")) {
-			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " should contain only location_tag OR children, not both");
+			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " should contain only location_tag OR children, not both");
 		} else if (config.contains("location_tag")) {
 			mLocation = config.getString("location_tag");
 			List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(mLocation);
 			if (souls == null || souls.isEmpty()) {
-				throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " specifies nonexistent location " + mLocation);
+				throw new Exception("Bestiary entry " + Utils.plainText(mName) + " specifies nonexistent location " + mLocation);
 			}
 			mChildren = new ArrayList<BestiaryEntryInterface>(souls);
 		} else if (config.contains("children")) {
@@ -65,7 +66,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 				}
 			}
 		} else {
-			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " must contain location_tag OR children");
+			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " must contain location_tag OR children");
 		}
 
 		if (config.contains("required_advancement")) {
@@ -88,17 +89,17 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			compound.setByte("Count", (byte)1);
 			mItem = NBTUtils.itemStackFromNBTData(compound);
 			if (mItem == null || mItem.getType().isAir()) {
-				throw new Exception("Item for " + PlainComponentSerializer.plain().serialize(mName) + " failed to parse, was: " + config.getString("item"));
+				throw new Exception("Item for " + Utils.plainText(mName) + " failed to parse, was: " + config.getString("item"));
 			}
 		} else {
-			throw new Exception("Bestiary entry " + PlainComponentSerializer.plain().serialize(mName) + " is missing 'item'");
+			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " is missing 'item'");
 		}
 
 		ItemMeta meta = mItem.getItemMeta();
 		meta.displayName(mName.colorIfAbsent(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 
 		if (config.contains("subtitle")) {
-			Component subtitle = MiniMessage.get().parse(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
+			Component subtitle = MiniMessage.miniMessage().deserialize(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
 			meta.lore(Arrays.asList(subtitle));
 		}
 
@@ -131,7 +132,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
+	public void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
 		/* Note this ignores the provided parent - the inventory will know to call getBestiaryParent() */
 		/* Maybe someday could use peers and peerIndex to go back and forth between areas too? */
 		new BestiaryAreaInventory(player, this, 0).openInventory(player, LibraryOfSouls.getInstance());

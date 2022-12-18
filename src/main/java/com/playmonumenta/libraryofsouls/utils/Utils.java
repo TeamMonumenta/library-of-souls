@@ -82,10 +82,6 @@ public class Utils {
 	}
 
 	public static String getLabelFromName(String name) throws Exception {
-		if (name == null) {
-			return null;
-		}
-
 		String label = null;
 		try {
 			label = Utils.stripColorsAndJSON(name).replaceAll("[^A-Za-z]", "");

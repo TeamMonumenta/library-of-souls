@@ -37,6 +37,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
+import org.jetbrains.annotations.Nullable;
 
 public class BestiarySoulInventory extends CustomInventory {
 	private static EnumMap<Material, Double> mDefaultArmor = new EnumMap<>(Material.class);
@@ -520,7 +521,7 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	// Use this one if you do care about the slot
-	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation, EquipmentSlot slot) {
+	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation, @Nullable EquipmentSlot slot) {
 		ItemMeta meta = item.getItemMeta();
 		double attributeNum = 0;
 		if (meta.getAttributeModifiers(attribute) != null) {
@@ -584,7 +585,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		return armorItem;
 	}
 
-	private static ItemStack getDamageItem(ItemStack item, double damage, double bowDamage, double explodePower, double horseJumpPower, double handDamage, DamageType type) {
+	private static ItemStack getDamageItem(@Nullable ItemStack item, double damage, double bowDamage, double explodePower, double horseJumpPower, double handDamage, DamageType type) {
 		ItemStack damageItem = item;
 		if (damageItem == null || damageItem.getItemMeta() == null) {
 			if (type == DamageType.RANGED) {

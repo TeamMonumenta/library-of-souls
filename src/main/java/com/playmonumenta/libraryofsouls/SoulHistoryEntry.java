@@ -6,7 +6,6 @@ import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.ItemStackNBTWrapper;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.Utils;
@@ -17,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,7 +25,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -40,10 +37,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
 
-public class SoulHistoryEntry implements Soul, SoulGroup {
-	private static Gson gson = null;
-
-	private class HitboxSize {
+public class SoulHistoryEntry implements Soul {
+	private static class HitboxSize {
 		private double mWidth;
 		private double mHeight;
 
@@ -102,7 +97,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		mHeight = height;
 
 		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
-		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
+		mLabel = Utils.getLabelFromName(Utils.plainText(mName));
 		if (mLabel == null || mLabel.isEmpty()) {
 			throw new Exception("Refused to load Library of Souls mob with no name!");
 		}
@@ -124,7 +119,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		mHeight = hitboxSize.height();
 
 		mName = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
-		mLabel = Utils.getLabelFromName(PlainComponentSerializer.plain().serialize(mName));
+		mLabel = Utils.getLabelFromName(Utils.plainText(mName));
 		if (mLabel == null || mLabel.isEmpty()) {
 			throw new Exception("Refused to load Library of Souls mob with no name!");
 		}
@@ -274,7 +269,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 
 	@Override
 	public Component getDisplayName() {
-		return Component.text(PlainComponentSerializer.plain().serialize(mName), isElite() ? NamedTextColor.GOLD : isBoss() ? NamedTextColor.RED : NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false);
+		return Component.text(Utils.plainText(mName), isElite() ? NamedTextColor.GOLD : isBoss() ? NamedTextColor.RED : NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false);
 	}
 
 	@Override
@@ -315,7 +310,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	 *--------------------------------------------------------------------------------*/
 
 	private List<String> stringifyWrapList(String prefix, int maxLen, Object[] elements) {
-		List<String> ret = new LinkedList<String>();
+		List<String> ret = new ArrayList<String>();
 
 		String cur = "" + prefix;
 		boolean first = true;
@@ -347,7 +342,7 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 		EntityNBT entityNBT = EntityNBT.fromEntityData(mNBT);
 
 		try {
-			mBoS = (new BookOfSouls(entityNBT)).getBook();
+			mBoS = new BookOfSouls(entityNBT).getBook();
 		} catch (Exception ex) {
 			Logger logger = LibraryOfSouls.getInstance().getLogger();
 			logger.warning("Library of souls entry for '" + mName + "' failed to load: " + ex.getMessage());
@@ -718,10 +713,6 @@ public class SoulHistoryEntry implements Soul, SoulGroup {
 	}
 
 	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, String lore) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
-		}
-
 		JsonElement elem = obj.get("mojangson");
 
 		NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());

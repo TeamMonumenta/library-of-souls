@@ -1,6 +1,5 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.jorel.commandapi.CommandAPI;
@@ -21,8 +20,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 
 public class SoulPoolHistoryEntry implements SoulGroup {
-	private static Gson gson = null;
-
 	private final String mLabel;
 	private final long mModifiedOn;
 	private final String mModifiedBy;
@@ -270,10 +267,6 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	}
 
 	public static SoulPoolHistoryEntry fromJson(JsonObject obj) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
-		}
-
 		String label = obj.get("label").getAsString();
 		long modifiedOn = obj.get("modified_on").getAsLong();
 		String modifiedBy = obj.get("modified_by").getAsString();

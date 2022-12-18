@@ -30,6 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 
 
@@ -38,7 +39,7 @@ public class SoulsDatabase {
 	private static final String SOUL_PARTIES_DATABASE_FILE = "soul_parties_database.json";
 	private static final String SOUL_POOLS_DATABASE_FILE = "soul_pools_database.json";
 
-	private static SoulsDatabase INSTANCE = null;
+	private static @Nullable SoulsDatabase INSTANCE = null;
 
 	private static final Comparator<String> COMPARATOR = new Comparator<String>() {
 		@Override
@@ -129,7 +130,7 @@ public class SoulsDatabase {
 		}.runTaskTimer(mPlugin, 0L, 1L);
 	}
 
-	public List<SoulEntry> getSoulsByLocation(String location) {
+	public @Nullable List<SoulEntry> getSoulsByLocation(@Nullable String location) {
 		if (location == null) {
 			return mNoLocMobs;
 		} else {
@@ -137,7 +138,7 @@ public class SoulsDatabase {
 		}
 	}
 
-	public List<SoulEntry> getSoulsByType(String id) {
+	public @Nullable List<SoulEntry> getSoulsByType(String id) {
 		return mTypesIndex.get(id);
 	}
 
@@ -147,7 +148,7 @@ public class SoulsDatabase {
 		return souls;
 	}
 
-	public SoulEntry getSoul(int index) {
+	public @Nullable SoulEntry getSoul(int index) {
 		if (index >= mSouls.size()) {
 			return null;
 		}
@@ -155,7 +156,7 @@ public class SoulsDatabase {
 		return (SoulEntry)mSouls.values().toArray()[index];
 	}
 
-	public SoulEntry getSoul(String name) {
+	public @Nullable SoulEntry getSoul(String name) {
 		return mSouls.get(name);
 	}
 
@@ -165,7 +166,7 @@ public class SoulsDatabase {
 		return soulParties;
 	}
 
-	public SoulPartyEntry getSoulParty(int index) {
+	public @Nullable SoulPartyEntry getSoulParty(int index) {
 		if (index >= mSoulParties.size()) {
 			return null;
 		}
@@ -173,9 +174,8 @@ public class SoulsDatabase {
 		return (SoulPartyEntry)mSoulParties.values().toArray()[index];
 	}
 
-	public SoulPartyEntry getSoulParty(String label) {
-		SoulPartyEntry soulParty = mSoulParties.get(label);
-		return soulParty;
+	public @Nullable SoulPartyEntry getSoulParty(String label) {
+		return mSoulParties.get(label);
 	}
 
 	public List<SoulPoolEntry> getSoulPools() {
@@ -184,7 +184,7 @@ public class SoulsDatabase {
 		return soulPools;
 	}
 
-	public SoulPoolEntry getSoulPool(int index) {
+	public @Nullable SoulPoolEntry getSoulPool(int index) {
 		if (index >= mSoulPools.size()) {
 			return null;
 		}
@@ -192,11 +192,11 @@ public class SoulsDatabase {
 		return (SoulPoolEntry)mSoulPools.values().toArray()[index];
 	}
 
-	public SoulPoolEntry getSoulPool(String label) {
+	public @Nullable SoulPoolEntry getSoulPool(String label) {
 		return mSoulPools.get(label);
 	}
 
-	public SoulGroup getSoulGroup(String label) {
+	public @Nullable SoulGroup getSoulGroup(String label) {
 		if (label.startsWith(LibraryOfSoulsAPI.SOUL_PARTY_PREFIX)) {
 			return mSoulParties.get(label);
 		} else if (label.startsWith(LibraryOfSoulsAPI.SOUL_POOL_PREFIX)) {
@@ -543,6 +543,9 @@ public class SoulsDatabase {
 	}
 
 	public static SoulsDatabase getInstance() {
+		if (INSTANCE == null) {
+			throw new RuntimeException("SoulsDatabase not loaded");
+		}
 		return INSTANCE;
 	}
 

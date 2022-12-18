@@ -104,26 +104,39 @@ public class BestiaryCommand {
 				.withPermission(CommandPermission.fromString("los.bestiary.info"))
 				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.executesPlayer((sender, args) -> {
-					SoulEntry soul = SoulsDatabase.getInstance().getSoul((String)args[0]);
-					LoreTestInventory inv = new LoreTestInventory(soul, sender);
-					inv.openInventory(sender);
+					String name = (String)args[0];
+					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+					if (soul == null) {
+						CommandAPI.fail("Mob '" + name + "' not found");
+					} else {
+						LoreTestInventory inv = new LoreTestInventory(soul, sender);
+						inv.openInventory(sender);
+					}
 				}))
-			.withSubcommand(new CommandAPICommand("lore")
-					.withPermission(CommandPermission.fromString("los.bestiary.lore"))
-					.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
-					.withArguments(new TextArgument("lore"))
-					.executesPlayer((sender, args) -> {
-						SoulsDatabase.getInstance().getSoul((String)args[0]).setLore((String)args[1], sender);
-					}))
 			.withSubcommand(new CommandAPICommand("lore")
 				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
 				.withArguments(new TextArgument("lore"))
-				.executesProxy((sender, args) -> {
-					if (sender.getCallee() instanceof Player) {
-						SoulsDatabase.getInstance().getSoul((String)args[0]).setLore((String)args[1], (Player)sender.getCallee());
+				.executesPlayer((sender, args) -> {
+					String name = (String)args[0];
+					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+					if (soul == null) {
+						CommandAPI.fail("Mob '" + name + "' not found");
 					} else {
-						sender.getCaller().sendMessage("Callee must be instance of Player");
+						soul.setLore((String)args[1], sender);
+					}
+				})
+				.executesProxy((sender, args) -> {
+					if (sender.getCallee() instanceof Player player) {
+						String name = (String)args[0];
+						SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+						if (soul == null) {
+							CommandAPI.fail("Mob '" + name + "' not found");
+						} else {
+							soul.setLore((String)args[1], player);
+						}
+					} else {
+						CommandAPI.fail("Callee must be instance of Player");
 					}
 				}))
 			.withSubcommand(new CommandAPICommand("lore")
@@ -137,22 +150,23 @@ public class BestiaryCommand {
 	}
 
 	private static class LoreTestInventory {
-		public static Inventory inv;
+		private final Inventory mInv;
+
 		private LoreTestInventory(SoulEntry soul, Player player) {
-			inv = Bukkit.createInventory(player, 54);
+			mInv = Bukkit.createInventory(player, 54);
 			ItemStack loreItem = getLoreItem(soul);
-			for(int i = 0; i < 54; i++) {
-				inv.setItem(i, new ItemStack(Material.BLUE_STAINED_GLASS_PANE));
+			for (int i = 0; i < 54; i++) {
+				mInv.setItem(i, new ItemStack(Material.BLUE_STAINED_GLASS_PANE));
 			}
 
-			inv.setItem(33, loreItem);
+			mInv.setItem(33, loreItem);
 		}
 
-		public void openInventory(Player player) {
-			player.openInventory(inv);
+		private void openInventory(Player player) {
+			player.openInventory(mInv);
 		}
 
-		public ItemStack getLoreItem(SoulEntry soul) {
+		private ItemStack getLoreItem(SoulEntry soul) {
 			String lore = soul.getLore();
 
 			ItemStack loreItem = new ItemStack(Material.BOOK);

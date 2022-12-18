@@ -40,8 +40,9 @@ public class BestiaryManager implements Listener {
 	 * Entity UUID key, Player UUID Set
 	 * The size here is automatically managed by removing the oldest entries as the map fills up
 	 */
-	private final Map<UUID, Set<UUID>> mDamageTracker = new LinkedHashMap<>(MAX_BOSS_TRACK_ENTRIES + 1, .75F, true) {
+	private final Map<UUID, Set<UUID>> mDamageTracker = new LinkedHashMap<UUID, Set<UUID>>(MAX_BOSS_TRACK_ENTRIES + 1, .75F, true) {
 		// This method is called just after a new entry has been added
+		@Override
 		public boolean removeEldestEntry(Map.Entry<UUID, Set<UUID>> eldest) {
 			return size() > MAX_BOSS_TRACK_ENTRIES;
 		}
@@ -104,11 +105,11 @@ public class BestiaryManager implements Listener {
 		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void entityDamageByEntityEvent(EntityDamageByEntityEvent event) {
 		Entity entity = event.getEntity();
 		Entity damager = event.getDamager();
-		if (!event.isCancelled() && entity instanceof LivingEntity &&
+		if (entity instanceof LivingEntity &&
 		    !(entity instanceof Player) && damager instanceof Player) {
 			// Non-player living entity was damaged by player
 
@@ -136,10 +137,10 @@ public class BestiaryManager implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void entityDeathEvent(EntityDeathEvent event) {
 		Entity entity = event.getEntity();
-		if (!event.isCancelled() && entity instanceof LivingEntity) {
+		if (entity instanceof LivingEntity) {
 			String name = entity.getCustomName();
 			if (name != null && !name.isEmpty()) {
 				LivingEntity livingEntity = (LivingEntity)entity;

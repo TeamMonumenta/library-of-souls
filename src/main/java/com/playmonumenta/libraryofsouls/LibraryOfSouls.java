@@ -12,13 +12,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 public class LibraryOfSouls extends JavaPlugin {
-	private static LibraryOfSouls INSTANCE = null;
+	private static @Nullable LibraryOfSouls INSTANCE = null;
 
 	public static class Config {
 		private static boolean mReadOnly = true;
-		private static BestiaryArea mBestiary = null;
+		private static @Nullable BestiaryArea mBestiary = null;
 
 		static void load(Logger logger, File dataFolder) {
 			/* Main config file, currently mostly unused */
@@ -47,7 +48,7 @@ public class LibraryOfSouls extends JavaPlugin {
 					FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
 
 					if (yamlConfig.isConfigurationSection("bestiary")) {
-							mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
 					}
 				} catch (Exception ex) {
 					logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
@@ -60,7 +61,7 @@ public class LibraryOfSouls extends JavaPlugin {
 			return mReadOnly;
 		}
 
-		public static BestiaryArea getBestiary() {
+		public static @Nullable BestiaryArea getBestiary() {
 			return mBestiary;
 		}
 	}
@@ -111,6 +112,9 @@ public class LibraryOfSouls extends JavaPlugin {
 	}
 
 	public static LibraryOfSouls getInstance() {
+		if (INSTANCE == null) {
+			throw new RuntimeException("LibraryOfSouls not loaded");
+		}
 		return INSTANCE;
 	}
 }

@@ -56,7 +56,7 @@ public class LibraryOfSoulsCommand {
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				(new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), ""))
+				new SoulsInventory(player, SoulsDatabase.getInstance().getSouls(), "")
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
@@ -134,7 +134,6 @@ public class LibraryOfSoulsCommand {
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				String groupLabel = (String)args[1];
-				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Pool weights:"));
 				for (Map.Entry<Soul, Double> entry : getSoulGroup(groupLabel).getAverageSouls().entrySet()) {
 					Component name = entry.getKey().getName();
@@ -153,7 +152,7 @@ public class LibraryOfSoulsCommand {
 			.withArguments(arguments)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				(new SoulsInventory(player, getSoul((String)args[1]).getHistory(), "History"))
+				new SoulsInventory(player, getSoul((String)args[1]).getHistory(), "History")
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
@@ -197,7 +196,7 @@ public class LibraryOfSoulsCommand {
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
 				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(null);
-				(new SoulsInventory(player, souls, "No Location"))
+				new SoulsInventory(player, souls, "No Location")
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
@@ -216,7 +215,7 @@ public class LibraryOfSoulsCommand {
 				if (souls == null) {
 					CommandAPI.fail("Area '" + area + "' not found");
 				}
-				(new SoulsInventory(player, souls, area))
+				new SoulsInventory(player, souls, area)
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
@@ -235,7 +234,7 @@ public class LibraryOfSoulsCommand {
 				if (souls == null) {
 					CommandAPI.fail("Mob type '" + id + "' not found");
 				}
-				(new SoulsInventory(player, souls, id))
+				new SoulsInventory(player, souls, id)
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();

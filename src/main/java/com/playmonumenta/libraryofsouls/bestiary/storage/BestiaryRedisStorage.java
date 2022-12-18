@@ -47,7 +47,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		Bukkit.getPluginManager().registerEvents(this, plugin);
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void playerJoinEvent(final PlayerJoinEvent event) {
 		final Player player = event.getPlayer();
 		final UUID uuid = player.getUniqueId();
@@ -124,7 +124,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	/* Whenever player data is saved, also save the local data */
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void playerSaveEvent(final PlayerSaveEvent event) {
 		/* Have to save the data right now - can't spread it out over multiple ticks (server shutdown, etc.)
 		 *
@@ -157,7 +157,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	}
 
 	/* When player leaves, remove it from the local storage a short bit later */
-	@EventHandler(priority = EventPriority.MONITOR)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void playerQuitEvent(final PlayerQuitEvent event) {
 		Bukkit.getScheduler().runTaskLater(mPlugin, () -> {
 			final Player player = event.getPlayer();

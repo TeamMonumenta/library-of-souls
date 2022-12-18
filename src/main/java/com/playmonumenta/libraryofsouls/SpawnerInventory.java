@@ -22,6 +22,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 public class SpawnerInventory extends CustomInventory {
 	private final SoulsInventory mGoBackInventory;
@@ -177,7 +178,7 @@ public class SpawnerInventory extends CustomInventory {
 			block.getLocation().getNearbyEntities(1, 1, 1).isEmpty();
 	}
 
-	private static Block findSafeAirBlock(Location startSearch) {
+	private static @Nullable Block findSafeAirBlock(Location startSearch) {
 		for (int x = 5; x >= -5; x--) {
 			for (int z = 5; z >= -5; z--) {
 				for (int y = 5; y >= -5; y--) {

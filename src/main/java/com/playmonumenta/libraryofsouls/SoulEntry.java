@@ -4,7 +4,6 @@ import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -35,9 +34,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 
-public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
-	private static Gson gson = null;
-
+public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
 	private String mLore;
@@ -336,11 +333,10 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	public boolean isInvulnerable() {
 		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
 		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
-		boolean override = false;
 		BooleanVariable booVar = new BooleanVariable("Invulnerable");
 
 		String ret = ((BooleanVariable)booVar.bind(entityNBT.getData())).get();
-		override = (ret != null && ret.toLowerCase().equals("true"));
+		boolean override = (ret != null && ret.toLowerCase().equals("true"));
 
 		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
 		if (effectItem != null && effectItem.hasItemMeta()) {
@@ -374,14 +370,8 @@ public class SoulEntry implements Soul, SoulGroup, BestiaryEntryInterface {
 	}
 
 	public static SoulEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
-		if (gson == null) {
-			gson = new Gson();
-		}
-
-		JsonElement elem = obj.get("mojangson");
-
 		Set<String> locs = new HashSet<String>();
-		elem = obj.get("location_names");
+		JsonElement elem = obj.get("location_names");
 		if (elem != null) {
 			JsonArray array = elem.getAsJsonArray();
 			if (array == null) {
