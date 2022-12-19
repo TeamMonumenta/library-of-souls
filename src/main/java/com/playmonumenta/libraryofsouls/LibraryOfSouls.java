@@ -5,6 +5,8 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIConfig;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -68,6 +70,14 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
+		// Load the CommandAPI. We enable verbose logging and allow the CommandAPI
+		// to generate a file command_registration.json for debugging purposes
+		CommandAPI.onLoad(
+			new CommandAPIConfig()
+				.verboseOutput(true)
+				.dispatcherFile(new File(getDataFolder(), "los_command_registration.json"))
+		);
+
 		/*
 		 * CommandAPI commands which register directly and are usable in functions
 		 *
@@ -80,6 +90,9 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onEnable() {
+		// Enable the CommandAPI
+		CommandAPI.onEnable(this);
+
 		INSTANCE = this;
 
 		getServer().getPluginManager().registerEvents(new BestiaryManager(this), this);

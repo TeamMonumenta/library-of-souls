@@ -54,7 +54,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly("dev.jorel.CommandAPI:commandapi-core:8.7.0")
+    implementation("dev.jorel.CommandAPI:commandapi-shade:8.7.0")
     compileOnly("com.playmonumenta:nbteditor:4.0")
     compileOnly("com.playmonumenta:redissync:3.0")
     compileOnly("com.google.code.gson:gson:2.8.5")
@@ -76,7 +76,7 @@ bukkit {
     apiVersion = "1.18"
     name = "LibraryOfSouls"
     authors = listOf("The Monumenta Team")
-    depend = listOf("CommandAPI", "NBTEditor")
+    depend = listOf("NBTEditor")
     softDepend = listOf("MonumentaRedisSync")
 }
 
@@ -85,6 +85,13 @@ pmd {
     toolVersion = "6.41.0"
     ruleSets = listOf("$rootDir/pmd-ruleset.xml")
     setIgnoreFailures(true)
+}
+
+// Relocation / shading
+tasks {
+    shadowJar {
+       relocate("dev.jorel.commandapi", "com.playmonumenta.libraryofsouls.internal.dev.jorel.commandapi")
+    }
 }
 
 publishing {
