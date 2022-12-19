@@ -38,6 +38,10 @@ repositories {
         url = uri("https://raw.githubusercontent.com/TeamMonumenta/monumenta-redis-sync/master/mvn-repo/")
     }
 
+    maven {
+        url = uri("https://raw.githubusercontent.com/TeamMonumenta/NBTEditor/master/mvn-repo/")
+    }
+
     // NBT API, pulled in by CommandAPI
     maven {
         url = uri("https://repo.codemc.org/repository/maven-public/")
@@ -51,7 +55,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
     compileOnly("dev.jorel.CommandAPI:commandapi-core:8.7.0")
-    compileOnly("com.goncalomb.bukkit:nbteditor:3.3-SNAPSHOT")
+    compileOnly("com.playmonumenta:nbteditor:4.0")
     compileOnly("com.playmonumenta:redissync:3.0")
     compileOnly("com.google.code.gson:gson:2.8.5")
     errorprone("com.google.errorprone:error_prone_core:2.10.0")
