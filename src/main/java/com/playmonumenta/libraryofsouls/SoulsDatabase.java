@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -215,7 +217,7 @@ public class SoulsDatabase {
 
 		try {
 			NBTTagCompound nbt = bos.getEntityNBT().getData();
-			String name = nbt.getString("CustomName");
+			Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 			String label = Utils.getLabelFromName(name);
 
 			if (mSouls.containsKey(label)) {
@@ -240,7 +242,7 @@ public class SoulsDatabase {
 
 		try {
 			NBTTagCompound nbt = bos.getEntityNBT().getData();
-			String name = nbt.getString("CustomName");
+			Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 			String label = Utils.getLabelFromName(name);
 
 			soul = mSouls.get(label);
