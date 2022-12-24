@@ -23,7 +23,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		private static boolean mReadOnly = true;
 		private static @Nullable BestiaryArea mBestiary = null;
 
-		static void load(Logger logger, File dataFolder) {
+		static void load(Logger logger, File dataFolder, boolean loadBestiary) {
 			/* Main config file, currently mostly unused */
 			File configFile = new File(dataFolder, "config.yml");
 			if (configFile.exists() && configFile.isFile()) {
@@ -43,18 +43,20 @@ public class LibraryOfSouls extends JavaPlugin {
 				}
 			}
 
-			/* Bestiary config file */
-			configFile = new File(dataFolder, "bestiary_config.yml");
-			if (configFile.exists() && configFile.isFile()) {
-				try {
-					FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
+			if (loadBestiary) {
+				/* Bestiary config file */
+				configFile = new File(dataFolder, "bestiary_config.yml");
+				if (configFile.exists() && configFile.isFile()) {
+					try {
+						FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
 
-					if (yamlConfig.isConfigurationSection("bestiary")) {
-						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+						if (yamlConfig.isConfigurationSection("bestiary")) {
+							mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+						}
+					} catch (Exception ex) {
+						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
+						ex.printStackTrace();
 					}
-				} catch (Exception ex) {
-					logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
-					ex.printStackTrace();
 				}
 			}
 		}
@@ -103,7 +105,8 @@ public class LibraryOfSouls extends JavaPlugin {
 		}
 
 		try {
-			Config.load(getLogger(), getDataFolder());
+			/* Don't load the bestiary config initially - this will happen when the souls database loads */
+			Config.load(getLogger(), getDataFolder(), false);
 
 			getLogger().info("Library of Souls read only: " + Boolean.toString(Config.isReadOnly()));
 

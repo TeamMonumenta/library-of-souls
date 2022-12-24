@@ -456,7 +456,7 @@ public class SoulsDatabase {
 			updateIndex();
 
 			/* Reload the main plugin config / bestiary also after reloading the database */
-			LibraryOfSouls.Config.load(mPlugin.getLogger(), mPlugin.getDataFolder());
+			LibraryOfSouls.Config.load(mPlugin.getLogger(), mPlugin.getDataFolder(), true);
 
 			mPlugin.getLogger().info("Finished parsing souls library");
 			mPlugin.getLogger().info("Loaded " + Integer.toString(finalSoulCount) + " mob souls");
