@@ -1,7 +1,7 @@
 # Library of Souls
 An extension of NBTEditor to allow managing a vast library of Minecraft mobs
 
-Minimum Java version: Java 11
+Minimum Java version: Java 17
 Recommended Minecraft Version: 1.16.5+ (older versions may work too, but are not supported)
 
 ## Maven dependency
@@ -17,7 +17,7 @@ Recommended Minecraft Version: 1.16.5+ (older versions may work too, but are not
         <dependency>
             <groupId>com.playmonumenta</groupId>
             <artifactId>libraryofsouls</artifactId>
-            <version>4.3</version>
+            <version>5.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
