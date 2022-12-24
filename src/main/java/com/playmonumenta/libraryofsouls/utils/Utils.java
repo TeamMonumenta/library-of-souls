@@ -1,6 +1,8 @@
 package com.playmonumenta.libraryofsouls.utils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.ChatColor;
@@ -74,6 +76,10 @@ public class Utils {
 			throw new Exception("Failed to parse Library of Souls mob name '" + name + "'");
 		}
 		return label;
+	}
+
+	public static Component parseMiniMessage(String text) {
+		return MiniMessage.miniMessage().deserialize(text).decoration(TextDecoration.ITALIC, false);
 	}
 
 	public static boolean insideBlocks(Location feetLoc, double width, double height) {

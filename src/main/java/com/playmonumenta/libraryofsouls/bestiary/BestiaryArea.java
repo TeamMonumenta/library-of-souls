@@ -13,7 +13,6 @@ import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -41,7 +40,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 	public BestiaryArea(@Nullable BestiaryArea parent, String name, ConfigurationSection config) throws Exception {
 		mParent = parent;
-		mName = MiniMessage.miniMessage().deserialize(name).decoration(TextDecoration.ITALIC, false);
+		mName = Utils.parseMiniMessage(name);
 
 		if (config.contains("location_tag") && config.contains("children")) {
 			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " should contain only location_tag OR children, not both");
@@ -99,7 +98,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		meta.displayName(mName.colorIfAbsent(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 
 		if (config.contains("subtitle")) {
-			Component subtitle = MiniMessage.miniMessage().deserialize(config.getString("subtitle")).decoration(TextDecoration.ITALIC, false);
+			Component subtitle = Utils.parseMiniMessage(config.getString("subtitle"));
 			meta.lore(Arrays.asList(subtitle));
 		}
 
