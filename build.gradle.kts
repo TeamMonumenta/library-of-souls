@@ -54,7 +54,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    implementation("dev.jorel.CommandAPI:commandapi-shade:8.7.1")
+    implementation("dev.jorel.CommandAPI:commandapi-shade:8.7.4")
     compileOnly("com.playmonumenta:nbteditor:4.0")
     compileOnly("com.playmonumenta:redissync:3.0")
     compileOnly("com.google.code.gson:gson:2.8.5")
