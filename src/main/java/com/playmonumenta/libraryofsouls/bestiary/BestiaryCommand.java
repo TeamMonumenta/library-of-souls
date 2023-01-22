@@ -1,5 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
@@ -23,7 +25,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -149,6 +153,26 @@ public class BestiaryCommand {
 					}
 					soul.setLore("", sender);
 				})))
+			//Todo: delete
+			.withSubcommand(new CommandAPICommand("maurice"))
+			.executes((sender, args) -> {
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSouls();
+				long time = System.currentTimeMillis();
+				for (SoulEntry soul : souls) {
+					EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
+					ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
+					ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
+
+					ItemStack mainhand = handItems[0].clone();
+					ItemMeta damageMeta = mainhand.getItemMeta();
+					if (mainhand.getType() == Material.ENCHANTED_BOOK || damageMeta.getEnchants().keySet().stream().filter(s -> s.getActiveSlots().contains(EquipmentSlot.HAND)).findFirst().isEmpty()) {
+						sender.sendMessage("e");
+						LibraryOfSouls.getInstance().getLogger().info(soul.getLabel());
+					}
+				}
+
+				sender.sendMessage("" + (System.currentTimeMillis() - time));
+			})
 			.register();
 	}
 

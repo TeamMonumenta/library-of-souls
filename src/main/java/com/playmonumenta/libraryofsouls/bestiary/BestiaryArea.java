@@ -18,6 +18,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
@@ -96,6 +97,9 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 		ItemMeta meta = mItem.getItemMeta();
 		meta.displayName(mName.colorIfAbsent(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
+		meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
 		if (config.contains("subtitle")) {
 			Component subtitle = Utils.parseMiniMessage(config.getString("subtitle"));

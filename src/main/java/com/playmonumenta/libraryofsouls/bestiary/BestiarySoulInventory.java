@@ -283,16 +283,17 @@ public class BestiarySoulInventory extends CustomInventory {
 		Double defHealth = mDefaultHealth.get(entType);
 		Double defDamage = mDefaultDamage.get(entType);
 
-		//Stuff to throw errors before everything
+		//Stuff to throw errors before everything. I don't see how health can be 0 tbh.
 		if (defHealth != null && health == 0.0) {
 			health += defHealth;
 		} else if (health == 0) {
 			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entityNBT.getEntityType());
 		}
 
-		if (defDamage != null && damage == 0.0) {
+		//What if it is supposed to be 0?
+		if (defDamage != null && damage == 0.0 && attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null) {
 			damage += defDamage;
-		} else if (damage == 0.0) {
+		} else if (damage == 0.0 && attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null) {
 			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the damage map: " + entityNBT.getEntityType());
 		}
 
@@ -538,7 +539,7 @@ public class BestiarySoulInventory extends CustomInventory {
 				}
 			}
 		}
-		return attributeNum;
+		return Math.round(attributeNum * 1000) / 1000.0;
 	}
 
 	private static ItemStack getHealthItem(double health) {
@@ -587,6 +588,10 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	private static ItemStack getDamageItem(@Nullable ItemStack item, double damage, double bowDamage, double explodePower, double horseJumpPower, double handDamage, DamageType type) {
+		if (damage < 0) {
+			damage = 0;
+		}
+
 		ItemStack damageItem = item;
 		if (damageItem == null || damageItem.getItemMeta() == null) {
 			if (type == DamageType.RANGED) {
@@ -608,6 +613,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		ItemMeta damageMeta = damageItem.getItemMeta();
 		damageMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		damageMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 		List<Component> lore = new ArrayList<>();
 
 		if (type == DamageType.RANGED) {
@@ -639,15 +645,16 @@ public class BestiarySoulInventory extends CustomInventory {
 		} else if (type == DamageType.CREEPER || type == DamageType.GHAST) {
 			lore.add(Component.text(" " + explodePower + " Explosion Power", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
 		} else if (type == DamageType.MELEE) {
-			lore.add(Component.text(" " + damage + " Attack Damage", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
-		}
+			if (damage > 0) {
+				lore.add(Component.text(" " + damage + " Attack Damage", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
+			} else {
+				lore.add(Component.text("0" + " Attack Damage", NamedTextColor.DARK_GREEN).decoration(TextDecoration.ITALIC, false));
+			}
 
+		}
 
 		damageMeta.lore(lore);
 		damageMeta.displayName(Component.text("Damage", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-
-		damageMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-		damageMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 
 		damageItem.setItemMeta(damageMeta);
 
