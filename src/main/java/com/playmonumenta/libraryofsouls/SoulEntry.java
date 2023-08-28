@@ -27,6 +27,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -250,6 +251,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 
 			meta.lore(lore);
+
+			// Hide weapon damage, book enchants, and potion effects:
+			meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+			meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+
 			item.setItemMeta(meta);
 			return item;
 		}

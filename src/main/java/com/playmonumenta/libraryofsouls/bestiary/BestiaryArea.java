@@ -18,6 +18,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
@@ -101,6 +102,11 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			Component subtitle = Utils.parseMiniMessage(config.getString("subtitle"));
 			meta.lore(Arrays.asList(subtitle));
 		}
+
+		// Hide weapon damage, book enchants, and potion effects:
+		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 
 		mItem.setItemMeta(meta);
 	}
