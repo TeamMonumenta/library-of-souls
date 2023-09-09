@@ -270,7 +270,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		double armorToughness = 0;
 		double health = vars.hasKey("Health") ? 0.0 + Float.valueOf(vars.getFloat("Health")) : 0.0;
 		double speed = vars.hasKey("MovementSpeed") ? 0.0 + Float.valueOf(vars.getFloat("MovementSpeed")) : 0;
-		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase() : 0.0;
+		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? Math.max(attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase(), 0.0) : 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
 		double bowDamage = 0;
@@ -648,6 +648,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		damageMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
 		damageMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+		damageMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
 
 		damageItem.setItemMeta(damageMeta);
 
