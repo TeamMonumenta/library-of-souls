@@ -158,6 +158,19 @@ tasks.create("stage-deploy") {
     }
 }
 
+tasks.create("volt-deploy") {
+    val shadowJar by tasks.named<ShadowJar>("shadowJar")
+    dependsOn(shadowJar)
+    doLast {
+        ssh.runSessions {
+            session(basicssh) {
+                put(shadowJar.archiveFile.get().getAsFile(), "/home/epic/volt/m12/server_config/plugins")
+                execute("cd /home/epic/volt/m12/server_config/plugins && rm -f LibraryOfSouls.jar && ln -s " + shadowJar.archiveFileName.get() + " LibraryOfSouls.jar")
+            }
+        }
+    }
+}
+
 tasks.create("build-deploy") {
     val shadowJar by tasks.named<ShadowJar>("shadowJar")
     dependsOn(shadowJar)
