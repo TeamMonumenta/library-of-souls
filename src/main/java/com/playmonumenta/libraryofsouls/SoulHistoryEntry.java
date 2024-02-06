@@ -370,7 +370,7 @@ public class SoulHistoryEntry implements Soul {
 				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
 				break;
 			case AXOLOTL:
-				mPlaceholder = new ItemStack(Material.WHITE_WOOL);
+				mPlaceholder = new ItemStack(Material.AXOLOTL_BUCKET);
 				break;
 			case BLAZE:
 				mPlaceholder = new ItemStack(Material.BLAZE_POWDER);
@@ -511,7 +511,7 @@ public class SoulHistoryEntry implements Soul {
 				mPlaceholder = new ItemStack(Material.SALMON);
 				break;
 			case SHEEP:
-				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
+				mPlaceholder = new ItemStack(Material.WHITE_WOOL);
 				break;
 			case SHULKER:
 				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
