@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -102,6 +103,13 @@ public class BestiaryManager implements Listener {
 		}
 
 		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);
+	}
+
+	public static void deleteAll(Player player) {
+		List<SoulEntry> souls = SoulsDatabase.getInstance().getSouls();
+		for (SoulEntry soul : souls) {
+			BestiaryManager.setKillsForMob(player, soul, 0);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
