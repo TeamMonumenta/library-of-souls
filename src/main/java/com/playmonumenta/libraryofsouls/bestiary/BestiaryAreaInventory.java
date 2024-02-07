@@ -88,8 +88,11 @@ public class BestiaryAreaInventory extends CustomInventory {
 					String secondBars = "|".repeat(20 - bars);
 					progressBar = progressBar.append(Component.text(secondBars, NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
 
+					//No way for discovered mobs to possibly be a non-integer, but safety first
+					int discInt = (int)Math.floor(discovered);
+					int totalInt = (int)Math.floor(total);
 					progressBar = progressBar.append(Component.text("]", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
-					progressBar = progressBar.append(Component.text(" " + discovered + "/" + total, NamedTextColor.BLUE).decoration(TextDecoration.ITALIC, false));
+					progressBar = progressBar.append(Component.text(" " + discInt + "/" + totalInt, NamedTextColor.BLUE).decoration(TextDecoration.ITALIC, false));
 					ItemMeta meta = item.getItemMeta();
 					List<Component> lore = meta.hasLore() ? meta.lore() : new ArrayList<>();
 					if (!lore.contains(progressBar)) {
