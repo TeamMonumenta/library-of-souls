@@ -149,6 +149,13 @@ public class BestiaryCommand {
 					}
 					soul.setLore("", sender);
 				})))
+			.withSubcommand(new CommandAPICommand("deleteall")
+				.withPermission(CommandPermission.fromString("los.bestiary.deleteall"))
+				.withArguments(new EntitySelectorArgument.OnePlayer("player"))
+				.executes((sender, args) -> {
+					Player player = (Player)args[0];
+					BestiaryManager.deleteAll(player);
+				}))
 			.register();
 	}
 

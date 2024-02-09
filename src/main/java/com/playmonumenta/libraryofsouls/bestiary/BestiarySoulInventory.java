@@ -538,7 +538,7 @@ public class BestiarySoulInventory extends CustomInventory {
 				}
 			}
 		}
-		return attributeNum;
+		return Math.round(attributeNum * 1000) / 1000.0;
 	}
 
 	private static ItemStack getHealthItem(double health) {
@@ -710,6 +710,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			speed *= speedPercent;
 		}
 
+		speed = Math.round(speed * 1000) / 1000.0;
 		lore.add(Component.text(speed + " Speed", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
 		speedMeta.lore(lore);
 		speedMeta.displayName(Component.text("Speed", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));

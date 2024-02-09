@@ -9,6 +9,7 @@ import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -102,6 +103,13 @@ public class BestiaryManager implements Listener {
 		}
 
 		return INSTANCE.mStorage.addKillsForMob(player, soul, amount);
+	}
+
+	public static void deleteAll(Player player) {
+		List<SoulEntry> souls = SoulsDatabase.getInstance().getSouls();
+		for (SoulEntry soul : souls) {
+			BestiaryManager.setKillsForMob(player, soul, 0);
+		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
