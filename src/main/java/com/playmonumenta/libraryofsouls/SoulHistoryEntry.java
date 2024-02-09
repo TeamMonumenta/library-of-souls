@@ -510,6 +510,9 @@ public class SoulHistoryEntry implements Soul {
 			case SALMON:
 				mPlaceholder = new ItemStack(Material.SALMON);
 				break;
+			case SHEEP:
+				mPlaceholder = new ItemStack(Material.WHITE_WOOL);
+				break;
 			case SHULKER:
 				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
 				break;
