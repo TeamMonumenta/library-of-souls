@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -122,7 +123,10 @@ public class BestiaryCommand {
 					if (soul == null) {
 						throw CommandAPI.failWithString("Mob '" + name + "' not found");
 					} else {
-						soul.setLore((String)args[1], sender);
+						Component component = Component.text((String)args[1]);
+						List<Component> compList = new ArrayList<Component>();
+						compList.add(component);
+						soul.setLore(compList, sender);
 					}
 				})
 				.executesProxy((sender, args) -> {
@@ -132,7 +136,10 @@ public class BestiaryCommand {
 						if (soul == null) {
 							throw CommandAPI.failWithString("Mob '" + name + "' not found");
 						}
-						soul.setLore((String)args[1], player);
+						Component component = Component.text((String)args[1]);
+						List<Component> compList = new ArrayList<Component>();
+						compList.add(component);
+						soul.setLore(compList, player);
 					} else {
 						throw CommandAPI.failWithString("Callee must be instance of Player");
 					}
@@ -147,7 +154,24 @@ public class BestiaryCommand {
 					if (soul == null) {
 						throw CommandAPI.failWithString("Mob '" + name + "' not found");
 					}
-					soul.setLore("", sender);
+					soul.setLore(new ArrayList<>(), sender);
+				})))
+			.withSubcommand(new CommandAPICommand("lore")
+				.withSubcommand(new CommandAPICommand("frommainhand")
+				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
+				.executesPlayer((sender, args) -> {
+					ItemStack item = sender.getInventory().getItemInMainHand();
+					if (item == null || !item.getItemMeta().hasLore()) {
+						throw CommandAPI.failWithString("You need a valid item with lore text!");
+					}
+					List<Component> lore = item.lore();
+					String name = (String)args[0];
+					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+					if (soul == null) {
+						throw CommandAPI.failWithString("Mob '" + name + "' not found");
+					}
+					soul.setLore(lore, sender);
 				})))
 			.withSubcommand(new CommandAPICommand("deleteall")
 				.withPermission(CommandPermission.fromString("los.bestiary.deleteall"))
@@ -177,13 +201,13 @@ public class BestiaryCommand {
 		}
 
 		private ItemStack getLoreItem(SoulEntry soul) {
-			String lore = soul.getLore();
+			List<Component> lore = soul.getLore();
 
 			ItemStack loreItem = new ItemStack(Material.BOOK);
 			ItemMeta meta = loreItem.getItemMeta();
 			meta.displayName(Component.text("Lore", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true));
 
-			if (lore == null || lore.equals("")) {
+			if (lore == null || lore.isEmpty()) {
 				List<Component> itemLore = new ArrayList<>();
 				itemLore.add(Component.text("This is a bug. Or at the very least, should be.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
 
@@ -192,15 +216,7 @@ public class BestiaryCommand {
 				return loreItem;
 			}
 
-			List<Component> itemLore = new ArrayList<>();
-
-			String[] loreArray = lore.split("~~~");
-
-			for (String a : loreArray) {
-				itemLore.add(Component.text(a, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
-			}
-
-			meta.lore(itemLore);
+			meta.lore(lore);
 			loreItem.setItemMeta(meta);
 
 			return loreItem;

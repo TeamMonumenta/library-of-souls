@@ -80,14 +80,14 @@ public class SoulHistoryEntry implements Soul {
 	private final String mLabel;
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
-	private final String mLore;
+	private final List<Component> mLore;
 	private final @Nullable Double mWidth;
 	private final @Nullable Double mHeight;
 	private @Nullable ItemStack mPlaceholder = null;
 	private @Nullable ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, String lore, @Nullable Double width, @Nullable Double height) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, List<Component> lore, @Nullable Double width, @Nullable Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
@@ -115,7 +115,7 @@ public class SoulHistoryEntry implements Soul {
 		mModifiedBy = player.getName();
 		mLocs = new HashSet<String>();
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
-		mLore = "";
+		mLore = new ArrayList<>();
 		mWidth = hitboxSize.width();
 		mHeight = hitboxSize.height();
 
@@ -653,11 +653,17 @@ public class SoulHistoryEntry implements Soul {
 			}
 		}
 
-		if (mLore != null && !mLore.equals("")) {
+		if (mLore != null && !mLore.isEmpty()) {
 			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
 			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(mLore, null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(mLore, null);
+			//This is going to be terrible. Maybe I should just combine them?
+			for (Component comp : mLore) {
+				((ListVariable)placeholderWrap.getVariable("Lore")).add(comp.toString(), null);
+			}
+			for (Component comp : mLore) {
+				((ListVariable)bosWrap.getVariable("Lore")).add(comp.toString(), null);
+			}
+
 		}
 
 		/* If the item has been modified, list when */
@@ -722,7 +728,7 @@ public class SoulHistoryEntry implements Soul {
 		return obj;
 	}
 
-	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, String lore) throws Exception {
+	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, List<Component> lore) throws Exception {
 		JsonElement elem = obj.get("mojangson");
 
 		NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());
