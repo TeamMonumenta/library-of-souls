@@ -417,6 +417,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 				Component comp = GSON_SERIALIZER.deserialize(loreElement.getAsString());
 				lore.add(comp);
 			}
+		} else if (elem != null && elem.isJsonPrimitive()) {
+			lore.add(Component.text(elem.getAsString()));
 		}
 
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
