@@ -99,6 +99,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 			if (!Config.isReadOnly()) {
 				LibraryOfSoulsCommand.registerWriteAccessCommands();
+				BestiaryCommand.registerWriteAccessCommands();
 			}
 
 			new SoulsDatabase(this, !Config.isReadOnly());

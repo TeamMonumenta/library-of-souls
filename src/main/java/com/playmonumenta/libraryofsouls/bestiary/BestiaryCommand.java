@@ -16,7 +16,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -113,6 +112,20 @@ public class BestiaryCommand {
 						inv.openInventory(sender);
 					}
 				}))
+			.withSubcommand(new CommandAPICommand("deleteall")
+				.withPermission(CommandPermission.fromString("los.bestiary.deleteall"))
+				.withArguments(new EntitySelectorArgument.OnePlayer("player"))
+				.executes((sender, args) -> {
+					Player player = (Player)args[0];
+					BestiaryManager.deleteAll(player);
+				}))
+			.register();
+	}
+
+	public static void registerWriteAccessCommands() {
+		final String command = "bestiary";
+
+		new CommandAPICommand(command)
 			.withSubcommand(new CommandAPICommand("lore")
 				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
@@ -144,42 +157,35 @@ public class BestiaryCommand {
 						throw CommandAPI.failWithString("Callee must be instance of Player");
 					}
 				}))
-			.withSubcommand(new CommandAPICommand("lore")
-				.withSubcommand(new CommandAPICommand("clear")
-				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
-				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
-				.executesPlayer((sender, args) -> {
-					String name = (String)args[0];
-					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
-					if (soul == null) {
-						throw CommandAPI.failWithString("Mob '" + name + "' not found");
-					}
-					soul.setLore(new ArrayList<>(), sender);
-				})))
-			.withSubcommand(new CommandAPICommand("lore")
-				.withSubcommand(new CommandAPICommand("frommainhand")
-				.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
-				.withPermission(CommandPermission.fromString("los.bestiary.lore"))
-				.executesPlayer((sender, args) -> {
-					ItemStack item = sender.getInventory().getItemInMainHand();
-					if (item == null || !item.getItemMeta().hasLore()) {
-						throw CommandAPI.failWithString("You need a valid item with lore text!");
-					}
-					List<Component> lore = item.lore();
-					String name = (String)args[0];
-					SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
-					if (soul == null) {
-						throw CommandAPI.failWithString("Mob '" + name + "' not found");
-					}
-					soul.setLore(lore, sender);
-				})))
-			.withSubcommand(new CommandAPICommand("deleteall")
-				.withPermission(CommandPermission.fromString("los.bestiary.deleteall"))
-				.withArguments(new EntitySelectorArgument.OnePlayer("player"))
-				.executes((sender, args) -> {
-					Player player = (Player)args[0];
-					BestiaryManager.deleteAll(player);
-				}))
+				.withSubcommand(new CommandAPICommand("lore")
+					.withSubcommand(new CommandAPICommand("clear")
+						.withPermission(CommandPermission.fromString("los.bestiary.lore"))
+						.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+						.executesPlayer((sender, args) -> {
+							String name = (String)args[0];
+							SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+							if (soul == null) {
+								throw CommandAPI.failWithString("Mob '" + name + "' not found");
+							}
+							soul.setLore(new ArrayList<>(), sender);
+						})))
+				.withSubcommand(new CommandAPICommand("lore")
+					.withSubcommand(new CommandAPICommand("frommainhand")
+						.withArguments(new StringArgument("mobLabel").replaceSuggestions(LibraryOfSoulsCommand.LIST_MOBS_FUNCTION))
+						.withPermission(CommandPermission.fromString("los.bestiary.lore"))
+						.executesPlayer((sender, args) -> {
+							ItemStack item = sender.getInventory().getItemInMainHand();
+							if (item == null || !item.getItemMeta().hasLore()) {
+								throw CommandAPI.failWithString("You need a valid item with lore text!");
+							}
+							List<Component> lore = item.lore();
+							String name = (String)args[0];
+							SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+							if (soul == null) {
+								throw CommandAPI.failWithString("Mob '" + name + "' not found");
+							}
+							soul.setLore(lore, sender);
+						})))
 			.register();
 	}
 
