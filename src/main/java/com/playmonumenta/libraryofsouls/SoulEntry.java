@@ -4,6 +4,7 @@ import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -21,6 +22,7 @@ import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -37,12 +39,14 @@ import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
 public class SoulEntry implements Soul, BestiaryEntryInterface {
+	public static final Gson GSON = new Gson();
+	public static final GsonComponentSerializer GSON_SERIALIZER = GsonComponentSerializer.gson();
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
-	private String mLore;
+	private List<Component> mLore;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, String lore) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, List<Component> lore) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -52,7 +56,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 
 		if (lore == null) {
-			mLore = "";
+			mLore = new ArrayList<Component>();
 		} else {
 			mLore = lore;
 		}
@@ -74,7 +78,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mLocs = new HashSet<String>();
 		mHistory = new ArrayList<SoulHistoryEntry>(1);
 		mHistory.add(newHist);
-		mLore = "";
+		mLore = new ArrayList<>();
 	}
 
 	/* Update this SoulEntry so new soul is now current; preserve history */
@@ -206,12 +210,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).summon(loc);
 	}
 
-	public void setLore(String lore, Player player) {
+	public void setLore(List<Component> lore, Player player) {
 		mLore = lore;
 		SoulsDatabase.getInstance().updateLore(this, player);
 	}
 
-	public String getLore() {
+	public List<Component> getLore() {
 		return mLore;
 	}
 
@@ -396,12 +400,25 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
-		String lore = new String();
+		List<Component> lore = new ArrayList<>();
 		elem = obj.get("lore");
-		if (elem != null) {
-			lore = elem.getAsString();
-		} else {
-			lore = "";
+		if (elem != null && elem.isJsonArray()) {
+			JsonArray array = elem.getAsJsonArray();
+			if (array == null) {
+				throw new Exception("Failed to parse lore as JSON array");
+			}
+
+			Iterator<JsonElement> iter = array.iterator();
+			while (iter.hasNext()) {
+				JsonElement loreElement = iter.next();
+				if (!loreElement.isJsonPrimitive()) {
+					throw new Exception("location_names entry for '" + elem.toString() + "' is not a string!");
+				}
+				Component comp = GSON_SERIALIZER.deserialize(loreElement.getAsString());
+				lore.add(comp);
+			}
+		} else if (elem != null && elem.isJsonPrimitive()) {
+			lore.add(Component.text(elem.getAsString()));
 		}
 
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
@@ -444,7 +461,13 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 		obj.add("history", histArray);
 
-		obj.addProperty("lore", mLore);
+		JsonArray loreArray = new JsonArray();
+
+		for (Component comp : mLore) {
+			loreArray.add(GSON_SERIALIZER.serialize(comp));
+		}
+
+		obj.add("lore", loreArray);
 
 		JsonArray locsArray = new JsonArray();
 		for (String location : mLocs) {

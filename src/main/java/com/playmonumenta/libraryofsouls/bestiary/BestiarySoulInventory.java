@@ -476,7 +476,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
 			_inventory.setItem(22, equipmentPageItem);
-			if (!soul.getLore().equals("")) {
+			if (!soul.getLore().isEmpty()) {
 				_inventory.setItem(29, speedItem);
 				_inventory.setItem(31, effectItem);
 				_inventory.setItem(33, loreItem);
@@ -724,13 +724,13 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	public ItemStack getLoreItem(SoulEntry soul) {
-		String lore = soul.getLore();
+		List<Component> lore = soul.getLore();
 
 		ItemStack loreItem = new ItemStack(Material.BOOK);
 		ItemMeta meta = loreItem.getItemMeta();
 		meta.displayName(Component.text("Lore", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false).decoration(TextDecoration.BOLD, true));
 
-		if (lore == null || lore.equals("")) {
+		if (lore == null || lore.isEmpty()) {
 			List<Component> itemLore = new ArrayList<>();
 			itemLore.add(Component.text("This is a bug. Or at the very least, should be.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
 
@@ -741,10 +741,8 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		List<Component> itemLore = new ArrayList<>();
 
-		String[] loreArray = lore.split("~~~");
-
-		for (String a : loreArray) {
-			itemLore.add(Component.text(a, NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+		for (Component comp : lore) {
+			itemLore.add(comp);
 		}
 
 		meta.lore(itemLore);
