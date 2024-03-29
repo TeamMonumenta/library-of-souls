@@ -656,14 +656,8 @@ public class SoulHistoryEntry implements Soul {
 		if (mLore != null && !mLore.isEmpty()) {
 			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
 			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
-			//This is going to be terrible. Maybe I should just combine them?
-			for (Component comp : mLore) {
-				((ListVariable)placeholderWrap.getVariable("Lore")).add(comp.toString(), null);
-			}
-			for (Component comp : mLore) {
-				((ListVariable)bosWrap.getVariable("Lore")).add(comp.toString(), null);
-			}
-
+			//Rather than a giant block of text, two words suffice.
+			((ListVariable)placeholderWrap.getVariable("Lore")).add("It exists.", null);
 		}
 
 		/* If the item has been modified, list when */
