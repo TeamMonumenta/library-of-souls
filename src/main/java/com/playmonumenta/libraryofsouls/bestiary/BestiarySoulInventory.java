@@ -21,6 +21,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
@@ -29,6 +30,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -490,7 +492,12 @@ public class BestiarySoulInventory extends CustomInventory {
 
 	@Override
 	protected void inventoryClick(final InventoryClickEvent event) {
-		/* Always cancel the event */
+		/* Always cancel the event, except in one specific circumstance*/
+		if (event.getClick().equals(ClickType.MIDDLE) && event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE) {
+			return;
+		} else if (event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE && event.getClickedInventory().getType() == InventoryType.PLAYER) {
+			return;
+		}
 		event.setCancelled(true);
 
 		/* Ignore non-left clicks */
