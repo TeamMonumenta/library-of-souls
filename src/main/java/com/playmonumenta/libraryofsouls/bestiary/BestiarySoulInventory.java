@@ -494,8 +494,8 @@ public class BestiarySoulInventory extends CustomInventory {
 	protected void inventoryClick(final InventoryClickEvent event) {
 		/* Allow creative mode players to grab items out of this specific inventory specifically to get the lore item
 		*  So that you can more easily interface with /bestiary lore add when holding an item */
-		if (event.getClick().equals(ClickType.MIDDLE) && event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE
-		|| event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE && event.getClickedInventory().getType() == InventoryType.PLAYER) {
+		if ((event.getClick().equals(ClickType.MIDDLE) && event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE)
+		    || (event.getWhoClicked().getType() == EntityType.PLAYER && event.getWhoClicked().getGameMode() == GameMode.CREATIVE && event.getClickedInventory().getType() == InventoryType.PLAYER)) {
 			return;
 		}
 		event.setCancelled(true);
