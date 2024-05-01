@@ -44,9 +44,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
 	private List<Component> mLore;
+	private List<Component> mDescription;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, List<Component> lore) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, List<Component> lore, List<Component> description) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -56,9 +57,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		}
 
 		if (lore == null) {
-			mLore = new ArrayList<Component>();
+			mLore = new ArrayList<>();
 		} else {
 			mLore = lore;
+		}
+
+		if (description == null) {
+			mDescription = new ArrayList<>();
+		} else {
+			mDescription = description;
 		}
 
 		String refLabel = history.get(0).getLabel();
@@ -79,6 +86,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mHistory = new ArrayList<SoulHistoryEntry>(1);
 		mHistory.add(newHist);
 		mLore = new ArrayList<>();
+		mDescription = new ArrayList<>();
 	}
 
 	/* Update this SoulEntry so new soul is now current; preserve history */
@@ -219,6 +227,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mLore;
 	}
 
+	public void setDescription(List<Component> description, Player player) {
+		mDescription = description;
+		SoulsDatabase.getInstance().updateLore(this, player);
+	}
+
+	public List<Component> getDescription() {
+		return mDescription;
+	}
+
 	/*
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
@@ -250,8 +267,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 			lore.add(Component.text(BestiarySoulInventory.formatWell(getId().getKey()), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
 			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
+			if (!mDescription.isEmpty()) {
+				lore.addAll(getDescription());
+			}
 			if (info.allowsAccessTo(InfoTier.STATS)) {
-				lore.add(Component.text("Click for mob info", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
+				lore.add(Component.text("Click for more info!", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
 			}
 
 			meta.lore(lore);
@@ -421,6 +441,27 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			lore.add(Component.text(elem.getAsString()));
 		}
 
+		List<Component> description = new ArrayList<>();
+		elem = obj.get("description");
+		if (elem != null && elem.isJsonArray()) {
+			JsonArray array = elem.getAsJsonArray();
+			if (array == null) {
+				throw new Exception("Failed to parse description as JSON array");
+			}
+
+			Iterator<JsonElement> iter = array.iterator();
+			while (iter.hasNext()) {
+				JsonElement descriptionElement = iter.next();
+				if (!descriptionElement.isJsonPrimitive()) {
+					throw new Exception("description entry for '" + elem + "' is not a string!");
+				}
+				Component comp = GSON_SERIALIZER.deserialize(descriptionElement.getAsString());
+				description.add(comp);
+			}
+		} else if (elem != null && elem.isJsonPrimitive()) {
+			description.add(Component.text(elem.getAsString()));
+		}
+
 		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -435,7 +476,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
 					}
 
-					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
+					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore, description));
 				}
 			} else {
 				if (array.size() >= 1) {
@@ -444,12 +485,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
 					}
 
-					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore));
+					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore, description));
 				}
 			}
 		}
 
-		return new SoulEntry(history, locs, lore);
+		return new SoulEntry(history, locs, lore, description);
 	}
 
 	public JsonObject toJson() {
@@ -462,12 +503,16 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		obj.add("history", histArray);
 
 		JsonArray loreArray = new JsonArray();
-
 		for (Component comp : mLore) {
 			loreArray.add(GSON_SERIALIZER.serialize(comp));
 		}
-
 		obj.add("lore", loreArray);
+
+		JsonArray descriptionArray = new JsonArray();
+		for (Component comp : mDescription) {
+			descriptionArray.add(GSON_SERIALIZER.serialize(comp));
+		}
+		obj.add("description", descriptionArray);
 
 		JsonArray locsArray = new JsonArray();
 		for (String location : mLocs) {
