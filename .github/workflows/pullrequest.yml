@@ -50,4 +50,4 @@ jobs:
         set +o pipefail
         cat compile.log | reviewdog -efm="%f:%l: warning:%m" -name="compiler-warnings" -level=error -fail-on-error -reporter=github-pr-check
         cat build/reports/pmd/main.xml | reviewdog -efm='%+P<file name="%f">' -efm='%W<violation beginline="%l%.%#begincolumn="%c%.%#' -efm='%-C<%.%#' -efm='%+C%.%#' -efm='%-Q' -name="pmd" -level=error -fail-on-error -reporter=github-pr-check
-        cat build/reports/checkstyle/main.xml | reviewdog -f=checkstyle -name="checkstyle (adapterapi)" -level=error -fail-on-error -reporter=github-pr-check
+        cat build/reports/checkstyle/main.xml | reviewdog -f=checkstyle -name="checkstyle" -level=error -fail-on-error -reporter=github-pr-check
