@@ -81,19 +81,21 @@ public class SoulHistoryEntry implements Soul {
 	private final Set<String> mLocs;
 	private final NamespacedKey mId;
 	private final List<Component> mLore;
+	private final List<Component> mDescription;
 	private final @Nullable Double mWidth;
 	private final @Nullable Double mHeight;
 	private @Nullable ItemStack mPlaceholder = null;
 	private @Nullable ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, List<Component> lore, @Nullable Double width, @Nullable Double height) throws Exception {
+	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, List<Component> lore, List<Component> description, @Nullable Double width, @Nullable Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 		mLore = lore;
+		mDescription = description;
 		mWidth = width;
 		mHeight = height;
 
@@ -116,6 +118,7 @@ public class SoulHistoryEntry implements Soul {
 		mLocs = new HashSet<String>();
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 		mLore = new ArrayList<>();
+		mDescription = new ArrayList<>();
 		mWidth = hitboxSize.width();
 		mHeight = hitboxSize.height();
 
@@ -133,12 +136,13 @@ public class SoulHistoryEntry implements Soul {
 	public SoulHistoryEntry getAutoUpdate(Location loc) throws Exception {
 		HitboxSize hitboxSize = new HitboxSize(loc, mNBT);
 		return new SoulHistoryEntry(mNBT,
-		                            Instant.now().getEpochSecond(),
-		                            "AutoUpdate",
-		                            mLocs,
-		                            mLore,
-		                            hitboxSize.width(),
-		                            hitboxSize.height());
+			Instant.now().getEpochSecond(),
+			"AutoUpdate",
+			mLocs,
+			mLore,
+			mDescription,
+			hitboxSize.width(),
+			hitboxSize.height());
 	}
 
 
@@ -660,6 +664,13 @@ public class SoulHistoryEntry implements Soul {
 			((ListVariable)placeholderWrap.getVariable("Lore")).add("It exists.", null);
 		}
 
+		if (mDescription != null && !mDescription.isEmpty()) {
+			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Description:", null);
+			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Description:", null);
+			// Rather than a giant block of text, two words suffice.
+			((ListVariable)placeholderWrap.getVariable("Lore")).add("It exists.", null);
+		}
+
 		/* If the item has been modified, list when */
 		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
 			/* Relative time on the placeholder item */
@@ -722,7 +733,7 @@ public class SoulHistoryEntry implements Soul {
 		return obj;
 	}
 
-	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, List<Component> lore) throws Exception {
+	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, List<Component> lore, List<Component> description) throws Exception {
 		JsonElement elem = obj.get("mojangson");
 
 		NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());
@@ -738,6 +749,6 @@ public class SoulHistoryEntry implements Soul {
 			height = obj.get("height").getAsDouble();
 		}
 
-		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore, width, height);
+		return new SoulHistoryEntry(nbt, modifiedOn, modifiedBy, locations, lore, description, width, height);
 	}
 }

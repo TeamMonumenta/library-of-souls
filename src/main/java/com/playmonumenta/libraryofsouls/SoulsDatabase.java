@@ -267,7 +267,7 @@ public class SoulsDatabase {
 		try {
 			soul.update(sender, soul.getNBT());
 		} catch (Exception ex) {
-			sender.sendMessage("Exception when updating lore: " + ex + " for " + soul.getDisplayName());
+			sender.sendMessage("Exception when updating lore or description: " + ex + " for " + soul.getDisplayName());
 		}
 		save();
 	}

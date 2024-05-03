@@ -1,9 +1,11 @@
 package com.playmonumenta.libraryofsouls;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.Nullable;
@@ -54,5 +56,14 @@ public class LibraryOfSoulsAPI {
 	public static Set<String> getSoulLocations() {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		return db.listMobLocations();
+	}
+
+	public static List<Component> getDescription(String soulName) {
+		SoulsDatabase db = SoulsDatabase.getInstance();
+		SoulEntry soul = db.getSoul(soulName);
+		if (soul == null) {
+			return null;
+		}
+		return soul.getDescription();
 	}
 }
