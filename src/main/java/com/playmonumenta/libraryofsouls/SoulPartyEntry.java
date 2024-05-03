@@ -22,7 +22,7 @@ public class SoulPartyEntry implements SoulGroup {
 	public SoulPartyEntry(List<SoulPartyHistoryEntry> history) throws Exception {
 		mHistory = history;
 
-		String refLabel = history.get(0 ).getLabel();
+		String refLabel = history.get(0).getLabel();
 
 		for (SoulPartyHistoryEntry entry : history) {
 			if (!entry.getLabel().equals(refLabel)) {
