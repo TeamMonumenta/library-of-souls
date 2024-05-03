@@ -58,7 +58,7 @@ public class LibraryOfSoulsAPI {
 		return db.listMobLocations();
 	}
 
-	public static List<Component> getDescription(String soulName) {
+	public static @Nullable List<Component> getDescription(String soulName) {
 		SoulsDatabase db = SoulsDatabase.getInstance();
 		SoulEntry soul = db.getSoul(soulName);
 		if (soul == null) {
