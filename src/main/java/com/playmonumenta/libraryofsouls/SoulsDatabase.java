@@ -102,8 +102,6 @@ public class SoulsDatabase {
 					mIgnoreNextChange = false;
 				}
 			} catch (Exception e) {
-				mPlugin.getLogger().warning("Caught exception while polling database file: " + e.getMessage());
-				e.printStackTrace();
 			}
 		}, 200, 200);
 
