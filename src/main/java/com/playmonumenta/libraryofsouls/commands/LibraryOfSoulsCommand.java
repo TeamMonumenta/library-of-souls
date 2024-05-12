@@ -19,7 +19,6 @@ import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.LocationArgument;
-import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.arguments.ScoreHolderArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
@@ -272,7 +271,7 @@ public class LibraryOfSoulsCommand {
 		/* los add */
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.add"))
-			.withArguments(new MultiLiteralArgument("add"))
+			.withArguments(new LiteralArgument("add"))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
 				BookOfSouls bos = getBos(player);
