@@ -46,11 +46,13 @@ repositories {
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
+
+    maven("https://repo.codemc.org/repository/maven-public/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT")
-    compileOnly("dev.jorel.CommandAPI:commandapi-core:8.7.0")
+    compileOnly("dev.jorel:commandapi-bukkit-core:9.4.1")
     compileOnly("com.playmonumenta:nbteditor:4.0")
     compileOnly("com.playmonumenta:redissync:3.0")
     compileOnly("com.google.code.gson:gson:2.8.5")

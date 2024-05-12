@@ -7,7 +7,8 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.Player;
@@ -16,26 +17,20 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 
 public class SpawnerNBTCommand {
 
-	public static void registerType(String method) {
+	public static void register() {
 		CommandPermission perms = CommandPermission.fromString("los.nbtheldspawner");
 
+		MultiLiteralArgument methodArg = new MultiLiteralArgument("method", "MaxSpawnDelay", "MinSpawnDelay", "RequiredPlayerRange", "SpawnCount", "SpawnRange");
+		IntegerArgument valueArg = new IntegerArgument("value");
 
 		new CommandAPICommand("nbtheldspawner")
 			.withPermission(perms)
-			.withArguments(new MultiLiteralArgument(method))
-			.withArguments(new IntegerArgument("value"))
-			.executes((sender, args) -> {
-				changeSpawnerNBT(method, (Integer)args[1], (Player)sender);
+			.withArguments(methodArg)
+			.withArguments(valueArg)
+			.executesPlayer((sender, args) -> {
+				changeSpawnerNBT(args.getByArgument(methodArg), args.getByArgument(valueArg), sender);
 			})
 			.register();
-	}
-
-	public static void register() {
-		registerType("MaxSpawnDelay");
-		registerType("MinSpawnDelay");
-		registerType("RequiredPlayerRange");
-		registerType("SpawnCount");
-		registerType("SpawnRange");
 	}
 
 	private static void changeSpawnerNBT(String method, int argument, Player player) throws WrapperCommandSyntaxException {
@@ -76,6 +71,6 @@ public class SpawnerNBTCommand {
 
 		SpawnerInventory.updateSpawnerItemDisplay(item, spawner);
 
-		player.sendMessage(ChatColor.GREEN + method + " set to " + Integer.toString(argument));
+		player.sendMessage(Component.text(method + " set to " + argument, NamedTextColor.GREEN));
 	}
 }
