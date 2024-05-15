@@ -369,241 +369,91 @@ public class SoulHistoryEntry implements Soul {
 			return;
 		}
 
-		switch (entityNBT.getEntityType()) {
-			case ALLAY:
-				mPlaceholder = new ItemStack(Material.AMETHYST_SHARD);
-				break;
-			case ARMOR_STAND:
-				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
-				break;
-			case AXOLOTL:
-				mPlaceholder = new ItemStack(Material.AXOLOTL_BUCKET);
-				break;
-			case BLAZE:
-				mPlaceholder = new ItemStack(Material.BLAZE_POWDER);
-				break;
-			case BEE:
-				mPlaceholder = new ItemStack(Material.HONEYCOMB);
-				break;
-			case CAT:
-				mPlaceholder = new ItemStack(Material.STRING);
-				break;
-			case CAMEL:
-				mPlaceholder = new ItemStack(Material.SANDSTONE);
-				break;
-			case CAVE_SPIDER:
-				mPlaceholder = new ItemStack(Material.FERMENTED_SPIDER_EYE);
-				break;
-			case CHICKEN:
-				mPlaceholder = new ItemStack(Material.CHICKEN);
-				break;
-			case COD:
-				mPlaceholder = new ItemStack(Material.COD);
-				break;
-			case COW:
-				mPlaceholder = new ItemStack(Material.BEEF);
-				break;
-			case CREEPER:
-				mPlaceholder = new ItemStack(Material.CREEPER_HEAD);
-				break;
-			case DOLPHIN:
-				mPlaceholder = new ItemStack(Material.COD);
-				break;
-			case DROWNED:
-				mPlaceholder = new ItemStack(Material.TRIDENT);
-				break;
-			case ELDER_GUARDIAN:
-				mPlaceholder = new ItemStack(Material.SPONGE);
-				break;
-			case ENDERMAN:
-				mPlaceholder = new ItemStack(Material.ENDER_PEARL);
-				break;
-			case ENDERMITE:
-				mPlaceholder = new ItemStack(Material.ENDER_EYE);
-				break;
-			case ENDER_CRYSTAL:
-				mPlaceholder = new ItemStack(Material.END_CRYSTAL);
-				break;
-			case ENDER_DRAGON:
-				mPlaceholder = new ItemStack(Material.DRAGON_HEAD);
-				break;
-			case EVOKER:
-				mPlaceholder = new ItemStack(Material.TOTEM_OF_UNDYING);
-				break;
-			case EVOKER_FANGS:
-				mPlaceholder = new ItemStack(Material.DEAD_FIRE_CORAL_FAN);
-				break;
-			case FALLING_BLOCK:
-				mPlaceholder = new ItemStack(Material.SAND);
-				break;
-			case FOX:
-				mPlaceholder = new ItemStack(Material.SWEET_BERRIES);
-				break;
-			case FROG:
-				mPlaceholder = new ItemStack(Material.LILY_PAD);
-				break;
-			case GHAST:
-				mPlaceholder = new ItemStack(Material.GHAST_TEAR);
-				break;
-			case GIANT:
-				mPlaceholder = new ItemStack(Material.ANCIENT_DEBRIS);
-				break;
-			case GLOW_SQUID:
-				mPlaceholder = new ItemStack(Material.GLOW_INK_SAC);
-				break;
-			case GUARDIAN:
-				mPlaceholder = new ItemStack(Material.PRISMARINE_SHARD);
-				break;
-			case HOGLIN:
-				mPlaceholder = new ItemStack(Material.WARPED_FUNGUS);
-				break;
-			case ZOGLIN:
-				mPlaceholder = new ItemStack(Material.CRIMSON_FUNGUS);
-				break;
-			case HORSE:
-				mPlaceholder = new ItemStack(Material.SADDLE);
-				break;
-			case HUSK:
-				mPlaceholder = new ItemStack(Material.ROTTEN_FLESH);
-				break;
-			case ILLUSIONER:
-				mPlaceholder = new ItemStack(Material.BOW);
-				break;
-			case IRON_GOLEM:
-				mPlaceholder = new ItemStack(Material.IRON_BLOCK);
-				break;
-			case MAGMA_CUBE:
-				mPlaceholder = new ItemStack(Material.MAGMA_CREAM);
-				break;
-			case MUSHROOM_COW:
-				mPlaceholder = new ItemStack(Material.RED_MUSHROOM);
-				break;
-			case OCELOT:
-				mPlaceholder = new ItemStack(Material.COOKED_CHICKEN);
-				break;
-			case PANDA:
-				mPlaceholder = new ItemStack(Material.BAMBOO);
-				break;
-			case PARROT:
-				mPlaceholder = new ItemStack(Material.FEATHER);
-				break;
-			case PILLAGER:
-				mPlaceholder = new ItemStack(Material.CROSSBOW);
-				break;
-			case PIG:
-				mPlaceholder = new ItemStack(Material.PORKCHOP);
-				break;
-			case PHANTOM:
-				mPlaceholder = new ItemStack(Material.PHANTOM_MEMBRANE);
-				break;
-			case POLAR_BEAR:
-				mPlaceholder = new ItemStack(Material.SNOW);
-				break;
-			case SPLASH_POTION:
-				mPlaceholder = new ItemStack(Material.GLASS_BOTTLE);
-				break;
-			case ZOMBIFIED_PIGLIN:
-				mPlaceholder = new ItemStack(Material.GOLD_NUGGET);
-				break;
-			case PIGLIN:
-				mPlaceholder = new ItemStack(Material.GOLDEN_BOOTS);
-				break;
-			case PIGLIN_BRUTE:
-				mPlaceholder = new ItemStack(Material.GOLDEN_AXE);
-				break;
-			case PUFFERFISH:
-				mPlaceholder = new ItemStack(Material.PUFFERFISH);
-				break;
-			case RABBIT:
-				mPlaceholder = new ItemStack(Material.RABBIT_FOOT);
-				break;
-			case RAVAGER:
-				mPlaceholder = new ItemStack(Material.SHIELD);
-				break;
-			case SALMON:
-				mPlaceholder = new ItemStack(Material.SALMON);
-				break;
-			case SHEEP:
-				mPlaceholder = new ItemStack(Material.WHITE_WOOL);
-				break;
-			case SHULKER:
-				mPlaceholder = new ItemStack(Material.SHULKER_BOX);
-				break;
-			case SILVERFISH:
-				mPlaceholder = new ItemStack(Material.MOSSY_STONE_BRICKS);
-				break;
-			case SKELETON:
-				mPlaceholder = new ItemStack(Material.SKELETON_SKULL);
-				break;
-			case SKELETON_HORSE:
-				mPlaceholder = new ItemStack(Material.IRON_HORSE_ARMOR);
-				break;
-			case SLIME:
-				mPlaceholder = new ItemStack(Material.SLIME_BALL);
-				break;
-			case SNIFFER:
-				mPlaceholder = new ItemStack(Material.TORCHFLOWER);
-				break;
-			case SNOWMAN:
-				mPlaceholder = new ItemStack(Material.CARVED_PUMPKIN);
-				break;
-			case SPIDER:
-				mPlaceholder = new ItemStack(Material.SPIDER_EYE);
-				break;
-			case STRAY:
-				mPlaceholder = new ItemStack(Material.BOW);
-				break;
-			case STRIDER:
-				mPlaceholder = new ItemStack(Material.WARPED_FUNGUS_ON_A_STICK);
-				break;
-			case SQUID:
-				mPlaceholder = new ItemStack(Material.INK_SAC);
-				break;
-			case TADPOLE:
-				mPlaceholder = new ItemStack(Material.FROGSPAWN);
-				break;
-			case TROPICAL_FISH:
-				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
-				break;
-			case TURTLE:
-				mPlaceholder = new ItemStack(Material.TURTLE_HELMET);
-				break;
-			case VEX:
-				mPlaceholder = new ItemStack(Material.IRON_SWORD);
-				break;
-			case VINDICATOR:
-				mPlaceholder = new ItemStack(Material.STONE_AXE);
-				break;
-			case VILLAGER:
-				mPlaceholder = new ItemStack(Material.EMERALD);
-				break;
-			case WARDEN:
-				mPlaceholder = new ItemStack(Material.SCULK_SHRIEKER);
-				break;
-			case WITCH:
-				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
-				break;
-			case WITHER:
-				mPlaceholder = new ItemStack(Material.NETHER_STAR);
-				break;
-			case WITHER_SKELETON:
-				mPlaceholder = new ItemStack(Material.WITHER_SKELETON_SKULL);
-				break;
-			case WOLF:
-				mPlaceholder = new ItemStack(Material.BONE);
-				break;
-			case ZOMBIE:
-				mPlaceholder = new ItemStack(Material.ZOMBIE_HEAD);
-				break;
-			case ZOMBIE_VILLAGER:
-				mPlaceholder = new ItemStack(Material.BELL);
-				break;
-			case ZOMBIE_HORSE:
-				mPlaceholder = new ItemStack(Material.LEATHER);
-				break;
-			default:
-				mPlaceholder = mBoS.clone();
-				break;
+		Material material = switch (entityNBT.getEntityType()) {
+			case ALLAY -> Material.AMETHYST_SHARD;
+			case ARMOR_STAND -> Material.ARMOR_STAND;
+			case AXOLOTL -> Material.AXOLOTL_BUCKET;
+			case BLAZE -> Material.BLAZE_POWDER;
+			case BEE -> Material.HONEYCOMB;
+			case CAT -> Material.STRING;
+			case CAMEL -> Material.SANDSTONE;
+			case CAVE_SPIDER -> Material.FERMENTED_SPIDER_EYE;
+			case CHICKEN -> Material.CHICKEN;
+			case COD -> Material.COD;
+			case COW -> Material.BEEF;
+			case CREEPER -> Material.CREEPER_HEAD;
+			case DOLPHIN -> Material.COD;
+			case DROWNED -> Material.TRIDENT;
+			case ELDER_GUARDIAN -> Material.SPONGE;
+			case ENDERMAN -> Material.ENDER_PEARL;
+			case ENDERMITE -> Material.ENDER_EYE;
+			case ENDER_CRYSTAL -> Material.END_CRYSTAL;
+			case ENDER_DRAGON -> Material.DRAGON_HEAD;
+			case EVOKER -> Material.TOTEM_OF_UNDYING;
+			case EVOKER_FANGS -> Material.DEAD_FIRE_CORAL_FAN;
+			case FALLING_BLOCK -> Material.SAND;
+			case FOX -> Material.SWEET_BERRIES;
+			case FROG -> Material.LILY_PAD;
+			case GHAST -> Material.GHAST_TEAR;
+			case GIANT -> Material.ANCIENT_DEBRIS;
+			case GLOW_SQUID -> Material.GLOW_INK_SAC;
+			case GUARDIAN -> Material.PRISMARINE_SHARD;
+			case HOGLIN -> Material.WARPED_FUNGUS;
+			case ZOGLIN -> Material.CRIMSON_FUNGUS;
+			case HORSE -> Material.SADDLE;
+			case HUSK -> Material.ROTTEN_FLESH;
+			case ILLUSIONER -> Material.BOW;
+			case IRON_GOLEM -> Material.IRON_BLOCK;
+			case MAGMA_CUBE -> Material.MAGMA_CREAM;
+			case MUSHROOM_COW -> Material.RED_MUSHROOM;
+			case OCELOT -> Material.COOKED_CHICKEN;
+			case PANDA -> Material.BAMBOO;
+			case PARROT -> Material.FEATHER;
+			case PILLAGER -> Material.CROSSBOW;
+			case PIG -> Material.PORKCHOP;
+			case PHANTOM -> Material.PHANTOM_MEMBRANE;
+			case POLAR_BEAR -> Material.SNOW;
+			case SPLASH_POTION -> Material.GLASS_BOTTLE;
+			case ZOMBIFIED_PIGLIN -> Material.GOLD_NUGGET;
+			case PIGLIN -> Material.GOLDEN_BOOTS;
+			case PIGLIN_BRUTE -> Material.GOLDEN_AXE;
+			case PUFFERFISH -> Material.PUFFERFISH;
+			case RABBIT -> Material.RABBIT_FOOT;
+			case RAVAGER -> Material.SHIELD;
+			case SALMON -> Material.SALMON;
+			case SHEEP -> Material.WHITE_WOOL;
+			case SHULKER -> Material.SHULKER_BOX;
+			case SILVERFISH -> Material.MOSSY_STONE_BRICKS;
+			case SKELETON -> Material.SKELETON_SKULL;
+			case SKELETON_HORSE -> Material.IRON_HORSE_ARMOR;
+			case SLIME -> Material.SLIME_BALL;
+			case SNIFFER -> Material.TORCHFLOWER;
+			case SNOWMAN -> Material.CARVED_PUMPKIN;
+			case SPIDER -> Material.SPIDER_EYE;
+			case STRAY -> Material.BOW;
+			case STRIDER -> Material.WARPED_FUNGUS_ON_A_STICK;
+			case SQUID -> Material.INK_SAC;
+			case TADPOLE -> Material.FROGSPAWN;
+			case TROPICAL_FISH -> Material.TROPICAL_FISH;
+			case TURTLE -> Material.TURTLE_HELMET;
+			case VEX -> Material.IRON_SWORD;
+			case VINDICATOR -> Material.STONE_AXE;
+			case VILLAGER -> Material.EMERALD;
+			case WARDEN -> Material.SCULK_SHRIEKER;
+			case WITCH -> Material.POISONOUS_POTATO;
+			case WITHER -> Material.NETHER_STAR;
+			case WITHER_SKELETON -> Material.WITHER_SKELETON_SKULL;
+			case WOLF -> Material.BONE;
+			case ZOMBIE -> Material.ZOMBIE_HEAD;
+			case ZOMBIE_VILLAGER -> Material.BELL;
+			case ZOMBIE_HORSE -> Material.LEATHER;
+			default -> null;
+		};
+
+		if (material == null) {
+			mPlaceholder = mBoS.clone();
+		} else {
+			mPlaceholder = new ItemStack(material);
 		}
 
 		mPlaceholder = mPlaceholder.ensureServerConversions();
