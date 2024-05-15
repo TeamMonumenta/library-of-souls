@@ -370,6 +370,9 @@ public class SoulHistoryEntry implements Soul {
 		}
 
 		switch (entityNBT.getEntityType()) {
+			case ALLAY:
+				mPlaceholder = new ItemStack(Material.AMETHYST_SHARD);
+				break;
 			case ARMOR_STAND:
 				mPlaceholder = new ItemStack(Material.ARMOR_STAND);
 				break;
@@ -384,6 +387,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case CAT:
 				mPlaceholder = new ItemStack(Material.STRING);
+				break;
+			case CAMEL:
+				mPlaceholder = new ItemStack(Material.SANDSTONE);
 				break;
 			case CAVE_SPIDER:
 				mPlaceholder = new ItemStack(Material.FERMENTED_SPIDER_EYE);
@@ -432,6 +438,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case FOX:
 				mPlaceholder = new ItemStack(Material.SWEET_BERRIES);
+				break;
+			case FROG:
+				mPlaceholder = new ItemStack(Material.LILY_PAD);
 				break;
 			case GHAST:
 				mPlaceholder = new ItemStack(Material.GHAST_TEAR);
@@ -532,6 +541,9 @@ public class SoulHistoryEntry implements Soul {
 			case SLIME:
 				mPlaceholder = new ItemStack(Material.SLIME_BALL);
 				break;
+			case SNIFFER:
+				mPlaceholder = new ItemStack(Material.TORCHFLOWER);
+				break;
 			case SNOWMAN:
 				mPlaceholder = new ItemStack(Material.CARVED_PUMPKIN);
 				break;
@@ -547,6 +559,9 @@ public class SoulHistoryEntry implements Soul {
 			case SQUID:
 				mPlaceholder = new ItemStack(Material.INK_SAC);
 				break;
+			case TADPOLE:
+				mPlaceholder = new ItemStack(Material.FROGSPAWN);
+				break;
 			case TROPICAL_FISH:
 				mPlaceholder = new ItemStack(Material.TROPICAL_FISH);
 				break;
@@ -561,6 +576,9 @@ public class SoulHistoryEntry implements Soul {
 				break;
 			case VILLAGER:
 				mPlaceholder = new ItemStack(Material.EMERALD);
+				break;
+			case WARDEN:
+				mPlaceholder = new ItemStack(Material.SCULK_SHRIEKER);
 				break;
 			case WITCH:
 				mPlaceholder = new ItemStack(Material.POISONOUS_POTATO);
