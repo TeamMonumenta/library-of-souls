@@ -21,7 +21,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -120,6 +122,26 @@ public class BestiaryCommand {
 					Player player = args.getByArgument(playerArg);
 					BestiaryManager.deleteAll(player);
 				}))
+			.withSubcommand(new CommandAPICommand("lore")
+				.withSubcommand(new CommandAPICommand("get")
+					.withPermission(CommandPermission.fromString("los.bestiary.lore"))
+					.withArguments(LibraryOfSoulsCommand.mobLabelArg)
+					.executesPlayer((sender, args) -> {
+						String name = args.getByArgument(LibraryOfSoulsCommand.mobLabelArg);
+						SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+						if (soul == null) {
+							throw CommandAPI.failWithString("Mob '" + name + "' not found");
+						} else {
+							ItemStack item = new ItemStack(Material.BOOK);
+							item.lore(soul.getLore());
+							Location location = sender.getLocation();
+							if (!sender.getInventory().addItem(item).isEmpty()) {
+								Item droppedItem = location.getWorld().dropItem(location, item);
+								droppedItem.setPickupDelay(0);
+								droppedItem.setCanMobPickup(false);
+							}
+						}
+					})))
 			.register();
 	}
 
