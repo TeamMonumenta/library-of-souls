@@ -1,7 +1,6 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
-import com.playmonumenta.libraryofsouls.Soul;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
@@ -10,17 +9,13 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.arguments.TextArgument;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Item;
@@ -134,6 +129,26 @@ public class BestiaryCommand {
 						} else {
 							ItemStack item = new ItemStack(Material.BOOK);
 							item.lore(soul.getLore());
+							Location location = sender.getLocation();
+							if (!sender.getInventory().addItem(item).isEmpty()) {
+								Item droppedItem = location.getWorld().dropItem(location, item);
+								droppedItem.setPickupDelay(0);
+								droppedItem.setCanMobPickup(false);
+							}
+						}
+					})))
+			.withSubcommand(new CommandAPICommand("description")
+				.withSubcommand(new CommandAPICommand("get")
+					.withPermission(CommandPermission.fromString("los.bestiary.description"))
+					.withArguments(LibraryOfSoulsCommand.mobLabelArg)
+					.executesPlayer((sender, args) -> {
+						String name = args.getByArgument(LibraryOfSoulsCommand.mobLabelArg);
+						SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+						if (soul == null) {
+							throw CommandAPI.failWithString("Mob '" + name + "' not found");
+						} else {
+							ItemStack item = new ItemStack(Material.BLAZE_POWDER);
+							item.lore(soul.getDescription());
 							Location location = sender.getLocation();
 							if (!sender.getInventory().addItem(item).isEmpty()) {
 								Item droppedItem = location.getWorld().dropItem(location, item);

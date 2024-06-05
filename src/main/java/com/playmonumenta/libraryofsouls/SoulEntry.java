@@ -268,7 +268,9 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			lore.add(Component.text(BestiarySoulInventory.formatWell(getId().getKey()), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
 			lore.add(Component.text("Kills: " + BestiaryManager.getKillsForMob(player, this), NamedTextColor.DARK_RED).decoration(TextDecoration.ITALIC, false));
 			if (!mDescription.isEmpty()) {
-				lore.addAll(getDescription());
+				for (Component line : mDescription) {
+					lore.add(line.color(NamedTextColor.DARK_GRAY));
+				}
 			}
 			if (info.allowsAccessTo(InfoTier.STATS)) {
 				lore.add(Component.text("Click for more info!", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false));
