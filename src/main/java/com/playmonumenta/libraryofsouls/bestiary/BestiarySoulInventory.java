@@ -468,6 +468,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			effectItem = getEffectItem(effectItem);
 			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
 
+			ItemStack descriptionItem = getDescriptionItem(soul);
 			ItemStack loreItem = getLoreItem(soul);
 			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
 			ItemMeta meta = equipmentPageItem.getItemMeta();
@@ -477,6 +478,9 @@ public class BestiarySoulInventory extends CustomInventory {
 			_inventory.setItem(11, healthItem);
 			_inventory.setItem(13, armorItem);
 			_inventory.setItem(15, damageItem);
+			if (!soul.getDescription().isEmpty()) {
+				_inventory.setItem(16, descriptionItem);
+			}
 			_inventory.setItem(22, equipmentPageItem);
 			if (!soul.getLore().isEmpty()) {
 				_inventory.setItem(29, speedItem);
@@ -756,6 +760,30 @@ public class BestiarySoulInventory extends CustomInventory {
 		loreItem.setItemMeta(meta);
 
 		return loreItem;
+	}
+
+	public ItemStack getDescriptionItem(SoulEntry soul) {
+		List<Component> description = soul.getDescription();
+		ItemStack descriptionItem = new ItemStack(Material.BLAZE_POWDER);
+		ItemMeta meta = descriptionItem.getItemMeta();
+		meta.displayName(Component.text("Description", NamedTextColor.WHITE, TextDecoration.BOLD).decoration(TextDecoration.ITALIC, false));
+
+		if (description == null || description.isEmpty()) {
+			List<Component> itemDescription = new ArrayList<>();
+			itemDescription.add(Component.text("This is a bug. Or at the very least, should be.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+			meta.lore(itemDescription);
+			descriptionItem.setItemMeta(meta);
+			return descriptionItem;
+		}
+
+		List<Component> itemDescription = new ArrayList<>();
+		for (Component comp : description) {
+			itemDescription.add(comp.color(NamedTextColor.GRAY));
+		}
+
+		meta.lore(itemDescription);
+		descriptionItem.setItemMeta(meta);
+		return descriptionItem;
 	}
 
 	//Legacy function, will be edited once the new boss tags system is implemented
