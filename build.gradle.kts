@@ -11,50 +11,29 @@ plugins {
     id("net.minecrell.plugin-yml.bukkit") version "0.5.1" // Generates plugin.yml
     id("net.ltgt.errorprone") version "2.0.2"
     id("net.ltgt.nullaway") version "1.3.0"
-	id("com.playmonumenta.deployment") version "1.0"
+	id("com.playmonumenta.deployment") version "1.+"
     checkstyle
     pmd
 }
 
 repositories {
     mavenLocal()
-    maven {
-        url = uri("https://repo.papermc.io/repository/maven-public/")
-    }
-
-    maven {
-        url = uri("https://jitpack.io")
-    }
-
-    maven {
-        url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-    }
-
-    maven {
-        url = uri("https://raw.githubusercontent.com/TeamMonumenta/monumenta-redis-sync/master/mvn-repo/")
-    }
-
-    maven {
-        url = uri("https://raw.githubusercontent.com/TeamMonumenta/NBTEditor/master/mvn-repo/")
-    }
-
-    // NBT API, pulled in by CommandAPI
-    maven {
-        url = uri("https://repo.codemc.org/repository/maven-public/")
-    }
-
-    maven {
-        url = uri("https://repo.maven.apache.org/maven2/")
-    }
-
+    maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://jitpack.io")
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+	maven("https://maven.playmonumenta.com/releases")
+	// NBT API, pulled in by CommandAPI
+    maven("https://repo.codemc.org/repository/maven-public/")
+    maven("https://repo.maven.apache.org/maven2/")
     maven("https://repo.codemc.org/repository/maven-public/")
 }
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
     compileOnly("dev.jorel:commandapi-bukkit-core:9.4.1")
-    compileOnly("com.playmonumenta:nbteditor:4.0")
-    compileOnly("com.playmonumenta:redissync:3.0")
+	compileOnly("de.tr7zw:item-nbt-api-plugin:2.12.0-SNAPSHOT")
+	compileOnly("com.playmonumenta:redissync:4.1")
+	compileOnly("com.playmonumenta:nbteditor:4.1:all")
     compileOnly("com.google.code.gson:gson:2.8.5")
     errorprone("com.google.errorprone:error_prone_core:2.10.0")
     errorprone("com.uber.nullaway:nullaway:0.9.5")
@@ -85,20 +64,31 @@ pmd {
     setIgnoreFailures(true)
 }
 
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+
 publishing {
-    publications.create<MavenPublication>("maven") {
-        project.shadow.component(this)
-    }
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/TeamMonumenta/library-of-souls")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
-        }
-    }
+	publications {
+		create<MavenPublication>("maven") {
+			from(components["java"])
+		}
+	}
+	repositories {
+		maven {
+			name = "MonumentaMaven"
+			url = when (version.toString().endsWith("SNAPSHOT")) {
+				true -> uri("https://maven.playmonumenta.com/snapshots")
+				false -> uri("https://maven.playmonumenta.com/releases")
+			}
+
+			credentials {
+				username = System.getenv("USERNAME")
+				password = System.getenv("TOKEN")
+			}
+		}
+	}
 }
 
 tasks.withType<JavaCompile>().configureEach {
