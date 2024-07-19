@@ -34,8 +34,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
 
-
-
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
 	private static final String SOUL_PARTIES_DATABASE_FILE = "soul_parties_database.json";
