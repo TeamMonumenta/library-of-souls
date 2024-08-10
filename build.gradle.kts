@@ -54,8 +54,8 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
     compileOnly("dev.jorel:commandapi-bukkit-core:9.4.1")
-    compileOnly("com.playmonumenta:nbteditor:4.1")
-    compileOnly("com.playmonumenta:redissync:5.0")
+    compileOnly("com.playmonumenta:nbteditor:4.1:all")
+    compileOnly("com.playmonumenta:redissync:5.0:all")
     compileOnly("com.google.code.gson:gson:2.8.5")
     errorprone("com.google.errorprone:error_prone_core:2.29.1")
     errorprone("com.uber.nullaway:nullaway:0.10.18")
