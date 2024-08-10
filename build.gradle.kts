@@ -32,11 +32,12 @@ dependencies {
 	compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
 	compileOnly("dev.jorel:commandapi-bukkit-core:9.4.1")
 	compileOnly("de.tr7zw:item-nbt-api-plugin:2.12.0-SNAPSHOT")
-	compileOnly("com.playmonumenta:redissync:4.1:all")
-	compileOnly("com.playmonumenta:nbteditor:4.1:all")
-	compileOnly("com.google.code.gson:gson:2.8.5")
-	errorprone("com.google.errorprone:error_prone_core:2.10.0")
-	errorprone("com.uber.nullaway:nullaway:0.9.5")
+    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
+    compileOnly("com.playmonumenta:nbteditor:4.1:all")
+    compileOnly("com.playmonumenta:redissync:5.0:all")
+    compileOnly("com.google.code.gson:gson:2.8.5")
+    errorprone("com.google.errorprone:error_prone_core:2.29.1")
+    errorprone("com.uber.nullaway:nullaway:0.10.18")
 }
 
 group = "com.playmonumenta"
