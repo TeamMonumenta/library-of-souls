@@ -4,16 +4,16 @@ import net.ltgt.gradle.errorprone.errorprone
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
-    java
-    `maven-publish`
-    id("com.palantir.git-version") version "0.12.2"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("net.minecrell.plugin-yml.bukkit") version "0.5.1" // Generates plugin.yml
-    id("net.ltgt.errorprone") version "3.1.0"
-    id("net.ltgt.nullaway") version "1.6.0"
+	java
+	`maven-publish`
+	id("com.palantir.git-version") version "0.12.2"
+	id("com.github.johnrengelman.shadow") version "7.1.2"
+	id("net.minecrell.plugin-yml.bukkit") version "0.5.1" // Generates plugin.yml
+	id("net.ltgt.errorprone") version "3.1.0"
+	id("net.ltgt.nullaway") version "1.6.0"
 	id("com.playmonumenta.deployment") version "1.+"
-    checkstyle
-    pmd
+	checkstyle
+	pmd
 }
 
 repositories {
@@ -31,14 +31,14 @@ dependencies {
 	compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
 	compileOnly("dev.jorel:commandapi-bukkit-core:9.4.1")
 	compileOnly("de.tr7zw:item-nbt-api-plugin:2.12.0-SNAPSHOT")
-    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
-    compileOnly("com.playmonumenta:nbteditor:4.1:all")
-    compileOnly("com.playmonumenta:redissync:5.0:all")
-    compileOnly("com.google.code.gson:gson:2.8.5")
-    errorprone("com.google.errorprone:error_prone_core:2.29.1")
-    errorprone("com.uber.nullaway:nullaway:0.10.18")
-    errorprone("com.google.errorprone:error_prone_core:2.29.1")
-    errorprone("com.uber.nullaway:nullaway:0.10.18")
+	compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
+	compileOnly("com.playmonumenta:nbteditor:4.1:all")
+	compileOnly("com.playmonumenta:redissync:5.0:all")
+	compileOnly("com.google.code.gson:gson:2.8.5")
+	errorprone("com.google.errorprone:error_prone_core:2.29.1")
+	errorprone("com.uber.nullaway:nullaway:0.10.18")
+	errorprone("com.google.errorprone:error_prone_core:2.29.1")
+	errorprone("com.uber.nullaway:nullaway:0.10.18")
 }
 
 group = "com.playmonumenta"
@@ -60,10 +60,10 @@ bukkit {
 }
 
 pmd {
-    isConsoleOutput = true
-    toolVersion = "7.2.0"
-    ruleSets = listOf("$rootDir/pmd-ruleset.xml")
-    setIgnoreFailures(true)
+	isConsoleOutput = true
+	toolVersion = "7.2.0"
+	ruleSets = listOf("$rootDir/pmd-ruleset.xml")
+	setIgnoreFailures(true)
 }
 
 java {
