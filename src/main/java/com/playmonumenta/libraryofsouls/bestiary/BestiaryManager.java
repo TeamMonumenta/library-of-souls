@@ -185,7 +185,7 @@ public class BestiaryManager implements Listener {
 									// good for both unlocking the entry in group play, and also to stop descriptions from showing up too many times
 									List<Player> otherPlayers = player.getWorld().getPlayers();
 									otherPlayers.remove(player);
-									otherPlayers.removeIf(p -> p.getLocation().distance(player.getLocation()) > 20);
+									otherPlayers.removeIf(p -> p.getLocation().distanceSquared(player.getLocation()) > 20 * 20);
 									otherPlayers.removeIf(p -> getKillsForMob(p, soul) > 0);
 									for (Player p : otherPlayers) {
 										try {
