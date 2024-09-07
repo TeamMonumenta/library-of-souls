@@ -174,11 +174,25 @@ public class BestiaryManager implements Listener {
 										}
 									});
 								} else {
-									// Not a boss, just record kill for the killer
+									// Not a boss, record kill for the killer
 									try {
 										mStorage.recordKill(player, soul);
 									} catch (Exception ex) {
 										mLogger.warning(ex.getMessage());
+									}
+
+									// also check if any nearby player has not killed that mob before, and give them the kill
+									// good for both unlocking the entry in group play, and also to stop descriptions from showing up too many times
+									List<Player> otherPlayers = player.getWorld().getPlayers();
+									otherPlayers.remove(player);
+									otherPlayers.removeIf(p -> p.getLocation().distanceSquared(player.getLocation()) > 20 * 20);
+									otherPlayers.removeIf(p -> getKillsForMob(p, soul) > 0);
+									for (Player p : otherPlayers) {
+										try {
+											mStorage.recordKill(p, soul);
+										} catch (Exception ex) {
+											mLogger.warning(ex.getMessage());
+										}
 									}
 								}
 							}
