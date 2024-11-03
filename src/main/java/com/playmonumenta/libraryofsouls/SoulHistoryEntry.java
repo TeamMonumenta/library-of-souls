@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -326,8 +327,8 @@ public class SoulHistoryEntry implements Soul {
 	 *--------------------------------------------------------------------------------*/
 
 	private List<TextComponent> stringifyWrapList(String prefix, int maxLen, int minLen, Object[] elements) {
-		final var text = IntStream.range(0, elements.length)
-			.mapToObj(i -> Component.text((String) elements[i], Utils.colorFromInt(i)))
+		final var text = Arrays.stream(elements)
+			.map(element -> Component.text((String) element, Utils.colorFromInt(element.hashCode())))
 			.collect(Component.toComponent(Component.space()));
 
 		return Utils.wrapComponent((TextComponent) text, maxLen - prefix.length(), minLen - prefix.length(), true)

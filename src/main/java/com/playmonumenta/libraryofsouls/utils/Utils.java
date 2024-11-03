@@ -15,6 +15,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.BoundingBox;
@@ -35,24 +36,38 @@ public class Utils {
 
 	public static TextColor colorFromInt(int val) {
 		return switch (val % 13) {
-			case 6 -> NamedTextColor.DARK_GRAY;
-			case 11 -> NamedTextColor.LIGHT_PURPLE;
-			case 8 -> NamedTextColor.DARK_AQUA;
+			case 0 -> NamedTextColor.DARK_GREEN;
+			case 1 -> NamedTextColor.DARK_AQUA;
 			case 2 -> NamedTextColor.DARK_RED;
 			case 3 -> NamedTextColor.DARK_PURPLE;
 			case 4 -> NamedTextColor.GOLD;
 			case 5 -> NamedTextColor.GRAY;
+			case 6 -> NamedTextColor.DARK_GRAY;
 			case 7 -> NamedTextColor.BLUE;
-			case 1 -> NamedTextColor.GREEN;
+			case 8 -> NamedTextColor.GREEN;
 			case 9 -> NamedTextColor.AQUA;
 			case 10 -> NamedTextColor.RED;
-			case 0 -> NamedTextColor.YELLOW;
-			default -> NamedTextColor.DARK_GREEN;
+			case 11 -> NamedTextColor.LIGHT_PURPLE;
+			default -> NamedTextColor.YELLOW;
 		};
 	}
 
-	public static TextColor hashColor(String in) {
-		return colorFromInt(in.hashCode());
+	public static String hashColor(String in) {
+		return switch (in.hashCode() % 13) {
+			case 0 -> ChatColor.DARK_GREEN + in;
+			case 1 -> ChatColor.DARK_AQUA + in;
+			case 2 -> ChatColor.DARK_RED + in;
+			case 3 -> ChatColor.DARK_PURPLE + in;
+			case 4 -> ChatColor.GOLD + in;
+			case 5 -> ChatColor.GRAY + in;
+			case 6 -> ChatColor.DARK_GRAY + in;
+			case 7 -> ChatColor.BLUE + in;
+			case 8 -> ChatColor.GREEN + in;
+			case 9 -> ChatColor.AQUA + in;
+			case 10 -> ChatColor.RED + in;
+			case 11 -> ChatColor.LIGHT_PURPLE + in;
+			default -> ChatColor.YELLOW + in;
+		};
 	}
 
 	public static String getLabelFromName(Component name) throws Exception {
@@ -161,8 +176,10 @@ public class Utils {
 			final var actualMax = Math.min(maxChars, string.length() - stringBuilderIndex);
 
 			int splitPos = -1;
-			for (int i = minChars; i < actualMax; i++) {
-				if (Character.isJavaIdentifierPart(string.charAt(stringBuilderIndex + i))) {
+			for (int i = minChars; i < actualMax - 1; i++) {
+				// look for the end of a word
+				if (Character.isJavaIdentifierPart(string.charAt(stringBuilderIndex + i)) &&
+					!Character.isJavaIdentifierPart(string.charAt(stringBuilderIndex + i + 1))) {
 					splitPos = i;
 				}
 			}
