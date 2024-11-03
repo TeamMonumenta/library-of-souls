@@ -1,5 +1,7 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
@@ -80,12 +82,12 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		if (config.contains("item")) {
-			final var material = Material.matchMaterial(Objects.requireNonNull(config.getString("item")));
-			if (material == null) {
+			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
+			compound.setByte("Count", (byte) 1);
+			mItem = NBTUtils.itemStackFromNBTData(compound);
+			if (mItem == null || mItem.getType().isAir()) {
 				throw new Exception("Item for " + Utils.plainText(mName) + " failed to parse, was: " + config.getString("item"));
 			}
-
-			mItem = new ItemStack(material, 1);
 		} else {
 			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " is missing 'item'");
 		}
