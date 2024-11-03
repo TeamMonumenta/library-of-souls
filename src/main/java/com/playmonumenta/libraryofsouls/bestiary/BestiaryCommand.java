@@ -38,7 +38,7 @@ public class BestiaryCommand {
 				.withArguments(playerArg)
 				.withArguments(LibraryOfSoulsCommand.mobLabelArg)
 				.executes((sender, args) -> {
-					int kills = 0;
+					int kills;
 					SoulEntry soul = LibraryOfSoulsCommand.getSoul(args.getByArgument(LibraryOfSoulsCommand.mobLabelArg));
 					Player player = args.getByArgument(playerArg);
 					try {
@@ -66,7 +66,7 @@ public class BestiaryCommand {
 				.withArguments(LibraryOfSoulsCommand.mobLabelArg)
 				.withArguments(amountArg)
 				.executes((sender, args) -> {
-					int kills = 0;
+					int kills;
 					try {
 						kills = BestiaryManager.addKillsToMob(args.getByArgument(playerArg), LibraryOfSoulsCommand.getSoul(args.getByArgument(LibraryOfSoulsCommand.mobLabelArg)), args.getByArgument(amountArg));
 					} catch (Exception ex) {
@@ -213,7 +213,7 @@ public class BestiaryCommand {
 						.withPermission(CommandPermission.fromString("los.bestiary.lore"))
 						.executesPlayer((sender, args) -> {
 							ItemStack item = sender.getInventory().getItemInMainHand();
-							if (item == null || !item.getItemMeta().hasLore()) {
+							if (!item.getItemMeta().hasLore()) {
 								throw CommandAPI.failWithString("You need a valid item with lore text!");
 							}
 							List<Component> lore = item.lore();
@@ -270,7 +270,7 @@ public class BestiaryCommand {
 					.withPermission(CommandPermission.fromString("los.bestiary.description"))
 					.executesPlayer((sender, args) -> {
 						ItemStack item = sender.getInventory().getItemInMainHand();
-						if (item == null || !item.getItemMeta().hasLore()) {
+						if (!item.getItemMeta().hasLore()) {
 							throw CommandAPI.failWithString("You need a valid item with lore text!");
 						}
 						List<Component> lore = item.lore();

@@ -48,7 +48,7 @@ public class SoulsInventory extends CustomInventory {
 		}
 
 		if (mOffset > 0) {
-			_inventory.setItem(45, UtilsMc.newSingleItemStack(Material.ARROW, "[" + Integer.toString(mOffset / 36) + "] Previous Page"));
+			_inventory.setItem(45, UtilsMc.newSingleItemStack(Material.ARROW, "[" + mOffset / 36 + "] Previous Page"));
 			mHasPrevPage = true;
 		} else {
 			mHasPrevPage = false;
@@ -56,7 +56,7 @@ public class SoulsInventory extends CustomInventory {
 		}
 
 		if (mCurrentSlots.size() >= 36) {
-			_inventory.setItem(53, UtilsMc.newSingleItemStack(Material.ARROW, "[" + Integer.toString(mOffset / 36) + "] Next Page"));
+			_inventory.setItem(53, UtilsMc.newSingleItemStack(Material.ARROW, "[" + mOffset / 36 + "] Next Page"));
 			mHasNextPage = true;
 		} else {
 			mHasNextPage = false;
@@ -67,9 +67,10 @@ public class SoulsInventory extends CustomInventory {
 	@Override
 	protected void inventoryClick(final InventoryClickEvent event) {
 		if (event.getClickedInventory() == null) {
-			// Player clicked off the screen
 			return;
-		} else if ((event.getCursor().getType() != Material.AIR && event.getClickedInventory().equals(getInventory()))
+		}
+			// Player clicked off the screen
+		if ((event.getCursor().getType() != Material.AIR && event.getClickedInventory().equals(getInventory()))
 		           || (event.isShiftClick() && !event.getClickedInventory().equals(getInventory()))) {
 			// Attempted to place something in the souls inventory
 			event.setCancelled(true);
@@ -79,12 +80,7 @@ public class SoulsInventory extends CustomInventory {
 			if (slot >= 0 && slot < 36 && mCurrentSlots.size() > slot) {
 				if (event.isShiftClick()) {
 					event.setCurrentItem(mCurrentSlots.get(slot).getBoS());
-					Bukkit.getScheduler().runTask(getPlugin(), new Runnable() {
-						@Override
-						public void run() {
-							event.setCurrentItem(mCurrentSlots.get(slot).getPlaceholder());
-						}
-					});
+					Bukkit.getScheduler().runTask(getPlugin(), () -> event.setCurrentItem(mCurrentSlots.get(slot).getPlaceholder()));
 				} else if (event.isRightClick()) {
 					event.setCancelled(true);
 					SpawnerInventory.openSpawnerInventory(mCurrentSlots.get(slot), (Player)event.getWhoClicked(), this);

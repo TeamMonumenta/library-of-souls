@@ -4,8 +4,7 @@ import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.ItemStackNBTWrapper;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ListVariable;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.Utils;
@@ -21,11 +20,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -34,14 +34,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
 public class SoulHistoryEntry implements Soul {
 	private static class HitboxSize {
-		private double mWidth;
-		private double mHeight;
+		private final double mWidth;
+		private final double mHeight;
 
 		public HitboxSize(Location origin, NBTTagCompound nbt) {
 			Entity entity = EntityNBT.fromEntityData(nbt).spawn(origin);
@@ -49,9 +48,9 @@ public class SoulHistoryEntry implements Soul {
 
 			// TODO get width and height of bounding box relative to origin (ignore height below origin, because boats are whack)
 			mWidth = Math.max(Math.max(bb.getMaxX() - origin.getX(),
-			                           bb.getMaxZ() - origin.getZ()),
-			                  Math.max(origin.getX() - bb.getMinX(),
-			                           origin.getZ() - bb.getMinZ()));
+					bb.getMaxZ() - origin.getZ()),
+				Math.max(origin.getX() - bb.getMinX(),
+					origin.getZ() - bb.getMinZ()));
 			mHeight = bb.getMaxY() - origin.getY();
 		}
 
@@ -115,7 +114,7 @@ public class SoulHistoryEntry implements Soul {
 		mNBT = nbt;
 		mModifiedOn = Instant.now().getEpochSecond();
 		mModifiedBy = player.getName();
-		mLocs = new HashSet<String>();
+		mLocs = new HashSet<>();
 		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
 		mLore = new ArrayList<>();
 		mDescription = new ArrayList<>();
@@ -285,30 +284,36 @@ public class SoulHistoryEntry implements Soul {
 
 	@Override
 	public boolean isBoss() {
-		boolean isBoss = false;
 		NBTTagList tags = mNBT.getList("Tags");
-		if (tags != null && tags.size() > 0) {
-			for (Object obj : tags.getAsArray()) {
-				if (obj.equals("Boss")) {
-					isBoss = true;
-				}
+
+		if (tags == null || tags.size() <= 0) {
+			return false;
+		}
+
+		for (Object obj : tags.getAsArray()) {
+			if (obj.equals("Boss")) {
+				return true;
 			}
 		}
-		return isBoss;
+
+		return false;
 	}
 
 	@Override
 	public boolean isElite() {
-		boolean isElite = false;
 		NBTTagList tags = mNBT.getList("Tags");
-		if (tags != null && tags.size() > 0) {
-			for (Object obj : tags.getAsArray()) {
-				if (obj.equals("Elite")) {
-					isElite = true;
-				}
+
+		if (tags == null || tags.size() <= 0) {
+			return false;
+		}
+
+		for (Object obj : tags.getAsArray()) {
+			if (obj.equals("Elite")) {
+				return true;
 			}
 		}
-		return isElite;
+
+		return false;
 	}
 
 	@Override
@@ -320,33 +325,57 @@ public class SoulHistoryEntry implements Soul {
 	 * Soul Interface
 	 *--------------------------------------------------------------------------------*/
 
-	private List<String> stringifyWrapList(String prefix, int maxLen, Object[] elements) {
-		List<String> ret = new ArrayList<String>();
+	private List<TextComponent> stringifyWrapList(String prefix, int maxLen, int minLen, Object[] elements) {
+		final var text = IntStream.range(0, elements.length)
+			.mapToObj(i -> Component.text((String) elements[i], Utils.colorFromInt(i)))
+			.collect(Component.toComponent(Component.space()));
 
-		String cur = "" + prefix;
-		boolean first = true;
-		for (Object element : elements) {
-			String entry = (String)element;
+		return Utils.wrapComponent((TextComponent) text, maxLen - prefix.length(), minLen - prefix.length(), true)
+			.stream()
+			.map(x -> Component.text(prefix).append(x))
+			.toList();
+	}
 
-			String temp;
-			if (first) {
-				temp = cur + Utils.hashColor(entry);
-			} else {
-				temp = cur + " " + Utils.hashColor(entry);
-			}
-			first = false;
+	private List<Component> renderItemLore(boolean isPlaceholder) {
+		List<Component> lore = new ArrayList<>();
 
-			if (ChatColor.stripColor(temp).length() <= maxLen) {
-				cur = temp;
-			} else {
-				ret.add(cur);
-				cur = prefix + Utils.hashColor(entry);
-			}
+		final var id = mNBT.getString("id");
+		lore.add(Component.text("Type: " + (id.startsWith("minecraft:") ? id.substring(10) : id)).color(NamedTextColor.WHITE));
+		lore.add(Component.text("Health: " + mNBT.getDouble("Health")).color(NamedTextColor.WHITE));
+
+		NBTTagList tags = mNBT.getList("Tags");
+		if (tags != null && tags.size() > 0) {
+			lore.add(Component.text("Tags:").color(NamedTextColor.WHITE));
+			lore.addAll(stringifyWrapList("  ", 50, 40, tags.getAsArray()));
 		}
 
-		ret.add(cur);
+		if (mLocs != null && !mLocs.isEmpty()) {
+			lore.add(Component.text("Locations:").color(NamedTextColor.WHITE));
+			lore.addAll(stringifyWrapList("  ", 50, 40, mLocs.toArray()));
+		}
 
-		return ret;
+		if (mLore != null && !mLore.isEmpty()) {
+			lore.add(Component.text("Lore:").color(NamedTextColor.WHITE));
+			lore.add(Component.text("It exists."));
+		}
+
+		if (mDescription != null && !mDescription.isEmpty()) {
+			lore.add(Component.text("Description:").color(NamedTextColor.WHITE));
+			lore.add(Component.text("It exists."));
+		}
+
+		/* If the item has been modified, list when */
+		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
+			if (isPlaceholder) {
+				lore.add(Component.text("Modified " + getTimeDeltaStr()).color(NamedTextColor.AQUA));
+			}
+			/* Actual time on the picked-up item */
+			LocalDateTime modTime = LocalDateTime.ofEpochSecond(mModifiedOn, 0, ZoneOffset.UTC);
+			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			lore.add(Component.text("Modified " + modTime.format(fmt) + " by " + mModifiedBy).color(NamedTextColor.AQUA));
+		}
+
+		return Lists.transform(lore, x -> x.decoration(TextDecoration.ITALIC, false));
 	}
 
 	private void regenerateItems() {
@@ -360,11 +389,7 @@ public class SoulHistoryEntry implements Soul {
 			ex.printStackTrace();
 
 			mPlaceholder = new ItemStack(Material.BARRIER);
-			mPlaceholder = mPlaceholder.ensureServerConversions();
-			ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
-			placeholderWrap.getVariable("Name").set("FAILED TO LOAD: " + getDisplayName(), null);
-			placeholderWrap.save();
-
+			mPlaceholder.editMeta(itemMeta -> itemMeta.displayName(Component.text("FAILED TO LOAD: ").append(getDisplayName())));
 			mBoS = mPlaceholder.clone();
 			return;
 		}
@@ -379,10 +404,9 @@ public class SoulHistoryEntry implements Soul {
 			case CAMEL -> Material.SANDSTONE;
 			case CAVE_SPIDER -> Material.FERMENTED_SPIDER_EYE;
 			case CHICKEN -> Material.CHICKEN;
-			case COD -> Material.COD;
+			case COD, DOLPHIN -> Material.COD;
 			case COW -> Material.BEEF;
 			case CREEPER -> Material.CREEPER_HEAD;
-			case DOLPHIN -> Material.COD;
 			case DROWNED -> Material.TRIDENT;
 			case ELDER_GUARDIAN -> Material.SPONGE;
 			case ENDERMAN -> Material.ENDER_PEARL;
@@ -402,7 +426,7 @@ public class SoulHistoryEntry implements Soul {
 			case ZOGLIN -> Material.CRIMSON_FUNGUS;
 			case HORSE -> Material.SADDLE;
 			case HUSK -> Material.ROTTEN_FLESH;
-			case ILLUSIONER -> Material.BOW;
+			case ILLUSIONER, STRAY -> Material.BOW;
 			case IRON_GOLEM -> Material.IRON_BLOCK;
 			case MAGMA_CUBE -> Material.MAGMA_CREAM;
 			case MUSHROOM_COW -> Material.RED_MUSHROOM;
@@ -430,7 +454,6 @@ public class SoulHistoryEntry implements Soul {
 			case SNIFFER -> Material.TORCHFLOWER;
 			case SNOWMAN -> Material.CARVED_PUMPKIN;
 			case SPIDER -> Material.SPIDER_EYE;
-			case STRAY -> Material.BOW;
 			case STRIDER -> Material.WARPED_FUNGUS_ON_A_STICK;
 			case SQUID -> Material.INK_SAC;
 			case TADPOLE -> Material.FROGSPAWN;
@@ -456,102 +479,19 @@ public class SoulHistoryEntry implements Soul {
 			mPlaceholder = new ItemStack(material);
 		}
 
-		mPlaceholder = mPlaceholder.ensureServerConversions();
-		ItemMeta placeholderMeta = mPlaceholder.getItemMeta();
-		placeholderMeta.displayName(Component.text(""));
-		placeholderMeta.lore(List.of());
-		mPlaceholder.setItemMeta(placeholderMeta);
-		mPlaceholder.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+		mPlaceholder.editMeta(itemMeta -> {
+			itemMeta.displayName(getDisplayName());
+			itemMeta.lore(renderItemLore(true));
+		});
 
-		mBoS = mBoS.ensureServerConversions();
-		ItemMeta bosMeta = mBoS.getItemMeta();
-		bosMeta.displayName(Component.text(""));
-		bosMeta.lore(List.of());
-		mBoS.setItemMeta(bosMeta);
+		mPlaceholder.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
-		ItemStackNBTWrapper placeholderWrap = new ItemStackNBTWrapper(mPlaceholder);
-		ItemStackNBTWrapper bosWrap = new ItemStackNBTWrapper(mBoS);
+		mBoS.editMeta(itemMeta -> {
+			itemMeta.displayName(getDisplayName());
+			itemMeta.lore(renderItemLore(false));
+		});
 
-		/* Set the item's display name (recolored, does not exactly match actual mob name) */
-		String serializedDisplayName = GsonComponentSerializer.gson().serialize(getDisplayName());
-		placeholderWrap.getVariable("Name").set(serializedDisplayName, null);
-		bosWrap.getVariable("Name").set(serializedDisplayName, null);
-
-		/* Set hide flags to hide the BoS author info */
-		placeholderWrap.getVariable("HideFlags").set("32", null);
-		bosWrap.getVariable("HideFlags").set("32", null);
-
-		String idStr = ChatColor.WHITE + "Type: ";
-		if (mNBT.getString("id").startsWith("minecraft:")) {
-			idStr += mNBT.getString("id").substring(10);
-		} else {
-			idStr += mNBT.getString("id");
-		}
-		((ListVariable)placeholderWrap.getVariable("Lore")).add(idStr, null);
-		((ListVariable)bosWrap.getVariable("Lore")).add(idStr, null);
-
-		if (mNBT.hasKey("Health")) {
-			String healthStr = ChatColor.WHITE + "Health: " + Double.toString(mNBT.getDouble("Health"));
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(healthStr, null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(healthStr, null);
-		}
-
-		NBTTagList tags = mNBT.getList("Tags");
-		if (tags != null && tags.size() > 0) {
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Tags:", null);
-
-			int index = 0;
-			for (String str : stringifyWrapList("  ", 50, tags.getAsArray())) {
-				index = 0;
-				while (str.length() - index >= 40) {
-					((ListVariable)placeholderWrap.getVariable("Lore")).add(str.substring(index, index + 40), null);
-					((ListVariable)bosWrap.getVariable("Lore")).add(str.substring(index, index + 40), null);
-					index += 40;
-				}
-
-				((ListVariable)placeholderWrap.getVariable("Lore")).add(str.substring(index), null);
-				((ListVariable)bosWrap.getVariable("Lore")).add(str.substring(index), null);
-			}
-		}
-
-		if (mLocs != null && mLocs.size() > 0) {
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Locations:", null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Locations:", null);
-
-			for (String str : stringifyWrapList("  ", 45, mLocs.toArray())) {
-				((ListVariable)placeholderWrap.getVariable("Lore")).add(str, null);
-				((ListVariable)bosWrap.getVariable("Lore")).add(str, null);
-			}
-		}
-
-		if (mLore != null && !mLore.isEmpty()) {
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Lore:", null);
-			//Rather than a giant block of text, two words suffice.
-			((ListVariable)placeholderWrap.getVariable("Lore")).add("It exists.", null);
-		}
-
-		if (mDescription != null && !mDescription.isEmpty()) {
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.WHITE + "Description:", null);
-			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.WHITE + "Description:", null);
-			// Rather than a giant block of text, two words suffice.
-			((ListVariable)placeholderWrap.getVariable("Lore")).add("It exists.", null);
-		}
-
-		/* If the item has been modified, list when */
-		if (mModifiedBy != null && !mModifiedBy.isEmpty()) {
-			/* Relative time on the placeholder item */
-			((ListVariable)placeholderWrap.getVariable("Lore")).add(ChatColor.AQUA + "Modified " + getTimeDeltaStr() + " by " + mModifiedBy, null);
-
-			/* Actual time on the picked-up item */
-			LocalDateTime modTime = LocalDateTime.ofEpochSecond(mModifiedOn, 0, ZoneOffset.UTC);
-			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			((ListVariable)bosWrap.getVariable("Lore")).add(ChatColor.AQUA + "Modified " + modTime.format(fmt) + " by " + mModifiedBy, null);
-		}
-
-		placeholderWrap.save();
-		bosWrap.save();
+		mBoS.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 	}
 
 	private String getTimeDeltaStr() {
@@ -559,25 +499,25 @@ public class SoulHistoryEntry implements Soul {
 
 		if (deltaSeconds > 60 * 24 * 60 * 60) {
 			/* More than 2 months - just print months */
-			return Long.toString(deltaSeconds / (60 * 24 * 60 * 60)) + " months ago";
+			return deltaSeconds / (60 * 24 * 60 * 60) + " months ago";
 		} else {
 			String retStr = "";
 
 			long days = deltaSeconds / (24 * 60 * 60);
 			if (days >= 1) {
-				retStr += Long.toString(days) + "d ";
+				retStr += days + "d ";
 			}
 
 			if (days < 7) {
 				long hours = (deltaSeconds % (24 * 60 * 60)) / (60 * 60);
 				if (hours >= 1) {
-					retStr += Long.toString(hours) + "h ";
+					retStr += hours + "h ";
 				}
 
 				if (days == 0) {
 					long minutes = (deltaSeconds % (60 * 60)) / 60;
 					if (minutes >= 1) {
-						retStr += Long.toString(minutes) + "m ";
+						retStr += minutes + "m ";
 					}
 				}
 			}

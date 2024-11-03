@@ -38,7 +38,7 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		}
 
 		Score score = objective.getScore(player.getName());
-		if (score == null || !score.isScoreSet()) {
+		if (!score.isScoreSet()) {
 			return 0;
 		}
 

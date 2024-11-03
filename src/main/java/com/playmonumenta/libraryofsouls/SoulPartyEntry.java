@@ -35,7 +35,7 @@ public class SoulPartyEntry implements SoulGroup {
 	public SoulPartyEntry(Player player, String label) {
 		SoulPartyHistoryEntry newHist = new SoulPartyHistoryEntry(player, label);
 
-		mHistory = new ArrayList<SoulPartyHistoryEntry>(1);
+		mHistory = new ArrayList<>(1);
 		mHistory.add(newHist);
 	}
 
@@ -117,11 +117,11 @@ public class SoulPartyEntry implements SoulGroup {
 	 *--------------------------------------------------------------------------------*/
 
 	public List<SoulGroup> getHistory() {
-		return new ArrayList<SoulGroup>(mHistory);
+		return new ArrayList<>(mHistory);
 	}
 
 	public static SoulPartyEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
-		List<SoulPartyHistoryEntry> history = new ArrayList<SoulPartyHistoryEntry>();
+		List<SoulPartyHistoryEntry> history = new ArrayList<>();
 		JsonArray array = obj.getAsJsonArray("history");
 		if (array == null) {
 			throw new Exception("Failed to parse history as JSON array");
@@ -130,16 +130,16 @@ public class SoulPartyEntry implements SoulGroup {
 		if (loadHistory) {
 			for (JsonElement historyElement : array) {
 				if (!historyElement.isJsonObject()) {
-					throw new Exception("history entry for '" + history.toString() + "' is not an object!");
+					throw new Exception("history entry for '" + history + "' is not an object!");
 				}
 
 				history.add(SoulPartyHistoryEntry.fromJson(historyElement.getAsJsonObject()));
 			}
 		} else {
-			if (array.size() >= 1) {
+			if (!array.isEmpty()) {
 				JsonElement historyElement = array.get(0);
 				if (!historyElement.isJsonObject()) {
-					throw new Exception("history entry for '" + history.toString() + "' is not an object!");
+					throw new Exception("history entry for '" + history + "' is not an object!");
 				}
 
 				history.add(SoulPartyHistoryEntry.fromJson(historyElement.getAsJsonObject()));

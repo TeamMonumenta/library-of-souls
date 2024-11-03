@@ -38,10 +38,10 @@ import org.bukkit.util.BoundingBox;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
-	public static final ArgumentSuggestions<CommandSender> LIST_MOBS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobNames().stream().toArray(String[]::new));
-	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_PARTIES_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPartyNames().stream().toArray(String[]::new));
-	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_POOLS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPoolNames().stream().toArray(String[]::new));
-	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_GROUPS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulGroupNames().stream().toArray(String[]::new));
+	public static final ArgumentSuggestions<CommandSender> LIST_MOBS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobNames().toArray(String[]::new));
+	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_PARTIES_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPartyNames().toArray(String[]::new));
+	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_POOLS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPoolNames().toArray(String[]::new));
+	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_GROUPS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulGroupNames().toArray(String[]::new));
 	private static final String COMMAND = "los";
 	private static final Pattern VALID_SOUL_GROUP_LABEL = Pattern.compile("[0-9A-Za-z_]+");
 
@@ -55,8 +55,8 @@ public class LibraryOfSoulsCommand {
 		LocationArgument locationArg = new LocationArgument("location");
 		LocationArgument pos1Arg = new LocationArgument("pos1");
 		LocationArgument pos2Arg = new LocationArgument("pos2");
-		Argument<String> areaArg = new StringArgument("area").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobLocations().stream().toArray(String[]::new)));
-		Argument<String> idArg = new StringArgument("id").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobTypes().stream().toArray(String[]::new)));
+		Argument<String> areaArg = new StringArgument("area").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobLocations().toArray(String[]::new)));
+		Argument<String> idArg = new StringArgument("id").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobTypes().toArray(String[]::new)));
 
 		/* los open */
 		new CommandAPICommand(COMMAND)

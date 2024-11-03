@@ -1,15 +1,10 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -51,7 +46,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			if (souls == null || souls.isEmpty()) {
 				throw new Exception("Bestiary entry " + Utils.plainText(mName) + " specifies nonexistent location " + mLocation);
 			}
-			mChildren = new ArrayList<BestiaryEntryInterface>(souls);
+			mChildren = new ArrayList<>(souls);
 		} else if (config.contains("children")) {
 			mLocation = null;
 
@@ -85,12 +80,12 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		if (config.contains("item")) {
-			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
-			compound.setByte("Count", (byte)1);
-			mItem = NBTUtils.itemStackFromNBTData(compound);
-			if (mItem == null || mItem.getType().isAir()) {
+			final var material = Material.matchMaterial(Objects.requireNonNull(config.getString("item")));
+			if (material == null) {
 				throw new Exception("Item for " + Utils.plainText(mName) + " failed to parse, was: " + config.getString("item"));
 			}
+
+			mItem = new ItemStack(material, 1);
 		} else {
 			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " is missing 'item'");
 		}
@@ -100,13 +95,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 
 		if (config.contains("subtitle")) {
 			Component subtitle = Utils.parseMiniMessage(config.getString("subtitle"));
-			meta.lore(Arrays.asList(subtitle));
+			meta.lore(List.of(subtitle));
 		}
 
 		// Hide weapon damage, book enchants, and potion effects:
 		meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 		meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-		meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+		meta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
 		mItem.setItemMeta(meta);
 	}
