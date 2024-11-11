@@ -303,7 +303,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		}
 
 		// Only need to create one of these
-		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		EffectsVariable effectVar = new EffectsVariable("active_effects");
 		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
 		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
 		// For each mob you want to work with:

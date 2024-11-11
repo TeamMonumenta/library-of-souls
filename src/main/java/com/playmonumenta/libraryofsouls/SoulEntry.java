@@ -357,7 +357,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	//Checks if the mob is invlunerable, for bestiary purposes
 	public boolean isInvulnerable() {
 		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
-		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		EffectsVariable effectVar = new EffectsVariable("active_effects");
 		BooleanVariable booVar = new BooleanVariable("Invulnerable");
 
 		String ret = booVar.bind(entityNBT.getData()).get();
