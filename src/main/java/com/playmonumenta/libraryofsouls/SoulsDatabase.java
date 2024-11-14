@@ -9,6 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
+import com.playmonumenta.mixinapi.v1.DataFix;
+import de.tr7zw.nbtapi.NBTContainer;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import java.nio.file.Files;
@@ -349,6 +351,57 @@ public class SoulsDatabase {
 		}
 	}
 
+	private JsonArray readSouls(Gson gson, String content) {
+		JsonElement soulsArray = gson.fromJson(content, JsonElement.class);
+
+		final JsonArray souls;
+		int dataVersion = 3337;
+		if(soulsArray instanceof JsonObject object) {
+			if(object.has("data_version")) {
+				dataVersion = object.get("data_version").getAsInt();
+			}
+
+			souls = object.getAsJsonArray("souls");
+		} else {
+			souls = (JsonArray) soulsArray;
+		}
+
+		try {
+			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
+			final var latestVersion = DataFix.getInstance().currentDataVersion();
+			if(dataVersion < latestVersion) {
+				for (JsonElement soul : souls) {
+					for (JsonElement h : soul.getAsJsonObject().get("history").getAsJsonArray()) {
+						final var history = h.getAsJsonObject();
+						final var result = DataFix.getInstance().dataFix(
+							new NBTContainer(history.get("mojangson").getAsString()),
+							DataFix.Types.ENTITY, dataVersion, latestVersion
+						);
+						history.addProperty("mojangson", result.toString());
+					}
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+		}
+
+		return souls;
+	}
+
+	private String writeSouls(JsonArray soulArray, Gson gson) {
+		final var object = new JsonObject();
+		object.add("souls", soulArray);
+
+		try {
+			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
+			object.addProperty("data_version" , DataFix.getInstance().currentDataVersion());
+		} catch (ClassNotFoundException e) {
+			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+		}
+
+		return gson.toJson(object);
+	}
+
 	public void reloadAsync() throws Exception {
 		mPlugin.getLogger().info("Reloading souls library...");
 		Map<String, SoulEntry> newSouls = new TreeMap<>(COMPARATOR);
@@ -361,7 +414,7 @@ public class SoulsDatabase {
 		}
 
 		Gson gson = new Gson();
-		JsonArray soulsArray = gson.fromJson(content, JsonArray.class);
+		JsonArray soulsArray = readSouls(gson, content);
 		if (soulsArray == null) {
 			throw new Exception("Failed to parse souls database as JSON array");
 		}
@@ -516,7 +569,7 @@ public class SoulsDatabase {
 		String soulPoolsDatabasePath = mSoulPoolsDatabasePath.toString();
 
 		try {
-			FileUtils.writeFile(soulsDatabasePath, gson.toJson(soulArray));
+			FileUtils.writeFile(soulsDatabasePath, writeSouls(soulArray, gson));
 		} catch (Exception ex) {
 			mPlugin.getLogger().severe("Failed to save souls database to '" + soulsDatabasePath + "': " + ex.getMessage());
 		}

@@ -7,6 +7,7 @@ plugins {
 dependencies {
 	compileOnly(libs.commandapi)
 	compileOnly(libs.nbtapi)
+	compileOnly(libs.mixinapi)
 	compileOnly(libs.nbteditor) {
 		artifact {
 			classifier = "all"
