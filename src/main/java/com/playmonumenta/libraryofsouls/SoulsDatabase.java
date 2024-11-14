@@ -27,10 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import net.kyori.adventure.text.Component;
-import static net.kyori.adventure.text.Component.text;
 import net.kyori.adventure.text.format.NamedTextColor;
-import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
-import static net.kyori.adventure.text.format.NamedTextColor.RED;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -39,6 +36,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -356,8 +357,8 @@ public class SoulsDatabase {
 
 		final JsonArray souls;
 		int dataVersion = 3337;
-		if(soulsArray instanceof JsonObject object) {
-			if(object.has("data_version")) {
+		if (soulsArray instanceof JsonObject object) {
+			if (object.has("data_version")) {
 				dataVersion = object.get("data_version").getAsInt();
 			}
 
@@ -369,7 +370,7 @@ public class SoulsDatabase {
 		try {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
 			final var latestVersion = DataFix.getInstance().currentDataVersion();
-			if(dataVersion < latestVersion) {
+			if (dataVersion < latestVersion) {
 				for (JsonElement soul : souls) {
 					for (JsonElement h : soul.getAsJsonObject().get("history").getAsJsonArray()) {
 						final var history = h.getAsJsonObject();
@@ -394,7 +395,7 @@ public class SoulsDatabase {
 
 		try {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
-			object.addProperty("data_version" , DataFix.getInstance().currentDataVersion());
+			object.addProperty("data_version", DataFix.getInstance().currentDataVersion());
 		} catch (ClassNotFoundException e) {
 			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
 		}

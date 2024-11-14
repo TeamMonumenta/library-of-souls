@@ -50,6 +50,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 	private final BestiaryArea mArea;
 	private final List<BestiaryEntryInterface> mChildren;
 
+	@SuppressWarnings("deprecation")
 	public BestiaryAreaInventory(Player player, BestiaryArea area, int offset) {
 		super(player, 54, ChatColor.BLACK + "Bestiary: " + Utils.plainText(area.getName()));
 		mOffset = offset;

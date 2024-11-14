@@ -52,6 +52,7 @@ public class Utils {
 		};
 	}
 
+	@SuppressWarnings("deprecation")
 	public static String hashColor(String in) {
 		return switch (in.hashCode() % 13) {
 			case 0 -> ChatColor.DARK_GREEN + in;
