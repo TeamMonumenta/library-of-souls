@@ -364,6 +364,7 @@ public class SoulsDatabase {
 
 			souls = object.getAsJsonArray("souls");
 		} else {
+			mPlugin.getLogger().info("Database is in legacy format, assuming data version: " + dataVersion);
 			souls = (JsonArray) soulsArray;
 		}
 
@@ -371,8 +372,11 @@ public class SoulsDatabase {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
 			final var latestVersion = DataFix.getInstance().currentDataVersion();
 			if (dataVersion < latestVersion) {
+				mPlugin.getLogger().info("Performing datafix...");
+				int entries = 0;
 				for (JsonElement soul : souls) {
 					for (JsonElement h : soul.getAsJsonObject().get("history").getAsJsonArray()) {
+						entries++;
 						final var history = h.getAsJsonObject();
 						final var result = DataFix.getInstance().dataFix(
 							new NBTContainer(history.get("mojangson").getAsString()),
@@ -381,6 +385,7 @@ public class SoulsDatabase {
 						history.addProperty("mojangson", result.toString());
 					}
 				}
+				mPlugin.getLogger().info("Datafixed " + entries + " entries");
 			}
 		} catch (ClassNotFoundException e) {
 			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
@@ -395,7 +400,9 @@ public class SoulsDatabase {
 
 		try {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
-			object.addProperty("data_version", DataFix.getInstance().currentDataVersion());
+			final var dfuVersion = DataFix.getInstance().currentDataVersion();
+			mPlugin.getLogger().info("Writing souls with DFU version: " + dfuVersion);
+			object.addProperty("data_version", dfuVersion);
 		} catch (ClassNotFoundException e) {
 			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
 		}

@@ -181,7 +181,7 @@ public class Utils {
 				// look for the end of a word
 				if (Character.isJavaIdentifierPart(string.charAt(stringBuilderIndex + i)) &&
 					!Character.isJavaIdentifierPart(string.charAt(stringBuilderIndex + i + 1))) {
-					splitPos = i;
+					splitPos = i + 1;
 				}
 			}
 

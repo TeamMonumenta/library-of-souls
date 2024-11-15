@@ -346,12 +346,12 @@ public class SoulHistoryEntry implements Soul {
 		NBTTagList tags = mNBT.getList("Tags");
 		if (tags != null && tags.size() > 0) {
 			lore.add(Component.text("Tags:").color(NamedTextColor.WHITE));
-			lore.addAll(stringifyWrapList("  ", 50, 40, tags.getAsArray()));
+			lore.addAll(stringifyWrapList("  ", 50, 30, tags.getAsArray()));
 		}
 
 		if (mLocs != null && !mLocs.isEmpty()) {
 			lore.add(Component.text("Locations:").color(NamedTextColor.WHITE));
-			lore.addAll(stringifyWrapList("  ", 50, 40, mLocs.toArray()));
+			lore.addAll(stringifyWrapList("  ", 50, 30, mLocs.toArray()));
 		}
 
 		if (mLore != null && !mLore.isEmpty()) {
