@@ -37,7 +37,7 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 
 	/* Create a new SoulPartyHistoryEntry object with a label */
 	public SoulPartyHistoryEntry(Player player, String label) {
-		this(label, Instant.now().getEpochSecond(), player.getName(), new HashMap<String, Integer>());
+		this(label, Instant.now().getEpochSecond(), player.getName(), new HashMap<>());
 	}
 
 	/* Create a new SoulPartyHistoryEntry object with modified counts */
@@ -62,7 +62,7 @@ public class SoulPartyHistoryEntry implements SoulGroup {
 	}
 
 	public Map<String, Integer> getEntryCounts() {
-		return new HashMap<String, Integer>(mEntryCounts);
+		return new HashMap<>(mEntryCounts);
 	}
 
 	/*--------------------------------------------------------------------------------

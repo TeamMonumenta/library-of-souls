@@ -95,7 +95,7 @@ public class LibraryOfSouls extends JavaPlugin {
 			/* Don't load the bestiary config initially - this will happen when the souls database loads */
 			Config.load(getLogger(), getDataFolder(), false);
 
-			getLogger().info("Library of Souls read only: " + Boolean.toString(Config.isReadOnly()));
+			getLogger().info("Library of Souls read only: " + Config.isReadOnly());
 
 			if (!Config.isReadOnly()) {
 				LibraryOfSoulsCommand.registerWriteAccessCommands();

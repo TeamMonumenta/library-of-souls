@@ -52,7 +52,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 
 	/* Create a new SoulPoolHistoryEntry object with a label */
 	public SoulPoolHistoryEntry(Player player, String label) {
-		this(label, Instant.now().getEpochSecond(), player.getName(), new HashMap<String, Integer>());
+		this(label, Instant.now().getEpochSecond(), player.getName(), new HashMap<>());
 	}
 
 	/* Create a new SoulPoolHistoryEntry object with modified weights */
@@ -77,7 +77,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	}
 
 	public Map<String, Integer> getEntryWeights() {
-		return new HashMap<String, Integer>(mEntryWeights);
+		return new HashMap<>(mEntryWeights);
 	}
 
 	/*--------------------------------------------------------------------------------
@@ -132,7 +132,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	@Override
 	public Map<SoulGroup, Integer> getRandomEntries(Random random) {
 		if (mTotalWeight == 0) {
-			return new HashMap<SoulGroup, Integer>();
+			return new HashMap<>();
 		}
 		int randomValue = random.nextInt(mTotalWeight);
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
@@ -162,7 +162,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 	@Override
 	public Map<Soul, Integer> getRandomSouls(Random random) {
 		if (mTotalWeight == 0) {
-			return new HashMap<Soul, Integer>();
+			return new HashMap<>();
 		}
 		int randomValue = random.nextInt(mTotalWeight);
 		String selectedLabel = mNavigableMap.higherEntry(randomValue).getValue();
@@ -170,7 +170,7 @@ public class SoulPoolHistoryEntry implements SoulGroup {
 		if (selected != null) {
 			return selected.getRandomSouls(random);
 		} else {
-			return new HashMap<Soul, Integer>();
+			return new HashMap<>();
 		}
 	}
 

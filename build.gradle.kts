@@ -1,23 +1,28 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
-	id("com.playmonumenta.gradle-config") version "1.+"
+	id("com.playmonumenta.gradle-config") version "2.2+"
 }
 
 dependencies {
 	compileOnly(libs.commandapi)
 	compileOnly(libs.nbtapi)
-	compileOnly(libs.redissync) {
-		artifact {
-			classifier = "all"
-		}
-	}
+	compileOnly(libs.mixinapi)
 	compileOnly(libs.nbteditor) {
 		artifact {
 			classifier = "all"
 		}
 	}
+	compileOnly(libs.redissync) {
+		artifact {
+			classifier = "all"
+		}
+	}
 	compileOnly(libs.gson)
+}
+
+tasks.javadoc {
+	(options as StandardJavadocDocletOptions).addBooleanOption("Xdoclint:none", true)
 }
 
 monumenta {

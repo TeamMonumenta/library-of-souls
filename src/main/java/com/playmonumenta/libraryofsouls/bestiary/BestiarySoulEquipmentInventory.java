@@ -71,7 +71,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		}
 
 		for (int i = mSoulPeerIndex - 1; i >= 0; i--) {
-			if (mSoulPeers.get(i).canOpenBestiary(player) && ((SoulEntry)mSoulPeers.get(i)).getInfoTier(player) == SoulEntry.InfoTier.EVERYTHING && i >= 0) {
+			if (mSoulPeers.get(i).canOpenBestiary(player) && ((SoulEntry) mSoulPeers.get(i)).getInfoTier(player) == SoulEntry.InfoTier.EVERYTHING) {
 				mPrevEntry = i;
 				break;
 			}

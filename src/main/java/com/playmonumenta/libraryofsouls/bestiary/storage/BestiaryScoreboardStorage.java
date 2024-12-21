@@ -14,6 +14,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 public class BestiaryScoreboardStorage implements BestiaryStorage {
+	@SuppressWarnings("deprecation")
 	@Override
 	public void recordKill(Player player, SoulEntry soul) {
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -38,13 +39,14 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		}
 
 		Score score = objective.getScore(player.getName());
-		if (score == null || !score.isScoreSet()) {
+		if (!score.isScoreSet()) {
 			return 0;
 		}
 
 		return score.getScore();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setKillsForMob(Player player, SoulEntry soul, int amount) {
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
@@ -59,6 +61,7 @@ public class BestiaryScoreboardStorage implements BestiaryStorage {
 		score.setScore(amount);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public int addKillsForMob(Player player, SoulEntry soul, int amount) {
 		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();

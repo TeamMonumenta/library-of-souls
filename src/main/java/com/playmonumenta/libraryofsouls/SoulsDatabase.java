@@ -9,6 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
+import com.playmonumenta.mixinapi.v1.DataFix;
+import de.tr7zw.nbtapi.NBTContainer;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import java.nio.file.Files;
@@ -20,19 +22,24 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.Nullable;
+
+import static net.kyori.adventure.text.Component.text;
+import static net.kyori.adventure.text.format.NamedTextColor.GREEN;
+import static net.kyori.adventure.text.format.NamedTextColor.RED;
 
 public class SoulsDatabase {
 	private static final String SOULS_DATABASE_FILE = "souls_database.json";
@@ -41,12 +48,7 @@ public class SoulsDatabase {
 
 	private static @Nullable SoulsDatabase INSTANCE = null;
 
-	private static final Comparator<String> COMPARATOR = new Comparator<String>() {
-		@Override
-		public int compare(String e1, String e2) {
-			return e1.toLowerCase().compareTo(e2.toLowerCase());
-		}
-	};
+	private static final Comparator<String> COMPARATOR = String::compareToIgnoreCase;
 
 	private final Plugin mPlugin;
 	private final boolean mLoadHistory;
@@ -57,7 +59,7 @@ public class SoulsDatabase {
 	private boolean mIgnoreNextChange = false;
 
 	/* This is the primary database. One name, one SoulEntry per mob */
-	private Map<String, SoulEntry> mSouls = new TreeMap<String, SoulEntry>(COMPARATOR);
+	private Map<String, SoulEntry> mSouls = new TreeMap<>(COMPARATOR);
 
 	/* These are secondary databases for pools/parties of mobs */
 	private Map<String, SoulPartyEntry> mSoulParties = new TreeMap<>(COMPARATOR);
@@ -120,10 +122,10 @@ public class SoulsDatabase {
 					try {
 						soulEntry.autoUpdate(loc);
 					} catch (Exception ex) {
-						sender.sendMessage(ChatColor.RED + "Failed to auto-update " + name + ": " + ex.getMessage());
+						sender.sendMessage(text("Failed to auto-update " + name + ": " + ex.getMessage(), RED));
 					}
 				} else {
-					sender.sendMessage(ChatColor.GRAY + "Auto-update done.");
+					sender.sendMessage(text("Auto-update done.", NamedTextColor.GRAY));
 					cancel();
 				}
 			}
@@ -143,7 +145,7 @@ public class SoulsDatabase {
 	}
 
 	public List<SoulEntry> getSouls() {
-		List<SoulEntry> souls = new ArrayList<SoulEntry>(mSouls.size());
+		List<SoulEntry> souls = new ArrayList<>(mSouls.size());
 		souls.addAll(mSouls.values());
 		return souls;
 	}
@@ -153,7 +155,7 @@ public class SoulsDatabase {
 			return null;
 		}
 
-		return (SoulEntry)mSouls.values().toArray()[index];
+		return (SoulEntry) mSouls.values().toArray()[index];
 	}
 
 	public @Nullable SoulEntry getSoul(String name) {
@@ -161,7 +163,7 @@ public class SoulsDatabase {
 	}
 
 	public List<SoulPartyEntry> getSoulParties() {
-		List<SoulPartyEntry> soulParties = new ArrayList<SoulPartyEntry>(mSoulParties.size());
+		List<SoulPartyEntry> soulParties = new ArrayList<>(mSoulParties.size());
 		soulParties.addAll(mSoulParties.values());
 		return soulParties;
 	}
@@ -171,7 +173,7 @@ public class SoulsDatabase {
 			return null;
 		}
 
-		return (SoulPartyEntry)mSoulParties.values().toArray()[index];
+		return (SoulPartyEntry) mSoulParties.values().toArray()[index];
 	}
 
 	public @Nullable SoulPartyEntry getSoulParty(String label) {
@@ -179,7 +181,7 @@ public class SoulsDatabase {
 	}
 
 	public List<SoulPoolEntry> getSoulPools() {
-		List<SoulPoolEntry> soulPools = new ArrayList<SoulPoolEntry>(mSoulPools.size());
+		List<SoulPoolEntry> soulPools = new ArrayList<>(mSoulPools.size());
 		soulPools.addAll(mSoulPools.values());
 		return soulPools;
 	}
@@ -189,7 +191,7 @@ public class SoulsDatabase {
 			return null;
 		}
 
-		return (SoulPoolEntry)mSoulPools.values().toArray()[index];
+		return (SoulPoolEntry) mSoulPools.values().toArray()[index];
 	}
 
 	public @Nullable SoulPoolEntry getSoulPool(String label) {
@@ -219,18 +221,18 @@ public class SoulsDatabase {
 			String label = Utils.getLabelFromName(name);
 
 			if (mSouls.containsKey(label)) {
-				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' already exists!");
+				sender.sendMessage(text("Mob '" + label + "' already exists!", RED));
 				return;
 			}
 
 			soul = new SoulEntry(sender, nbt);
 		} catch (Exception ex) {
-			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
+			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
 			return;
 		}
 
 		mSouls.put(soul.getLabel(), soul);
-		sender.sendMessage(ChatColor.GREEN + "Added " + soul.getLabel());
+		sender.sendMessage(text("Added " + soul.getLabel(), GREEN));
 		updateIndex();
 		save();
 	}
@@ -245,22 +247,23 @@ public class SoulsDatabase {
 
 			soul = mSouls.get(label);
 			if (soul == null) {
-				sender.sendMessage(ChatColor.RED + "Mob '" + label + "' does not exist!");
+				sender.sendMessage(text("Mob '" + label + "' does not exist!", RED));
 				return;
 			}
 
 			soul.update(sender, nbt);
 		} catch (Exception ex) {
-			sender.sendMessage(ChatColor.RED + "Error parsing BoS: " + ex.getMessage());
+			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
 			return;
 		}
 
-		sender.sendMessage(ChatColor.GREEN + "Updated " + soul.getLabel());
+		sender.sendMessage(text("Updated " + soul.getLabel(), GREEN));
 		updateIndex();
 		save();
 	}
 
-	// This function is only called in updateLore, where by definition the soul exists - also the bos doesnt change internally, only on the outside but maybe that needs to happen?
+	// This function is only called in updateLore, where by definition the soul exists - also the bos doesnt change
+	// internally, only on the outside but maybe that needs to happen?
 	public void updateLore(SoulEntry soul, Player sender) {
 		try {
 			soul.update(sender, soul.getNBT());
@@ -272,10 +275,10 @@ public class SoulsDatabase {
 
 	public void del(CommandSender sender, String name) {
 		if (!mSouls.containsKey(name)) {
-			sender.sendMessage(ChatColor.RED + "Mob '" + name + "' does not exist!");
+			sender.sendMessage(text("Mob '" + name + "' does not exist!", RED));
 		} else {
 			mSouls.remove(name);
-			sender.sendMessage(ChatColor.GREEN + "Removed " + name);
+			sender.sendMessage(text("Removed " + name, GREEN));
 			updateIndex();
 			save();
 		}
@@ -285,7 +288,7 @@ public class SoulsDatabase {
 		SoulPartyEntry soulParty = new SoulPartyEntry(player, label);
 
 		mSoulParties.put(soulParty.getLabel(), soulParty);
-		player.sendMessage(ChatColor.GREEN + "Added " + soulParty.getLabel());
+		player.sendMessage(text("Added " + soulParty.getLabel(), GREEN));
 		save();
 	}
 
@@ -301,16 +304,16 @@ public class SoulsDatabase {
 		}
 
 		soulParty.update(player, entryLabel, count);
-		player.sendMessage(ChatColor.GREEN + "Updated " + soulParty.getLabel());
+		player.sendMessage(text("Updated " + soulParty.getLabel(), GREEN));
 		save();
 	}
 
 	public void delParty(CommandSender player, String label) {
 		if (!mSoulParties.containsKey(label)) {
-			player.sendMessage(ChatColor.RED + "Soul party '" + label + "' does not exist!");
+			player.sendMessage(text("Soul party '" + label + "' does not exist!", RED));
 		} else {
 			mSoulParties.remove(label);
-			player.sendMessage(ChatColor.GREEN + "Removed " + label);
+			player.sendMessage(text("Removed " + label, GREEN));
 			save();
 		}
 	}
@@ -319,7 +322,7 @@ public class SoulsDatabase {
 		SoulPoolEntry soulPool = new SoulPoolEntry(player, label);
 
 		mSoulPools.put(soulPool.getLabel(), soulPool);
-		player.sendMessage(ChatColor.GREEN + "Added " + soulPool.getLabel());
+		player.sendMessage(text("Added " + soulPool.getLabel(), GREEN));
 		save();
 	}
 
@@ -335,18 +338,76 @@ public class SoulsDatabase {
 		}
 
 		soulPool.update(player, entryLabel, weight);
-		player.sendMessage(ChatColor.GREEN + "Updated " + soulPool.getLabel());
+		player.sendMessage(text("Updated " + soulPool.getLabel(), GREEN));
 		save();
 	}
 
 	public void delPool(CommandSender player, String label) {
 		if (!mSoulPools.containsKey(label)) {
-			player.sendMessage(ChatColor.RED + "Soul Pool '" + label + "' does not exist!");
+			player.sendMessage(text("Soul Pool '" + label + "' does not exist!", GREEN));
 		} else {
 			mSoulPools.remove(label);
-			player.sendMessage(ChatColor.GREEN + "Removed " + label);
+			player.sendMessage(text("Removed " + label, GREEN));
 			save();
 		}
+	}
+
+	private JsonArray readSouls(Gson gson, String content) {
+		JsonElement soulsArray = gson.fromJson(content, JsonElement.class);
+
+		final JsonArray souls;
+		int dataVersion = 3337;
+		if (soulsArray instanceof JsonObject object) {
+			if (object.has("data_version")) {
+				dataVersion = object.get("data_version").getAsInt();
+			}
+
+			souls = object.getAsJsonArray("souls");
+		} else {
+			mPlugin.getLogger().info("Database is in legacy format, assuming data version: " + dataVersion);
+			souls = (JsonArray) soulsArray;
+		}
+
+		try {
+			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
+			final var latestVersion = DataFix.getInstance().currentDataVersion();
+			if (dataVersion < latestVersion) {
+				mPlugin.getLogger().info("Performing datafix...");
+				int entries = 0;
+				for (JsonElement soul : souls) {
+					for (JsonElement h : soul.getAsJsonObject().get("history").getAsJsonArray()) {
+						entries++;
+						final var history = h.getAsJsonObject();
+						final var result = DataFix.getInstance().dataFix(
+							new NBTContainer(history.get("mojangson").getAsString()),
+							DataFix.Types.ENTITY, dataVersion, latestVersion
+						);
+						history.addProperty("mojangson", result.toString());
+					}
+				}
+				mPlugin.getLogger().info("Datafixed " + entries + " entries");
+			}
+		} catch (ClassNotFoundException e) {
+			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+		}
+
+		return souls;
+	}
+
+	private String writeSouls(JsonArray soulArray, Gson gson) {
+		final var object = new JsonObject();
+		object.add("souls", soulArray);
+
+		try {
+			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
+			final var dfuVersion = DataFix.getInstance().currentDataVersion();
+			mPlugin.getLogger().info("Writing souls with DFU version: " + dfuVersion);
+			object.addProperty("data_version", dfuVersion);
+		} catch (ClassNotFoundException e) {
+			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+		}
+
+		return gson.toJson(object);
 	}
 
 	public void reloadAsync() throws Exception {
@@ -356,18 +417,18 @@ public class SoulsDatabase {
 		Map<String, SoulPoolEntry> newSoulPools = new TreeMap<>(COMPARATOR);
 
 		String content = FileUtils.readFile(mSoulsDatabasePath.toString());
-		if (content == null || content.isEmpty()) {
+		if (content.isEmpty()) {
 			throw new Exception("Failed to read souls database");
 		}
 
 		Gson gson = new Gson();
-		JsonArray soulsArray = gson.fromJson(content, JsonArray.class);
+		JsonArray soulsArray = readSouls(gson, content);
 		if (soulsArray == null) {
 			throw new Exception("Failed to parse souls database as JSON array");
 		}
 
 		content = FileUtils.readFile(mSoulPartiesDatabasePath.toString());
-		if (content == null || content.isEmpty()) {
+		if (content.isEmpty()) {
 			throw new Exception("Failed to read soul parties database");
 		}
 
@@ -377,7 +438,7 @@ public class SoulsDatabase {
 		}
 
 		content = FileUtils.readFile(mSoulPoolsDatabasePath.toString());
-		if (content == null || content.isEmpty()) {
+		if (content.isEmpty()) {
 			throw new Exception("Failed to read soul parties database");
 		}
 
@@ -459,9 +520,9 @@ public class SoulsDatabase {
 			LibraryOfSouls.Config.load(mPlugin.getLogger(), mPlugin.getDataFolder(), true);
 
 			mPlugin.getLogger().info("Finished parsing souls library");
-			mPlugin.getLogger().info("Loaded " + Integer.toString(finalSoulCount) + " mob souls");
-			mPlugin.getLogger().info("Loaded " + Integer.toString(finalSoulPartyCount) + " mob soul parties");
-			mPlugin.getLogger().info("Loaded " + Integer.toString(finalSoulPoolCount) + " mob soul pools");
+			mPlugin.getLogger().info("Loaded " + finalSoulCount + " mob souls");
+			mPlugin.getLogger().info("Loaded " + finalSoulPartyCount + " mob soul parties");
+			mPlugin.getLogger().info("Loaded " + finalSoulPoolCount + " mob soul pools");
 		});
 	}
 
@@ -480,22 +541,14 @@ public class SoulsDatabase {
 				mNoLocMobs.add(soul);
 			} else {
 				for (String tag : locs) {
-					List<SoulEntry> lst = mLocsIndex.get(tag);
-					if (lst == null) {
-						lst = new ArrayList<SoulEntry>();
-						mLocsIndex.put(tag, lst);
-					}
+					List<SoulEntry> lst = mLocsIndex.computeIfAbsent(tag, k -> new ArrayList<>());
 					lst.add(soul);
 				}
 			}
 
 			/* Update type index */
-			String id = soul.getId().getKey().toLowerCase();
-			List<SoulEntry> lst = mTypesIndex.get(id);
-			if (lst == null) {
-				lst = new ArrayList<SoulEntry>();
-				mTypesIndex.put(id, lst);
-			}
+			String id = soul.getId().getKey().toLowerCase(Locale.ROOT);
+			List<SoulEntry> lst = mTypesIndex.computeIfAbsent(id, k -> new ArrayList<>());
 			lst.add(soul);
 		}
 	}
@@ -524,7 +577,7 @@ public class SoulsDatabase {
 		String soulPoolsDatabasePath = mSoulPoolsDatabasePath.toString();
 
 		try {
-			FileUtils.writeFile(soulsDatabasePath, gson.toJson(soulArray));
+			FileUtils.writeFile(soulsDatabasePath, writeSouls(soulArray, gson));
 		} catch (Exception ex) {
 			mPlugin.getLogger().severe("Failed to save souls database to '" + soulsDatabasePath + "': " + ex.getMessage());
 		}
@@ -562,7 +615,7 @@ public class SoulsDatabase {
 	}
 
 	public Set<String> listSoulGroupNames() {
-		Set<String> result = new HashSet<String>(mSouls.keySet());
+		Set<String> result = new HashSet<>(mSouls.keySet());
 		result.addAll(mSoulParties.keySet());
 		result.addAll(mSoulPools.keySet());
 		return result;

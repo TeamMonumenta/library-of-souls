@@ -6,14 +6,7 @@ import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryScoreboardStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryStorage;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -41,7 +34,8 @@ public class BestiaryManager implements Listener {
 	 * Entity UUID key, Player UUID Set
 	 * The size here is automatically managed by removing the oldest entries as the map fills up
 	 */
-	private final Map<UUID, Set<UUID>> mDamageTracker = new LinkedHashMap<UUID, Set<UUID>>(MAX_BOSS_TRACK_ENTRIES + 1, .75F, true) {
+	private final Map<UUID, Set<UUID>> mDamageTracker = new LinkedHashMap<>(MAX_BOSS_TRACK_ENTRIES + 1,
+		.75F, true) {
 		// This method is called just after a new entry has been added
 		@Override
 		public boolean removeEldestEntry(Map.Entry<UUID, Set<UUID>> eldest) {
@@ -108,7 +102,7 @@ public class BestiaryManager implements Listener {
 	public static void deleteAll(Player player) {
 		List<SoulEntry> souls = SoulsDatabase.getInstance().getSouls();
 		for (SoulEntry soul : souls) {
-			BestiaryManager.setKillsForMob(player, soul, 0);
+			setKillsForMob(player, soul, 0);
 		}
 	}
 
@@ -117,14 +111,14 @@ public class BestiaryManager implements Listener {
 		Entity entity = event.getEntity();
 		Entity damager = event.getDamager();
 		if (entity instanceof LivingEntity &&
-		    !(entity instanceof Player) && damager instanceof Player) {
+			!(entity instanceof Player) && damager instanceof Player) {
 			// Non-player living entity was damaged by player
 
 			if (entity.customName() != null) {
 				// Damaged entity had a non-empty name
 
 				Set<String> tags = entity.getScoreboardTags();
-				if (tags != null && !tags.isEmpty() && tags.contains("Boss")) {
+				if (!tags.isEmpty() && tags.contains("Boss")) {
 					// Damaged entity has the Boss tag
 
 					// Keep track of all players that damage this mob
@@ -145,63 +139,68 @@ public class BestiaryManager implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void entityDeathEvent(EntityDeathEvent event) {
-		Entity entity = event.getEntity();
-		if (entity instanceof LivingEntity) {
-			Component name = entity.customName();
-			if (name != null) {
-				LivingEntity livingEntity = (LivingEntity)entity;
-				Player player = livingEntity.getKiller();
-				if (player != null) {
-					// Player kills a mob
-					SoulsDatabase database = SoulsDatabase.getInstance();
-					if (database != null) {
+		LivingEntity entity = event.getEntity();
+
+		Component name = entity.customName();
+		if (name == null) {
+			return;
+		}
+
+		Player player = entity.getKiller();
+		if (player == null) {
+			return;
+		}
+
+		// Player kills a mob
+		SoulsDatabase database = SoulsDatabase.getInstance();
+		if (database == null) {
+			return;
+		}
+
+		try {
+			String label = Utils.getLabelFromName(name);
+			SoulEntry soul = database.getSoul(label);
+			if (soul != null) {
+				// A soul entry exists for this mob
+
+				// Check if this was a boss with multiple tracked damagers
+				Set<UUID> damagers = mDamageTracker.remove(entity.getUniqueId());
+				if (damagers != null) {
+					// A boss, record kill for everyone who damaged the mob (including the killer)
+					damagers.add(player.getUniqueId());
+					damagers.stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach((damager) -> {
 						try {
-							String label = Utils.getLabelFromName(name);
-							SoulEntry soul = database.getSoul(label);
-							if (soul != null) {
-								// A soul entry exists for this mob
+							mStorage.recordKill(damager, soul);
+						} catch (Exception ex) {
+							mLogger.warning(ex.getMessage());
+						}
+					});
+				} else {
+					// Not a boss, record kill for the killer
+					try {
+						mStorage.recordKill(player, soul);
+					} catch (Exception ex) {
+						mLogger.warning(ex.getMessage());
+					}
 
-								// Check if this was a boss with multiple tracked damagers
-								Set<UUID> damagers = mDamageTracker.remove(entity.getUniqueId());
-								if (damagers != null) {
-									// A boss, record kill for everyone who damaged the mob (including the killer)
-									damagers.add(player.getUniqueId());
-									damagers.stream().map((damagerUUID) -> Bukkit.getPlayer(damagerUUID)).filter(Objects::nonNull).forEach((damager) -> {
-										try {
-											mStorage.recordKill(damager, soul);
-										} catch (Exception ex) {
-											mLogger.warning(ex.getMessage());
-										}
-									});
-								} else {
-									// Not a boss, record kill for the killer
-									try {
-										mStorage.recordKill(player, soul);
-									} catch (Exception ex) {
-										mLogger.warning(ex.getMessage());
-									}
-
-									// also check if any nearby player has not killed that mob before, and give them the kill
-									// good for both unlocking the entry in group play, and also to stop descriptions from showing up too many times
-									List<Player> otherPlayers = player.getWorld().getPlayers();
-									otherPlayers.remove(player);
-									otherPlayers.removeIf(p -> p.getLocation().distanceSquared(player.getLocation()) > 20 * 20);
-									otherPlayers.removeIf(p -> getKillsForMob(p, soul) > 0);
-									for (Player p : otherPlayers) {
-										try {
-											mStorage.recordKill(p, soul);
-										} catch (Exception ex) {
-											mLogger.warning(ex.getMessage());
-										}
-									}
-								}
-							}
+					// also check if any nearby player has not killed that mob before, and give them the kill
+					// good for both unlocking the entry in group play, and also to stop descriptions from showing up
+					// too many times
+					List<Player> otherPlayers = player.getWorld().getPlayers();
+					otherPlayers.remove(player);
+					otherPlayers.removeIf(p -> p.getLocation().distanceSquared(player.getLocation()) > 20 * 20);
+					otherPlayers.removeIf(p -> getKillsForMob(p, soul) > 0);
+					for (Player p : otherPlayers) {
+						try {
+							mStorage.recordKill(p, soul);
 						} catch (Exception ex) {
 							mLogger.warning(ex.getMessage());
 						}
 					}
 				}
 			}
+		} catch (Exception ex) {
+			mLogger.warning(ex.getMessage());
 		}
 	}
 }

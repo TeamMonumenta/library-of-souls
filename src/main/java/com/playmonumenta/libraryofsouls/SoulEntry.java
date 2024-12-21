@@ -14,9 +14,9 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import net.kyori.adventure.text.Component;
@@ -51,7 +51,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mHistory = history;
 
 		if (locationNames == null) {
-			mLocs = new HashSet<String>();
+			mLocs = new HashSet<>();
 		} else {
 			mLocs = locationNames;
 		}
@@ -62,18 +62,13 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			mLore = lore;
 		}
 
-		if (description == null) {
-			mDescription = new ArrayList<>();
-		} else {
-			mDescription = description;
-		}
+		mDescription = Objects.requireNonNullElseGet(description, ArrayList::new);
 
 		String refLabel = history.get(0).getLabel();
-		Component refName = history.get(0).getName();
 
 		for (SoulHistoryEntry entry : history) {
 			if (!entry.getLabel().equals(refLabel)) {
-				throw new Exception("Soul history has mismatching names! '" + refName + "' != '" + entry.getName());
+				throw new Exception("Soul history has mismatching labels! '" + refLabel + "' != '" + entry.getLabel());
 			}
 		}
 	}
@@ -82,8 +77,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	public SoulEntry(Player player, NBTTagCompound nbt) throws Exception {
 		SoulHistoryEntry newHist = new SoulHistoryEntry(player, nbt);
 
-		mLocs = new HashSet<String>();
-		mHistory = new ArrayList<SoulHistoryEntry>(1);
+		mLocs = new HashSet<>();
+		mHistory = new ArrayList<>(1);
 		mHistory.add(newHist);
 		mLore = new ArrayList<>();
 		mDescription = new ArrayList<>();
@@ -281,7 +276,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			// Hide weapon damage, book enchants, and potion effects:
 			meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			meta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+			meta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
 			item.setItemMeta(meta);
 			return item;
@@ -346,15 +341,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			return InfoTier.EVERYTHING;
 		}
 
-		Integer kills = BestiaryManager.getKillsForMob(player, this);
-		if (kills != null && kills >= 1) {
-			if (kills >= 60
-				|| (isElite() && kills >= 10)
-				|| (isBoss() && kills >= 2)) {
+		int kills = BestiaryManager.getKillsForMob(player, this);
+		if (kills >= 1) {
+			if (kills >= 60 || (isElite() && kills >= 10) || (isBoss() && kills >= 2)) {
 				return InfoTier.EVERYTHING;
-			} else if (kills >= 30
-			           || (isElite() && kills >= 5)
-					   || (isBoss() && kills >= 1)) {
+			} else if (kills >= 30 || (isElite() && kills >= 5) || isBoss()) {
 				return InfoTier.STATS;
 			} else {
 				return InfoTier.MINIMAL;
@@ -366,11 +357,11 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	//Checks if the mob is invlunerable, for bestiary purposes
 	public boolean isInvulnerable() {
 		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
-		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		EffectsVariable effectVar = new EffectsVariable("active_effects");
 		BooleanVariable booVar = new BooleanVariable("Invulnerable");
 
-		String ret = ((BooleanVariable)booVar.bind(entityNBT.getData())).get();
-		boolean override = (ret != null && ret.toLowerCase().equals("true"));
+		String ret = booVar.bind(entityNBT.getData()).get();
+		boolean override = (ret != null && ret.equalsIgnoreCase("true"));
 
 		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
 		if (effectItem != null && effectItem.hasItemMeta()) {
@@ -396,7 +387,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	public List<Soul> getHistory() {
-		return new ArrayList<Soul>(mHistory);
+		return new ArrayList<>(mHistory);
 	}
 
 	public Set<String> getLocationNames() {
@@ -404,7 +395,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	public static SoulEntry fromJson(JsonObject obj, boolean loadHistory) throws Exception {
-		Set<String> locs = new HashSet<String>();
+		Set<String> locs = new HashSet<>();
 		JsonElement elem = obj.get("location_names");
 		if (elem != null) {
 			JsonArray array = elem.getAsJsonArray();
@@ -412,11 +403,9 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 				throw new Exception("Failed to parse location_names as JSON array");
 			}
 
-			Iterator<JsonElement> iter = array.iterator();
-			while (iter.hasNext()) {
-				JsonElement tagElement = iter.next();
+			for (JsonElement tagElement : array) {
 				if (!tagElement.isJsonPrimitive()) {
-					throw new Exception("location_names entry for '" + elem.toString() + "' is not a string!");
+					throw new Exception("location_names entry for '" + elem + "' is not a string!");
 				}
 				locs.add(tagElement.getAsString());
 			}
@@ -430,11 +419,9 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 				throw new Exception("Failed to parse lore as JSON array");
 			}
 
-			Iterator<JsonElement> iter = array.iterator();
-			while (iter.hasNext()) {
-				JsonElement loreElement = iter.next();
+			for (JsonElement loreElement : array) {
 				if (!loreElement.isJsonPrimitive()) {
-					throw new Exception("location_names entry for '" + elem.toString() + "' is not a string!");
+					throw new Exception("location_names entry for '" + elem + "' is not a string!");
 				}
 				Component comp = GSON_SERIALIZER.deserialize(loreElement.getAsString());
 				lore.add(comp);
@@ -451,9 +438,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 				throw new Exception("Failed to parse description as JSON array");
 			}
 
-			Iterator<JsonElement> iter = array.iterator();
-			while (iter.hasNext()) {
-				JsonElement descriptionElement = iter.next();
+			for (JsonElement descriptionElement : array) {
 				if (!descriptionElement.isJsonPrimitive()) {
 					throw new Exception("description entry for '" + elem + "' is not a string!");
 				}
@@ -464,7 +449,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			description.add(Component.text(elem.getAsString()));
 		}
 
-		List<SoulHistoryEntry> history = new ArrayList<SoulHistoryEntry>();
+		List<SoulHistoryEntry> history = new ArrayList<>();
 		elem = obj.get("history");
 		if (elem != null) {
 			JsonArray array = elem.getAsJsonArray();
@@ -475,16 +460,16 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			if (loadHistory) {
 				for (JsonElement historyElement : array) {
 					if (!historyElement.isJsonObject()) {
-						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
+						throw new Exception("history entry for '" + elem + "' is not a string!");
 					}
 
 					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore, description));
 				}
 			} else {
-				if (array.size() >= 1) {
+				if (!array.isEmpty()) {
 					JsonElement historyElement = array.get(0);
 					if (!historyElement.isJsonObject()) {
-						throw new Exception("history entry for '" + elem.toString() + "' is not a string!");
+						throw new Exception("history entry for '" + elem + "' is not a string!");
 					}
 
 					history.add(SoulHistoryEntry.fromJson(historyElement.getAsJsonObject(), locs, lore, description));

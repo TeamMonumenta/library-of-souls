@@ -85,7 +85,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			new BukkitRunnable() {
 				@Override
 				public void run() {
-					final Long runnableTime = System.currentTimeMillis();
+					final long runnableTime = System.currentTimeMillis();
 					int stepCounter = 0;
 					while (iter.hasNext() && player.isOnline()) {
 						final SoulEntry soul = iter.next();
@@ -106,7 +106,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 							break;
 						}
 					}
-					mLogger.fine("Main thread data loading loop took " + Long.toString(System.currentTimeMillis() - runnableTime) + " milliseconds");
+					mLogger.fine("Main thread data loading loop took " + (System.currentTimeMillis() - runnableTime) + " milliseconds");
 
 					if (!player.isOnline()) {
 						/* Player logged out before their data finished loading - abort */
@@ -115,7 +115,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 						/* All done loading - make the player kills map accessible */
 						mPlayerKills.put(uuid, playerKills);
 						this.cancel();
-						mLogger.fine("Data load complete, total time " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds");
+						mLogger.fine("Data load complete, total time " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
 					}
 				}
 			}.runTaskTimer(mPlugin, 1, 1);
@@ -141,7 +141,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		}
 
 		mLogger.fine("Started saving redis player data for " + uuid);
-		final Long startMainTime = System.currentTimeMillis();
+		final long startMainTime = System.currentTimeMillis();
 
 		if (playerKills != null) {
 			for (final Map.Entry<SoulEntry, Integer> entry : playerKills.entrySet()) {
@@ -152,7 +152,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		/* Save the data to Redis */
 		event.setPluginData(IDENTIFIER, originalData);
 
-		mLogger.fine("Main thread work took " + Long.toString(System.currentTimeMillis() - startMainTime) + " milliseconds");
+		mLogger.fine("Main thread work took " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
 	}
 
 	/* When player leaves, remove it from the local storage a short bit later */
@@ -178,12 +178,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		}
 		mLogger.fine("Recording kill for player " + player.getName() + " mob " + soul.getLabel());
 
-		final Integer kills = playerKills.get(soul);
-		if (kills == null) {
-			playerKills.put(soul, 1);
-		} else {
-			playerKills.put(soul, kills + 1);
-		}
+		playerKills.merge(soul, 1, Integer::sum);
 	}
 
 	@Override
@@ -195,11 +190,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			return 0;
 		}
 
-		final Integer kills = playerKills.get(soul);
-		if (kills == null) {
-			return 0;
-		}
-		return kills;
+		return playerKills.getOrDefault(soul, 0);
 	}
 
 	@Override
@@ -242,11 +233,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		final Map<SoulEntry, Integer> map = new HashMap<>();
 
 		for (final SoulEntry soul : searchSouls) {
-			if (playerKills == null) {
-				map.put(soul, 0);
-			} else {
-				map.put(soul, playerKills.getOrDefault(soul, 0));
-			}
+			map.put(soul, playerKills.getOrDefault(soul, 0));
 		}
 
 		return map;

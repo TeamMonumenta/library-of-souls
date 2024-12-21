@@ -11,10 +11,7 @@ import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -42,11 +39,11 @@ import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.Nullable;
 
 public class BestiarySoulInventory extends CustomInventory {
-	private static EnumMap<Material, Double> mDefaultArmor = new EnumMap<>(Material.class);
-	private static EnumMap<EntityType, Double> mDefaultDamage = new EnumMap<>(EntityType.class);
-	private static EnumMap<EntityType, Double> mDefaultSpeed = new EnumMap<>(EntityType.class);
-	private static EnumMap<Material, Double> mDefaultItemDamage = new EnumMap<>(Material.class);
-	private static EnumMap<EntityType, Double> mDefaultHealth = new EnumMap<>(EntityType.class);
+	private static final EnumMap<Material, Double> DEFAULT_ARMOR = new EnumMap<>(Material.class);
+	private static final EnumMap<EntityType, Double> DEFAULT_DAMAGE = new EnumMap<>(EntityType.class);
+	private static final EnumMap<EntityType, Double> DEFAULT_SPEED = new EnumMap<>(EntityType.class);
+	private static final EnumMap<Material, Double> DEFAULT_ITEM_DAMAGE = new EnumMap<>(Material.class);
+	private static final EnumMap<EntityType, Double> DEFAULT_HEALTH = new EnumMap<>(EntityType.class);
 	private static final AttributeModifier.Operation ADD = AttributeModifier.Operation.ADD_NUMBER;
 	private static final AttributeModifier.Operation SCALAR = AttributeModifier.Operation.ADD_SCALAR;
 
@@ -62,189 +59,196 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	static {
-		mDefaultArmor.put(Material.LEATHER_HELMET, 1.0);
-		mDefaultArmor.put(Material.LEATHER_CHESTPLATE, 3.0);
-		mDefaultArmor.put(Material.LEATHER_LEGGINGS, 2.0);
-		mDefaultArmor.put(Material.LEATHER_BOOTS, 1.0);
-		mDefaultArmor.put(Material.GOLDEN_HELMET, 2.0);
-		mDefaultArmor.put(Material.GOLDEN_CHESTPLATE, 5.0);
-		mDefaultArmor.put(Material.GOLDEN_LEGGINGS, 3.0);
-		mDefaultArmor.put(Material.GOLDEN_BOOTS, 1.0);
-		mDefaultArmor.put(Material.CHAINMAIL_HELMET, 2.0);
-		mDefaultArmor.put(Material.CHAINMAIL_CHESTPLATE, 5.0);
-		mDefaultArmor.put(Material.CHAINMAIL_LEGGINGS, 4.0);
-		mDefaultArmor.put(Material.CHAINMAIL_BOOTS, 1.0);
-		mDefaultArmor.put(Material.IRON_HELMET, 2.0);
-		mDefaultArmor.put(Material.IRON_CHESTPLATE, 6.0);
-		mDefaultArmor.put(Material.IRON_LEGGINGS, 5.0);
-		mDefaultArmor.put(Material.IRON_BOOTS, 2.0);
-		mDefaultArmor.put(Material.DIAMOND_HELMET, 3.0);
-		mDefaultArmor.put(Material.DIAMOND_CHESTPLATE, 8.0);
-		mDefaultArmor.put(Material.DIAMOND_LEGGINGS, 6.0);
-		mDefaultArmor.put(Material.DIAMOND_BOOTS, 3.0);
-		mDefaultArmor.put(Material.TURTLE_HELMET, 2.0);
+		DEFAULT_ARMOR.put(Material.LEATHER_HELMET, 1.0);
+		DEFAULT_ARMOR.put(Material.LEATHER_CHESTPLATE, 3.0);
+		DEFAULT_ARMOR.put(Material.LEATHER_LEGGINGS, 2.0);
+		DEFAULT_ARMOR.put(Material.LEATHER_BOOTS, 1.0);
+		DEFAULT_ARMOR.put(Material.GOLDEN_HELMET, 2.0);
+		DEFAULT_ARMOR.put(Material.GOLDEN_CHESTPLATE, 5.0);
+		DEFAULT_ARMOR.put(Material.GOLDEN_LEGGINGS, 3.0);
+		DEFAULT_ARMOR.put(Material.GOLDEN_BOOTS, 1.0);
+		DEFAULT_ARMOR.put(Material.CHAINMAIL_HELMET, 2.0);
+		DEFAULT_ARMOR.put(Material.CHAINMAIL_CHESTPLATE, 5.0);
+		DEFAULT_ARMOR.put(Material.CHAINMAIL_LEGGINGS, 4.0);
+		DEFAULT_ARMOR.put(Material.CHAINMAIL_BOOTS, 1.0);
+		DEFAULT_ARMOR.put(Material.IRON_HELMET, 2.0);
+		DEFAULT_ARMOR.put(Material.IRON_CHESTPLATE, 6.0);
+		DEFAULT_ARMOR.put(Material.IRON_LEGGINGS, 5.0);
+		DEFAULT_ARMOR.put(Material.IRON_BOOTS, 2.0);
+		DEFAULT_ARMOR.put(Material.DIAMOND_HELMET, 3.0);
+		DEFAULT_ARMOR.put(Material.DIAMOND_CHESTPLATE, 8.0);
+		DEFAULT_ARMOR.put(Material.DIAMOND_LEGGINGS, 6.0);
+		DEFAULT_ARMOR.put(Material.DIAMOND_BOOTS, 3.0);
+		DEFAULT_ARMOR.put(Material.TURTLE_HELMET, 2.0);
 
-		mDefaultDamage.put(EntityType.BLAZE, 6.0);
-		mDefaultDamage.put(EntityType.CAVE_SPIDER, 2.0);
-		mDefaultDamage.put(EntityType.CREEPER, 49.0);
-		mDefaultDamage.put(EntityType.DOLPHIN, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.BLAZE, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.CAVE_SPIDER, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.CREEPER, 49.0);
+		DEFAULT_DAMAGE.put(EntityType.DOLPHIN, 3.0);
 		//??
-		mDefaultDamage.put(EntityType.DROWNED, 3.0);
-		mDefaultDamage.put(EntityType.ELDER_GUARDIAN, 8.0);
-		mDefaultDamage.put(EntityType.ENDERMAN, 7.0);
-		mDefaultDamage.put(EntityType.ENDERMITE, 2.0);
-		mDefaultDamage.put(EntityType.EVOKER, 6.0);
-		mDefaultDamage.put(EntityType.GHAST, 23.0);
-		mDefaultDamage.put(EntityType.GUARDIAN, 6.0);
-		mDefaultDamage.put(EntityType.HUSK, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.DROWNED, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.ELDER_GUARDIAN, 8.0);
+		DEFAULT_DAMAGE.put(EntityType.ENDERMAN, 7.0);
+		DEFAULT_DAMAGE.put(EntityType.ENDERMITE, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.EVOKER, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.GHAST, 23.0);
+		DEFAULT_DAMAGE.put(EntityType.GUARDIAN, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.HUSK, 3.0);
 		//??
-		mDefaultDamage.put(EntityType.ILLUSIONER, 4.0);
-		mDefaultDamage.put(EntityType.IRON_GOLEM, 21.0);
-		mDefaultDamage.put(EntityType.MAGMA_CUBE, 6.0);
-		mDefaultDamage.put(EntityType.PHANTOM, 6.0);
-		mDefaultDamage.put(EntityType.ZOMBIFIED_PIGLIN, 4.0);
+		DEFAULT_DAMAGE.put(EntityType.ILLUSIONER, 4.0);
+		DEFAULT_DAMAGE.put(EntityType.IRON_GOLEM, 21.0);
+		DEFAULT_DAMAGE.put(EntityType.MAGMA_CUBE, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.PHANTOM, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.ZOMBIFIED_PIGLIN, 4.0);
 		//??
-		mDefaultDamage.put(EntityType.PILLAGER, 4.0);
-		mDefaultDamage.put(EntityType.POLAR_BEAR, 6.0);
-		mDefaultDamage.put(EntityType.RAVAGER, 12.0);
-		mDefaultDamage.put(EntityType.SHULKER, 4.0);
-		mDefaultDamage.put(EntityType.SILVERFISH, 1.0);
+		DEFAULT_DAMAGE.put(EntityType.PILLAGER, 4.0);
+		DEFAULT_DAMAGE.put(EntityType.POLAR_BEAR, 6.0);
+		DEFAULT_DAMAGE.put(EntityType.RAVAGER, 12.0);
+		DEFAULT_DAMAGE.put(EntityType.SHULKER, 4.0);
+		DEFAULT_DAMAGE.put(EntityType.SILVERFISH, 1.0);
 		//??
-		mDefaultDamage.put(EntityType.SKELETON, 2.5);
-		mDefaultDamage.put(EntityType.SLIME, 2.0);
-		mDefaultDamage.put(EntityType.SPIDER, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.SKELETON, 2.5);
+		DEFAULT_DAMAGE.put(EntityType.SLIME, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.SPIDER, 2.0);
 		//??
-		mDefaultDamage.put(EntityType.STRAY, 2.0);
-		mDefaultDamage.put(EntityType.VEX, 3.0);
-		mDefaultDamage.put(EntityType.VINDICATOR, 5.0);
-		mDefaultDamage.put(EntityType.WITHER_SKELETON, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.STRAY, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.VEX, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.VINDICATOR, 5.0);
+		DEFAULT_DAMAGE.put(EntityType.WITHER_SKELETON, 3.0);
 		//??
-		mDefaultDamage.put(EntityType.WITHER, 8.0);
-		mDefaultDamage.put(EntityType.WOLF, 2.0);
-		mDefaultDamage.put(EntityType.ZOMBIE, 3.0);
-		mDefaultDamage.put(EntityType.ZOMBIE_VILLAGER, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.WITHER, 8.0);
+		DEFAULT_DAMAGE.put(EntityType.WOLF, 2.0);
+		DEFAULT_DAMAGE.put(EntityType.ZOMBIE, 3.0);
+		DEFAULT_DAMAGE.put(EntityType.ZOMBIE_VILLAGER, 3.0);
 
 		//Health
-		mDefaultHealth.put(EntityType.SNOWMAN, 4.0);
-		mDefaultHealth.put(EntityType.BLAZE, 20.0);
-		mDefaultHealth.put(EntityType.DROWNED, 20.0);
-		mDefaultHealth.put(EntityType.HUSK, 20.0);
-		mDefaultHealth.put(EntityType.ZOMBIE, 20.0);
-		mDefaultHealth.put(EntityType.ZOMBIE_VILLAGER, 20.0);
-		mDefaultHealth.put(EntityType.ZOMBIFIED_PIGLIN, 20.0);
-		mDefaultHealth.put(EntityType.CREEPER, 20.0);
-		mDefaultHealth.put(EntityType.ENDERMITE, 8.0);
-		mDefaultHealth.put(EntityType.IRON_GOLEM, 100.0);
-		mDefaultHealth.put(EntityType.POLAR_BEAR, 30.0);
-		mDefaultHealth.put(EntityType.SILVERFISH, 8.0);
-		mDefaultHealth.put(EntityType.SKELETON, 20.0);
-		mDefaultHealth.put(EntityType.STRAY, 20.0);
-		mDefaultHealth.put(EntityType.WITCH, 26.0);
-		mDefaultHealth.put(EntityType.WITHER_SKELETON, 20.0);
-		mDefaultHealth.put(EntityType.CAT, 10.0);
-		mDefaultHealth.put(EntityType.CAVE_SPIDER, 12.0);
-		mDefaultHealth.put(EntityType.ELDER_GUARDIAN, 80.0);
-		mDefaultHealth.put(EntityType.ENDERMAN, 40.0);
-		mDefaultHealth.put(EntityType.FOX, 10.0);
-		mDefaultHealth.put(EntityType.OCELOT, 10.0);
-		mDefaultHealth.put(EntityType.RAVAGER, 1000.0);
-		mDefaultHealth.put(EntityType.SPIDER, 16.0);
-		mDefaultHealth.put(EntityType.WOLF, 8.0);
-		mDefaultHealth.put(EntityType.PILLAGER, 24.0);
-		mDefaultHealth.put(EntityType.VINDICATOR, 24.0);
-		mDefaultHealth.put(EntityType.EVOKER, 24.0);
-		mDefaultHealth.put(EntityType.GUARDIAN, 30.0);
-		mDefaultHealth.put(EntityType.ILLUSIONER, 32.0);
-		mDefaultHealth.put(EntityType.WITHER, 300.0);
-		mDefaultHealth.put(EntityType.GHAST, 10.0);
-		mDefaultHealth.put(EntityType.PUFFERFISH, 30.0);
-		mDefaultHealth.put(EntityType.SHULKER, 30.0);
-		mDefaultHealth.put(EntityType.DOLPHIN, 19.0);
-		mDefaultHealth.put(EntityType.SQUID, 10.0);
-		mDefaultHealth.put(EntityType.VEX, 14.0);
+		DEFAULT_HEALTH.put(EntityType.SNOWMAN, 4.0);
+		DEFAULT_HEALTH.put(EntityType.BLAZE, 20.0);
+		DEFAULT_HEALTH.put(EntityType.DROWNED, 20.0);
+		DEFAULT_HEALTH.put(EntityType.HUSK, 20.0);
+		DEFAULT_HEALTH.put(EntityType.ZOMBIE, 20.0);
+		DEFAULT_HEALTH.put(EntityType.ZOMBIE_VILLAGER, 20.0);
+		DEFAULT_HEALTH.put(EntityType.ZOMBIFIED_PIGLIN, 20.0);
+		DEFAULT_HEALTH.put(EntityType.CREEPER, 20.0);
+		DEFAULT_HEALTH.put(EntityType.ENDERMITE, 8.0);
+		DEFAULT_HEALTH.put(EntityType.IRON_GOLEM, 100.0);
+		DEFAULT_HEALTH.put(EntityType.POLAR_BEAR, 30.0);
+		DEFAULT_HEALTH.put(EntityType.SILVERFISH, 8.0);
+		DEFAULT_HEALTH.put(EntityType.SKELETON, 20.0);
+		DEFAULT_HEALTH.put(EntityType.STRAY, 20.0);
+		DEFAULT_HEALTH.put(EntityType.WITCH, 26.0);
+		DEFAULT_HEALTH.put(EntityType.WITHER_SKELETON, 20.0);
+		DEFAULT_HEALTH.put(EntityType.CAT, 10.0);
+		DEFAULT_HEALTH.put(EntityType.CAVE_SPIDER, 12.0);
+		DEFAULT_HEALTH.put(EntityType.ELDER_GUARDIAN, 80.0);
+		DEFAULT_HEALTH.put(EntityType.ENDERMAN, 40.0);
+		DEFAULT_HEALTH.put(EntityType.FOX, 10.0);
+		DEFAULT_HEALTH.put(EntityType.OCELOT, 10.0);
+		DEFAULT_HEALTH.put(EntityType.RAVAGER, 1000.0);
+		DEFAULT_HEALTH.put(EntityType.SPIDER, 16.0);
+		DEFAULT_HEALTH.put(EntityType.WOLF, 8.0);
+		DEFAULT_HEALTH.put(EntityType.PILLAGER, 24.0);
+		DEFAULT_HEALTH.put(EntityType.VINDICATOR, 24.0);
+		DEFAULT_HEALTH.put(EntityType.EVOKER, 24.0);
+		DEFAULT_HEALTH.put(EntityType.GUARDIAN, 30.0);
+		DEFAULT_HEALTH.put(EntityType.ILLUSIONER, 32.0);
+		DEFAULT_HEALTH.put(EntityType.WITHER, 300.0);
+		DEFAULT_HEALTH.put(EntityType.GHAST, 10.0);
+		DEFAULT_HEALTH.put(EntityType.PUFFERFISH, 30.0);
+		DEFAULT_HEALTH.put(EntityType.SHULKER, 30.0);
+		DEFAULT_HEALTH.put(EntityType.DOLPHIN, 19.0);
+		DEFAULT_HEALTH.put(EntityType.SQUID, 10.0);
+		DEFAULT_HEALTH.put(EntityType.VEX, 14.0);
 
 		//I'll just assume it works the same for each mob-it should really only be on select zombies anyway
-		mDefaultItemDamage.put(Material.WOODEN_SWORD, 4.0);
-		mDefaultItemDamage.put(Material.GOLDEN_SWORD, 4.0);
-		mDefaultItemDamage.put(Material.STONE_SWORD, 5.0);
-		mDefaultItemDamage.put(Material.IRON_SWORD, 6.0);
-		mDefaultItemDamage.put(Material.DIAMOND_SWORD, 7.0);
-		mDefaultItemDamage.put(Material.NETHERITE_SWORD, 8.0);
-		mDefaultItemDamage.put(Material.WOODEN_AXE, 7.0);
-		mDefaultItemDamage.put(Material.GOLDEN_AXE, 7.0);
-		mDefaultItemDamage.put(Material.STONE_AXE, 9.0);
-		mDefaultItemDamage.put(Material.IRON_AXE, 9.0);
-		mDefaultItemDamage.put(Material.DIAMOND_AXE, 9.0);
-		mDefaultItemDamage.put(Material.NETHERITE_AXE, 10.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.WOODEN_SWORD, 4.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.GOLDEN_SWORD, 4.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.STONE_SWORD, 5.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.IRON_SWORD, 6.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.DIAMOND_SWORD, 7.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.NETHERITE_SWORD, 8.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.WOODEN_AXE, 7.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.GOLDEN_AXE, 7.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.STONE_AXE, 9.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.IRON_AXE, 9.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.DIAMOND_AXE, 9.0);
+		DEFAULT_ITEM_DAMAGE.put(Material.NETHERITE_AXE, 10.0);
 
-		mDefaultSpeed.put(EntityType.STRIDER, 0.125);
-		mDefaultSpeed.put(EntityType.SNOWMAN, 0.2);
-		mDefaultSpeed.put(EntityType.BLAZE, 0.23);
-		mDefaultSpeed.put(EntityType.DROWNED, 0.23);
-		mDefaultSpeed.put(EntityType.HUSK, 0.23);
-		mDefaultSpeed.put(EntityType.ZOMBIE, 0.23);
-		mDefaultSpeed.put(EntityType.ZOMBIE_VILLAGER, 0.23);
-		mDefaultSpeed.put(EntityType.ZOMBIFIED_PIGLIN, 0.23);
-		mDefaultSpeed.put(EntityType.CREEPER, 0.25);
-		mDefaultSpeed.put(EntityType.ENDERMITE, 0.25);
-		mDefaultSpeed.put(EntityType.IRON_GOLEM, 0.25);
-		mDefaultSpeed.put(EntityType.POLAR_BEAR, 0.25);
-		mDefaultSpeed.put(EntityType.SILVERFISH, 0.25);
-		mDefaultSpeed.put(EntityType.SKELETON, 0.25);
-		mDefaultSpeed.put(EntityType.STRAY, 0.25);
-		mDefaultSpeed.put(EntityType.WITCH, 0.25);
-		mDefaultSpeed.put(EntityType.WITHER_SKELETON, 0.25);
-		mDefaultSpeed.put(EntityType.BEE, 0.3);
-		mDefaultSpeed.put(EntityType.CAT, 0.3);
-		mDefaultSpeed.put(EntityType.CAVE_SPIDER, 0.3);
-		mDefaultSpeed.put(EntityType.ELDER_GUARDIAN, 0.3);
-		mDefaultSpeed.put(EntityType.ENDERMAN, 0.3);
-		mDefaultSpeed.put(EntityType.FOX, 0.3);
-		mDefaultSpeed.put(EntityType.OCELOT, 0.3);
-		mDefaultSpeed.put(EntityType.RAVAGER, 0.3);
-		mDefaultSpeed.put(EntityType.SPIDER, 0.3);
-		mDefaultSpeed.put(EntityType.WOLF, 0.3);
-		mDefaultSpeed.put(EntityType.PILLAGER, 0.35);
-		mDefaultSpeed.put(EntityType.VINDICATOR, 0.35);
-		mDefaultSpeed.put(EntityType.EVOKER, 0.5);
-		mDefaultSpeed.put(EntityType.GUARDIAN, 0.5);
-		mDefaultSpeed.put(EntityType.ILLUSIONER, 0.5);
-		mDefaultSpeed.put(EntityType.PIGLIN, 0.5);
-		mDefaultSpeed.put(EntityType.WITHER, 0.6);
-		mDefaultSpeed.put(EntityType.GHAST, 0.7);
-		mDefaultSpeed.put(EntityType.PUFFERFISH, 0.7);
-		mDefaultSpeed.put(EntityType.SHULKER, 0.0);
-		mDefaultSpeed.put(EntityType.DOLPHIN, 1.2);
-		mDefaultSpeed.put(EntityType.SQUID, 0.7);
-		mDefaultSpeed.put(EntityType.VEX, 0.7);
+		DEFAULT_SPEED.put(EntityType.STRIDER, 0.125);
+		DEFAULT_SPEED.put(EntityType.SNOWMAN, 0.2);
+		DEFAULT_SPEED.put(EntityType.BLAZE, 0.23);
+		DEFAULT_SPEED.put(EntityType.DROWNED, 0.23);
+		DEFAULT_SPEED.put(EntityType.HUSK, 0.23);
+		DEFAULT_SPEED.put(EntityType.ZOMBIE, 0.23);
+		DEFAULT_SPEED.put(EntityType.ZOMBIE_VILLAGER, 0.23);
+		DEFAULT_SPEED.put(EntityType.ZOMBIFIED_PIGLIN, 0.23);
+		DEFAULT_SPEED.put(EntityType.CREEPER, 0.25);
+		DEFAULT_SPEED.put(EntityType.ENDERMITE, 0.25);
+		DEFAULT_SPEED.put(EntityType.IRON_GOLEM, 0.25);
+		DEFAULT_SPEED.put(EntityType.POLAR_BEAR, 0.25);
+		DEFAULT_SPEED.put(EntityType.SILVERFISH, 0.25);
+		DEFAULT_SPEED.put(EntityType.SKELETON, 0.25);
+		DEFAULT_SPEED.put(EntityType.STRAY, 0.25);
+		DEFAULT_SPEED.put(EntityType.WITCH, 0.25);
+		DEFAULT_SPEED.put(EntityType.WITHER_SKELETON, 0.25);
+		DEFAULT_SPEED.put(EntityType.BEE, 0.3);
+		DEFAULT_SPEED.put(EntityType.CAT, 0.3);
+		DEFAULT_SPEED.put(EntityType.CAVE_SPIDER, 0.3);
+		DEFAULT_SPEED.put(EntityType.ELDER_GUARDIAN, 0.3);
+		DEFAULT_SPEED.put(EntityType.ENDERMAN, 0.3);
+		DEFAULT_SPEED.put(EntityType.FOX, 0.3);
+		DEFAULT_SPEED.put(EntityType.OCELOT, 0.3);
+		DEFAULT_SPEED.put(EntityType.RAVAGER, 0.3);
+		DEFAULT_SPEED.put(EntityType.SPIDER, 0.3);
+		DEFAULT_SPEED.put(EntityType.WOLF, 0.3);
+		DEFAULT_SPEED.put(EntityType.PILLAGER, 0.35);
+		DEFAULT_SPEED.put(EntityType.VINDICATOR, 0.35);
+		DEFAULT_SPEED.put(EntityType.EVOKER, 0.5);
+		DEFAULT_SPEED.put(EntityType.GUARDIAN, 0.5);
+		DEFAULT_SPEED.put(EntityType.ILLUSIONER, 0.5);
+		DEFAULT_SPEED.put(EntityType.PIGLIN, 0.5);
+		DEFAULT_SPEED.put(EntityType.WITHER, 0.6);
+		DEFAULT_SPEED.put(EntityType.GHAST, 0.7);
+		DEFAULT_SPEED.put(EntityType.PUFFERFISH, 0.7);
+		DEFAULT_SPEED.put(EntityType.SHULKER, 0.0);
+		DEFAULT_SPEED.put(EntityType.DOLPHIN, 1.2);
+		DEFAULT_SPEED.put(EntityType.SQUID, 0.7);
+		DEFAULT_SPEED.put(EntityType.VEX, 0.7);
 	}
 
 	public static String formatWell(String in) {
 		in = in.replaceAll("\"", "");
-		String sub = "";
+		StringBuilder sub = new StringBuilder();
 		if (in.contains("_")) {
 			String[] cuts = in.split("_");
 			for (String cut : cuts) {
-				if (cut.length() == 0) {
+				if (cut.isEmpty()) {
 					continue;
 				}
 				String subCut = cut.substring(0, 1);
-				subCut = subCut.toUpperCase();
+				subCut = subCut.toUpperCase(Locale.ROOT);
 				subCut += cut.substring(1);
-				sub += subCut + " ";
+				sub.append(subCut).append(" ");
 			}
 		} else {
-			sub = in.substring(0, 1);
-			sub = sub.toUpperCase();
-			sub += in.substring(1);
+			sub = new StringBuilder(in.substring(0, 1));
+			sub = new StringBuilder(sub.toString().toUpperCase(Locale.ROOT));
+			sub.append(in.substring(1));
 		}
-		return sub;
+		return sub.toString();
 	}
 
 	private static Component blackIfWhite(Component comp) {
-		if (comp.color().asHexString().equals("#ffffff")) {
-			comp = comp.color(TextColor.color(0, 0, 0));
+		final var color = comp.color();
+
+		if (color == null) {
+			return comp.color(TextColor.color(0, 0, 0));
 		}
+
+		if (color.value() == 0xffffff) {
+			return comp.color(TextColor.color(0, 0, 0));
+		}
+
 		return comp;
 	}
 
@@ -253,7 +257,7 @@ public class BestiarySoulInventory extends CustomInventory {
 	private final List<BestiaryEntryInterface> mPeers;
 	private final int mPeerIndex;
 	private int mPrevEntry = -1;
-	private int mNextEntry = 40000;
+	private int mNextEntry;
 
 	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
 		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getDisplayName())));
@@ -270,8 +274,8 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		double armor = 0;
 		double armorToughness = 0;
-		double health = vars.hasKey("Health") ? 0.0 + Float.valueOf(vars.getFloat("Health")) : 0.0;
-		double speed = vars.hasKey("MovementSpeed") ? 0.0 + Float.valueOf(vars.getFloat("MovementSpeed")) : 0;
+		double health = vars.hasKey("Health") ? 0.0 + vars.getFloat("Health") : 0.0;
+		double speed = vars.hasKey("MovementSpeed") ? 0.0 + vars.getFloat("MovementSpeed") : 0;
 		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? Math.max(attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase(), 0.0) : 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
@@ -282,8 +286,8 @@ public class BestiarySoulInventory extends CustomInventory {
 		EntityType entType = entityNBT.getEntityType();
 		DamageType type = null;
 
-		Double defHealth = mDefaultHealth.get(entType);
-		Double defDamage = mDefaultDamage.get(entType);
+		Double defHealth = DEFAULT_HEALTH.get(entType);
+		Double defDamage = DEFAULT_DAMAGE.get(entType);
 
 		//Stuff to throw errors before everything
 		if (defHealth != null && health == 0.0) {
@@ -299,7 +303,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		}
 
 		// Only need to create one of these
-		EffectsVariable effectVar = new EffectsVariable("ActiveEffects");
+		EffectsVariable effectVar = new EffectsVariable("active_effects");
 		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
 		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
 		// For each mob you want to work with:
@@ -310,8 +314,8 @@ public class BestiarySoulInventory extends CustomInventory {
 				if (item != null && item.hasItemMeta()) {
 					armor += getAttributeNumber(item, Attribute.GENERIC_ARMOR, ADD);
 
-					if (mDefaultArmor.containsKey(item.getType()) && item.getItemMeta().getAttributeModifiers(Attribute.GENERIC_ARMOR) == null) {
-						armor += mDefaultArmor.get(item.getType());
+					if (DEFAULT_ARMOR.containsKey(item.getType()) && item.getItemMeta().getAttributeModifiers(Attribute.GENERIC_ARMOR) == null) {
+						armor += DEFAULT_ARMOR.get(item.getType());
 					}
 
 					armorToughness += getAttributeNumber(item, Attribute.GENERIC_ARMOR_TOUGHNESS, ADD);
@@ -347,8 +351,8 @@ public class BestiarySoulInventory extends CustomInventory {
 						type = DamageType.TRIDENT;
 					}
 
-					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot) == 0 && mDefaultItemDamage.containsKey(item.getType()) && slot == EquipmentSlot.HAND) {
-						damage += mDefaultItemDamage.get(item.getType());
+					if (getAttributeNumber(item, Attribute.GENERIC_ATTACK_DAMAGE, ADD, slot) == 0 && DEFAULT_ITEM_DAMAGE.containsKey(item.getType()) && slot == EquipmentSlot.HAND) {
+						damage += DEFAULT_ITEM_DAMAGE.get(item.getType());
 					}
 
 					if (slot == EquipmentSlot.HAND && item.containsEnchantment(Enchantment.DAMAGE_ALL)) {
@@ -379,7 +383,7 @@ public class BestiarySoulInventory extends CustomInventory {
 				String get = nbtVar.get();
 				if (get != null && !get.isEmpty()) {
 					type = DamageType.GHAST;
-					explodePower = Float.valueOf(nbtVar.get());
+					explodePower = Float.parseFloat(nbtVar.get());
 				} else {
 					type = DamageType.GHAST;
 					explodePower = 1;
@@ -395,7 +399,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			} else {
 				String get = nbtVar.get();
 				if (get != null) {
-					explodePower = Double.valueOf(get);
+					explodePower = Double.parseDouble(get);
 				} else {
 					explodePower = 3;
 				}
@@ -435,7 +439,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		// Outside of the checking for tier since if you can see the entry, you can hopefully move between them (If there are mobs there)
 
 		for (int i = mPeerIndex - 1; i >= 0; i--) {
-			if (mPeers.get(i).canOpenBestiary(player) && i >= 0) {
+			if (mPeers.get(i).canOpenBestiary(player)) {
 				mPrevEntry = i;
 				break;
 			}
@@ -537,9 +541,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		ItemMeta meta = item.getItemMeta();
 		double attributeNum = 0;
 		if (meta.getAttributeModifiers(attribute) != null) {
-			Iterator<AttributeModifier> iterator = meta.getAttributeModifiers(attribute).iterator();
-			while (iterator.hasNext()) {
-				AttributeModifier mod = iterator.next();
+			for (AttributeModifier mod : meta.getAttributeModifiers(attribute)) {
 				if (mod.getOperation().equals(operation)) {
 					if (slot == null) {
 						attributeNum += mod.getAmount();
@@ -659,7 +661,7 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		damageMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
 		damageMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-		damageMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+		damageMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
 		damageItem.setItemMeta(damageMeta);
 
@@ -672,10 +674,10 @@ public class BestiarySoulInventory extends CustomInventory {
 			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
 
 			for (PotionEffect effect : potionMeta.getCustomEffects()) {
-				lore.add(Component.text(formatWell(effect.toString().substring(0, effect.toString().indexOf(":")).toLowerCase()) + " (∞)", NamedTextColor.DARK_BLUE).decoration(TextDecoration.ITALIC, false));
+				lore.add(Component.text(formatWell(effect.toString().substring(0, effect.toString().indexOf(":")).toLowerCase(Locale.ROOT)) + " (∞)", NamedTextColor.DARK_BLUE).decoration(TextDecoration.ITALIC, false));
 			}
 
-			potionMeta.addItemFlags(ItemFlag.HIDE_POTION_EFFECTS);
+			potionMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 			potionMeta.lore(lore);
 			potionMeta.displayName(Component.text("Effects", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
 			potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
@@ -701,10 +703,10 @@ public class BestiarySoulInventory extends CustomInventory {
 		ItemMeta speedMeta = speedItem.getItemMeta();
 		List<Component> lore = new ArrayList<>();
 
-		if (mDefaultSpeed.containsKey(entityNBT.getEntityType()) && speed == 0) {
+		if (DEFAULT_SPEED.containsKey(entityNBT.getEntityType()) && speed == 0) {
 
-			if (mDefaultSpeed.get(entityNBT.getEntityType()) != null) {
-				speedScalar += mDefaultSpeed.get(entityNBT.getEntityType());
+			if (DEFAULT_SPEED.get(entityNBT.getEntityType()) != null) {
+				speedScalar += DEFAULT_SPEED.get(entityNBT.getEntityType());
 			} else {
 				LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the speed map: " + entityNBT.getEntityType());
 			}
@@ -712,7 +714,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			speed += speedScalar;
 			speed *= speedPercent;
 		} else if (entityNBT.getEntityType().equals(EntityType.SLIME)) {
-			int size = Integer.valueOf(entityNBT.getVariable("Size").get());
+			int size = Integer.parseInt(entityNBT.getVariable("Size").get());
 			speed = 0.2 + (0.1 * size);
 			speed += speedScalar;
 			speed *= speedPercent;
@@ -750,11 +752,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			return loreItem;
 		}
 
-		List<Component> itemLore = new ArrayList<>();
-
-		for (Component comp : lore) {
-			itemLore.add(comp);
-		}
+		List<Component> itemLore = new ArrayList<>(lore);
 
 		meta.lore(itemLore);
 		loreItem.setItemMeta(meta);
@@ -795,7 +793,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			for (String iterTag : tags) {
 				iterTag = iterTag.replaceAll("\"", "");
 				iterTag = iterTag.replaceAll("\\[", "");
-				iterTag = iterTag.replaceAll("\\]", "");
+				iterTag = iterTag.replaceAll("]", "");
 				iterTag = formatWell(iterTag);
 				iterTag = iterTag.replaceAll("Boss ", "");
 				ret.add(iterTag);
@@ -803,7 +801,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		} else {
 			tag = tag.replaceAll("\"", "");
 			tag = tag.replaceAll("\\[", "");
-			tag = tag.replaceAll("\\]", "");
+			tag = tag.replaceAll("]", "");
 			tag = formatWell(tag);
 			tag = tag.replaceAll("Boss ", "");
 			ret.add(tag);

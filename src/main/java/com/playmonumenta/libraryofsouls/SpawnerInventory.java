@@ -6,12 +6,12 @@ import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -75,9 +75,11 @@ public class SpawnerInventory extends CustomInventory {
 	@Override
 	protected void inventoryClick(InventoryClickEvent event) {
 		if (event.getClickedInventory() == null) {
-			// Player clicked off the screen
 			return;
-		} else if (event.getClickedInventory().equals(getInventory()) && event.getSlot() == 0 && mGoBackInventory != null) {
+			// Player clicked off the screen
+		}
+
+		if (event.getClickedInventory().equals(getInventory()) && event.getSlot() == 0 && mGoBackInventory != null) {
 			event.setCancelled(true);
 			Player player = (Player)event.getWhoClicked();
 			new SoulsInventory(mGoBackInventory, player).openInventory(player, LibraryOfSouls.getInstance());
@@ -94,7 +96,7 @@ public class SpawnerInventory extends CustomInventory {
 
 		Block block = findSafeAirBlock(player.getLocation());
 		if (block == null) {
-			player.sendMessage(ChatColor.RED + "There is no nearby air block to construct the spawner");
+			player.sendMessage(Component.text("There is no nearby air block to construct the spawner").color(NamedTextColor.RED));
 			player.playSound(player.getLocation(), Sound.ENTITY_SHULKER_HURT, 1, 1);
 			return;
 		}
@@ -135,7 +137,7 @@ public class SpawnerInventory extends CustomInventory {
 		ItemStack item = new ItemStack(Material.SPAWNER);
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		meta.setBlockState(spawnerBlock);
-		meta.displayName(soul.getDisplayName().append(Component.text(" " + nbt.getEntityType().toString().toLowerCase(), NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false)));
+		meta.displayName(soul.getDisplayName().append(Component.text(" " + nbt.getEntityType().toString().toLowerCase(Locale.ROOT), NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false)));
 		item.setItemMeta(meta);
 
 		// Update the item's lore/name
@@ -160,7 +162,7 @@ public class SpawnerInventory extends CustomInventory {
 		// Append the radius to the item name
 		Component name = meta.displayName();
 		name = name.replaceText(TextReplacementConfig.builder().match(" r=").replacement(Component.empty()).build());
-		name = name.append(Component.text(" r=" + Integer.toString(spawner.getRequiredPlayerRange())).color(NamedTextColor.GREEN));
+		name = name.append(Component.text(" r=" + spawner.getRequiredPlayerRange()).color(NamedTextColor.GREEN));
 
 		meta.displayName(name);
 		meta.lore(loreString);
