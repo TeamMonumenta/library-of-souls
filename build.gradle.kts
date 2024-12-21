@@ -21,6 +21,10 @@ dependencies {
 	compileOnly(libs.gson)
 }
 
+tasks.javadoc {
+	(options as StandardJavadocDocletOptions).addBooleanOption("Xdoclint:none", true)
+}
+
 monumenta {
 	name("LibraryOfSouls")
 	paper(
