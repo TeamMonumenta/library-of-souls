@@ -473,7 +473,6 @@ public class BestiarySoulInventory extends CustomInventory {
 			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
 
 			ItemStack descriptionItem = getDescriptionItem(soul);
-			ItemStack loreItem = getLoreItem(soul);
 			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
 			ItemMeta meta = equipmentPageItem.getItemMeta();
 			meta.displayName(Component.text("View Equipment Items", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
@@ -486,7 +485,8 @@ public class BestiarySoulInventory extends CustomInventory {
 				_inventory.setItem(16, descriptionItem);
 			}
 			_inventory.setItem(22, equipmentPageItem);
-			if (!soul.getLore().isEmpty()) {
+			if (!soul.getLore().isEmpty() && soul.canSeeLore(player)) {
+				ItemStack loreItem = getLoreItem(soul);
 				_inventory.setItem(29, speedItem);
 				_inventory.setItem(31, effectItem);
 				_inventory.setItem(33, loreItem);
