@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
@@ -23,6 +24,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -35,6 +37,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.Objective;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,10 +47,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private final Set<String> mLocs;
 	private final List<SoulHistoryEntry> mHistory;
 	private List<Component> mLore;
+	private @Nullable String mLorePrereqObjective;
+	private int mLorePrereqMinScore = 0;
 	private List<Component> mDescription;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, List<Component> lore, List<Component> description) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -61,6 +66,9 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		} else {
 			mLore = lore;
 		}
+
+		mLorePrereqObjective = lorePrereqObjective;
+		mLorePrereqMinScore = lorePrereqMinScore;
 
 		mDescription = Objects.requireNonNullElseGet(description, ArrayList::new);
 
@@ -222,6 +230,31 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mLore;
 	}
 
+	public void setLorePrereq(String objective, int minScore, Player player) {
+		mLorePrereqObjective = objective;
+		mLorePrereqMinScore = minScore;
+		SoulsDatabase.getInstance().updateLore(this, player);
+	}
+
+	public @Nullable String getLorePrereqObjective() {
+		return mLorePrereqObjective;
+	}
+
+	public int getLorePrereqMinScore() {
+		return mLorePrereqMinScore;
+	}
+
+	public boolean canSeeLore(Player player) {
+		if (mLorePrereqObjective == null || mLorePrereqMinScore == 0) {
+			return true;
+		}
+		Objective objective = Bukkit.getScoreboardManager().getMainScoreboard().getObjective(mLorePrereqObjective);
+		if (objective == null) {
+			return true;
+		}
+		return objective.getScore(player).getScore() >= mLorePrereqMinScore;
+	}
+
 	public void setDescription(List<Component> description, Player player) {
 		mDescription = description;
 		SoulsDatabase.getInstance().updateLore(this, player);
@@ -285,7 +318,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
+	public void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
 		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
@@ -430,6 +463,18 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			lore.add(Component.text(elem.getAsString()));
 		}
 
+		String lorePrereqObjective = null;
+		elem = obj.get("lore_prereq_objective");
+		if (elem != null && elem.isJsonPrimitive()) {
+			lorePrereqObjective = elem.getAsString();
+		}
+
+		int lorePrereqMinScore = 0;
+		elem = obj.get("lore_prereq_min_score");
+		if (elem != null && elem.isJsonPrimitive()) {
+			lorePrereqMinScore = elem.getAsInt();
+		}
+
 		List<Component> description = new ArrayList<>();
 		elem = obj.get("description");
 		if (elem != null && elem.isJsonArray()) {
@@ -477,7 +522,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
-		return new SoulEntry(history, locs, lore, description);
+		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description);
 	}
 
 	public JsonObject toJson() {
@@ -494,6 +539,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			loreArray.add(GSON_SERIALIZER.serialize(comp));
 		}
 		obj.add("lore", loreArray);
+
+		if (mLorePrereqObjective != null) {
+			obj.add("lore_prereq_objective", new JsonPrimitive(mLorePrereqObjective));
+		}
+
+		obj.add("lore_prereq_min_score", new JsonPrimitive(mLorePrereqMinScore));
 
 		JsonArray descriptionArray = new JsonArray();
 		for (Component comp : mDescription) {
