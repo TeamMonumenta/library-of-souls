@@ -13,7 +13,6 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
-import com.playmonumenta.redissync.utils.ScoreboardUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -39,7 +38,6 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.Nullable;
 
