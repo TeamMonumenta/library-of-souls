@@ -380,7 +380,7 @@ public class SoulsDatabase {
 						final var history = h.getAsJsonObject();
 						final var result = DataFix.getInstance().dataFix(
 							new NBTContainer(history.get("mojangson").getAsString()),
-							DataFix.Types.ENTITY_TREE, dataVersion, latestVersion
+							DataFix.Types.ENTITY, dataVersion, latestVersion
 						);
 						history.addProperty("mojangson", result.toString());
 					}
