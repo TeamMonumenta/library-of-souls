@@ -9,6 +9,7 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.EntitySelectorArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.ObjectiveArgument;
 import dev.jorel.commandapi.arguments.TextArgument;
 import java.util.ArrayList;
 import java.util.List;
@@ -165,6 +166,8 @@ public class BestiaryCommand {
 
 		TextArgument loreArg = new TextArgument("lore");
 		TextArgument descriptionArg = new TextArgument("description");
+		ObjectiveArgument objectiveArg = new ObjectiveArgument("objective");
+		IntegerArgument minScoreArg = new IntegerArgument("min_score");
 
 		new CommandAPICommand(command)
 			.withSubcommand(new CommandAPICommand("lore")
@@ -224,6 +227,21 @@ public class BestiaryCommand {
 							}
 							soul.setLore(lore, sender);
 						})))
+			.withSubcommand(new CommandAPICommand("lore")
+				.withSubcommand(new CommandAPICommand("prereq")
+					.withArguments(LibraryOfSoulsCommand.mobLabelArg)
+					.withArguments(objectiveArg)
+					.withArguments(minScoreArg)
+					.withPermission(CommandPermission.fromString("los.bestiary.lore"))
+					.executesPlayer((sender, args) -> {
+						String name = args.getByArgument(LibraryOfSoulsCommand.mobLabelArg);
+						SoulEntry soul = SoulsDatabase.getInstance().getSoul(name);
+						if (soul == null) {
+							throw CommandAPI.failWithString("Mob '" + name + "' not found");
+						}
+						soul.setLorePrereq(args.getByArgument(objectiveArg).getName(), args.getByArgument(minScoreArg), sender);
+					}))
+			)
 			.withSubcommand(new CommandAPICommand("description")
 				.withPermission(CommandPermission.fromString("los.bestiary.description"))
 				.withArguments(LibraryOfSoulsCommand.mobLabelArg)
@@ -289,7 +307,7 @@ public class BestiaryCommand {
 
 		private LoreTestInventory(SoulEntry soul, Player player) {
 			mInv = Bukkit.createInventory(player, 54);
-			ItemStack loreItem = getLoreItem(soul);
+			ItemStack loreItem = getLoreItem(soul, player);
 			for (int i = 0; i < 54; i++) {
 				mInv.setItem(i, new ItemStack(Material.BLUE_STAINED_GLASS_PANE));
 			}
@@ -301,7 +319,7 @@ public class BestiaryCommand {
 			player.openInventory(mInv);
 		}
 
-		private ItemStack getLoreItem(SoulEntry soul) {
+		private ItemStack getLoreItem(SoulEntry soul, Player player) {
 			List<Component> lore = soul.getLore();
 
 			ItemStack loreItem = new ItemStack(Material.BOOK);
@@ -310,7 +328,17 @@ public class BestiaryCommand {
 
 			if (lore == null || lore.isEmpty()) {
 				List<Component> itemLore = new ArrayList<>();
-				itemLore.add(Component.text("This is a bug. Or at the very least, should be.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+				itemLore.add(Component.text("No lore provided.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+
+				meta.lore(itemLore);
+				loreItem.setItemMeta(meta);
+				return loreItem;
+			} else if (!soul.canSeeLore(player)) {
+				List<Component> itemLore = new ArrayList<>();
+				itemLore.add(Component.text("Required scores not present to view lore.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+				if (soul.getLorePrereqObjective() != null) {
+					itemLore.add(Component.text("Need " + soul.getLorePrereqObjective() + " score of at least " + soul.getLorePrereqMinScore() + " to view.", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, true));
+				}
 
 				meta.lore(itemLore);
 				loreItem.setItemMeta(meta);
