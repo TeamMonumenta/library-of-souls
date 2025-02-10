@@ -75,7 +75,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		String refLabel = history.get(0).getLabel();
 
 		for (SoulHistoryEntry entry : history) {
-			if (!entry.getLabel().equals(refLabel)) {
+			if (!entry.getLabel().equalsIgnoreCase(refLabel)) {
 				throw new Exception("Soul history has mismatching labels! '" + refLabel + "' != '" + entry.getLabel());
 			}
 		}

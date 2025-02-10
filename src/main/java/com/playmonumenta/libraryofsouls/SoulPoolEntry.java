@@ -25,7 +25,7 @@ public class SoulPoolEntry implements SoulGroup {
 		String refLabel = history.get(0).getLabel();
 
 		for (SoulPoolHistoryEntry entry : history) {
-			if (!entry.getLabel().equals(refLabel)) {
+			if (!entry.getLabel().equalsIgnoreCase(refLabel)) {
 				throw new Exception("Soul Pool history has mismatching labels! '" + refLabel + "' != '" + entry.getLabel());
 			}
 		}

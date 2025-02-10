@@ -48,7 +48,7 @@ public class SoulsDatabase {
 
 	private static @Nullable SoulsDatabase INSTANCE = null;
 
-	private static final Comparator<String> COMPARATOR = String::compareToIgnoreCase;
+	private static final Comparator<String> COMPARATOR = String.CASE_INSENSITIVE_ORDER;
 
 	private final Plugin mPlugin;
 	private final boolean mLoadHistory;
@@ -111,14 +111,13 @@ public class SoulsDatabase {
 	}
 
 	public void autoUpdate(CommandSender sender, Location loc) {
-		Iterator<Map.Entry<String, SoulEntry>> it = mSouls.entrySet().iterator();
+		Iterator<SoulEntry> it = mSouls.values().iterator();
 		new BukkitRunnable() {
 			@Override
 			public void run() {
 				if (it.hasNext()) {
-					Map.Entry<String, SoulEntry> entry = it.next();
-					String name = entry.getKey();
-					SoulEntry soulEntry = entry.getValue();
+					SoulEntry soulEntry = it.next();
+					String name = soulEntry.getLabel();
 					try {
 						soulEntry.autoUpdate(loc);
 					} catch (Exception ex) {
@@ -603,21 +602,22 @@ public class SoulsDatabase {
 	}
 
 	public Set<String> listMobNames() {
-		return new HashSet<>(mSouls.keySet());
+		return new HashSet<>(mSouls.values().stream().map(SoulEntry::getLabel).toList());
 	}
 
 	public Set<String> listSoulPartyNames() {
-		return new HashSet<>(mSoulParties.keySet());
+		return new HashSet<>(mSoulParties.values().stream().map(SoulPartyEntry::getLabel).toList());
 	}
 
 	public Set<String> listSoulPoolNames() {
-		return new HashSet<>(mSoulPools.keySet());
+		return new HashSet<>(mSoulPools.values().stream().map(SoulPoolEntry::getLabel).toList());
 	}
 
 	public Set<String> listSoulGroupNames() {
-		Set<String> result = new HashSet<>(mSouls.keySet());
-		result.addAll(mSoulParties.keySet());
-		result.addAll(mSoulPools.keySet());
+		// Takes advantage of listMobNames() returning a copy of the set
+		Set<String> result = listMobNames();
+		result.addAll(listSoulPartyNames());
+		result.addAll(listSoulPoolNames());
 		return result;
 	}
 

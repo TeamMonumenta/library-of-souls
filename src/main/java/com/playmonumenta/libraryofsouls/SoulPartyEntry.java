@@ -25,7 +25,7 @@ public class SoulPartyEntry implements SoulGroup {
 		String refLabel = history.get(0).getLabel();
 
 		for (SoulPartyHistoryEntry entry : history) {
-			if (!entry.getLabel().equals(refLabel)) {
+			if (!entry.getLabel().equalsIgnoreCase(refLabel)) {
 				throw new Exception("Soul party history has mismatching labels! '" + refLabel + "' != '" + entry.getLabel());
 			}
 		}
