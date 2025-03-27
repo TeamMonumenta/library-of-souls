@@ -251,6 +251,13 @@ public class SoulsDatabase {
 				return;
 			}
 
+			if (!soul.getName().equals(name)) {
+				sender.sendMessage(text("BoS name mismatches with existing name! Fix name capitalization and formatting.", RED));
+				sender.sendMessage(text("LoS name: ", RED).append(soul.getName()));
+				sender.sendMessage(text("BoS name: ", RED).append(name));
+				return;
+			}
+
 			soul.update(sender, nbt);
 		} catch (Exception ex) {
 			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
