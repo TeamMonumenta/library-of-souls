@@ -121,7 +121,7 @@ public class SpawnerInventory extends CustomInventory {
 		block.setType(Material.AIR);
 
 		// Default spawner stats
-		if (soul.isElite()) {
+		if (soul.isElite() || soul.isBoss()) {
 			spawnerBlock.setMaxSpawnDelay(1800);
 			spawnerBlock.setMinSpawnDelay(1800);
 			spawnerBlock.setSpawnCount(1);
