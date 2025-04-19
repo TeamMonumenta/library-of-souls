@@ -1,7 +1,7 @@
 import net.minecrell.pluginyml.bukkit.BukkitPluginDescription
 
 plugins {
-	id("com.playmonumenta.gradle-config") version "2.2+"
+	id("com.playmonumenta.gradle-config") version "3+"
 }
 
 dependencies {
@@ -27,6 +27,7 @@ tasks.javadoc {
 
 monumenta {
 	name("LibraryOfSouls")
+	id("LibraryOfSouls")
 	paper(
 		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.18",
 		depends = listOf("CommandAPI", "NBTEditor"),
