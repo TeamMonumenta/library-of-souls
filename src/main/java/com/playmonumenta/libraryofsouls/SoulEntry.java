@@ -50,9 +50,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private @Nullable String mLorePrereqObjective;
 	private int mLorePrereqMinScore = 0;
 	private List<Component> mDescription;
+	private int mIndex = 0; // Numeric index for this soul (0 means unassigned)
 
 	/* Create a SoulEntry object with existing history */
 	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description) throws Exception {
+		this(history, locationNames, lore, lorePrereqObjective, lorePrereqMinScore, description, 0);
+	}
+
+	/* Create a SoulEntry object with existing history and index */
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description, int index) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -71,6 +77,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mLorePrereqMinScore = lorePrereqMinScore;
 
 		mDescription = Objects.requireNonNullElseGet(description, ArrayList::new);
+		mIndex = index;
 
 		String refLabel = history.get(0).getLabel();
 
@@ -111,6 +118,14 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	@Override
 	public String getLabel() {
 		return mHistory.get(0).getLabel();
+	}
+
+	public int getIndex() {
+		return mIndex;
+	}
+
+	public void setIndex(int index) {
+		mIndex = index;
 	}
 
 	@Override
@@ -494,6 +509,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			description.add(Component.text(elem.getAsString()));
 		}
 
+		int index = 0;
+		elem = obj.get("index");
+		if (elem != null && elem.isJsonPrimitive()) {
+			index = elem.getAsInt();
+		}
+
 		List<SoulHistoryEntry> history = new ArrayList<>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -522,7 +543,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
-		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description);
+		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description, index);
 	}
 
 	public JsonObject toJson() {
@@ -557,6 +578,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			locsArray.add(location);
 		}
 		obj.add("location_names", locsArray);
+
+		if (mIndex > 0) {
+			obj.addProperty("index", mIndex);
+		}
 
 		return obj;
 	}

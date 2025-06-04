@@ -57,6 +57,7 @@ public class LibraryOfSoulsCommand {
 		LocationArgument pos2Arg = new LocationArgument("pos2");
 		Argument<String> areaArg = new StringArgument("area").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobLocations().toArray(String[]::new)));
 		Argument<String> idArg = new StringArgument("id").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobTypes().toArray(String[]::new)));
+		Argument<Integer> indexArg = new IntegerArgument("index", 1);
 
 		/* los open */
 		new CommandAPICommand(COMMAND)
@@ -80,6 +81,21 @@ public class LibraryOfSoulsCommand {
 					throw CommandAPI.failWithString("Your inventory is full!");
 				}
 				inv.addItem(getSoul(args.getByArgument(mobLabelArg)).getBoS());
+			})
+			.register();
+
+		/* los get <index> - Get soul by numeric index */
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.get"))
+			.withArguments(new LiteralArgument("get"))
+			.withArguments(indexArg)
+			.executes((sender, args) -> {
+				PlayerInventory inv = getPlayer(sender).getInventory();
+				if (inv.firstEmpty() == -1) {
+					throw CommandAPI.failWithString("Your inventory is full!");
+				}
+				int index = args.getByArgument(indexArg);
+				inv.addItem(getSoulByIndex(index).getBoS());
 			})
 			.register();
 
@@ -171,6 +187,18 @@ public class LibraryOfSoulsCommand {
 			.withArguments(mobLabelArg)
 			.executes((sender, args) -> {
 				getSoul(args.getByArgument(mobLabelArg)).summon(args.getByArgument(locationArg));
+			})
+			.register();
+
+		/* los summon <location> <index> - Summon soul by numeric index */
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.summon"))
+			.withArguments(new LiteralArgument("summon"))
+			.withArguments(locationArg)
+			.withArguments(indexArg)
+			.executes((sender, args) -> {
+				int index = args.getByArgument(indexArg);
+				getSoulByIndex(index).summon(args.getByArgument(locationArg));
 			})
 			.register();
 
@@ -406,6 +434,21 @@ public class LibraryOfSoulsCommand {
 		}
 
 		throw CommandAPI.failWithString("Soul '" + name + "' not found");
+	}
+
+	/**
+	 * Helper method to get a soul by its numeric index with proper error handling
+	 * @param index The numeric index of the soul to retrieve
+	 * @return The SoulEntry with that index
+	 * @throws WrapperCommandSyntaxException if no soul is found with that index
+	 */
+	public static SoulEntry getSoulByIndex(int index) throws WrapperCommandSyntaxException {
+		SoulEntry soul = SoulsDatabase.getInstance().getSoulByIndex(index);
+		if (soul != null) {
+			return soul;
+		}
+
+		throw CommandAPI.failWithString("No soul found with index " + index);
 	}
 
 	public static SoulGroup getSoulGroup(String name) throws WrapperCommandSyntaxException {
