@@ -9,13 +9,18 @@ import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
 import com.playmonumenta.redissync.RedisAPI;
 import com.playmonumenta.redissync.event.PlayerSaveEvent;
 import io.lettuce.core.RedisFuture;
+import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.async.RedisAsyncCommands;
+import io.lettuce.core.api.sync.RedisCommands;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -24,9 +29,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
+/*
+ * This class provides a Redis-based storage solution for the Library of Souls bestiary.
+ * The design is roughly:
+ * - Incremental player kills are tracked and saved to redis by HINCRBY. The
+ *   kills themselves aren't set directly, so if they fail to load, they're never
+ *   overwritten.
+ * - Total kill counts (for actually looking at bestiary in-game) are loaded
+ *   over several ticks after the player joins, they are not all available
+ *   immediately.
+ */
 public class BestiaryRedisStorage implements BestiaryStorage, Listener {
-	private static final String IDENTIFIER = "LOS";
+	private static final String LEGACY_PLUGINDATA_IDENTIFIER = "LOS";
+	private static final int MAX_LOAD_PER_TICK = 100;
 
 	/*
 	 * This stores the player's current kill data in memory.
@@ -65,10 +82,11 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		mPlayerKillsSinceSave.remove(uuid);
 
 		/* First check for legacy JSON data and migrate it if present */
-		final JsonObject legacyData = MonumentaRedisSyncAPI.getPlayerPluginData(uuid, IDENTIFIER);
+		final JsonObject legacyData = MonumentaRedisSyncAPI.getPlayerPluginData(uuid, LEGACY_PLUGINDATA_IDENTIFIER);
 		if (legacyData != null && legacyData.size() > 0) {
 			mLogger.info("Found legacy bestiary data for player " + player.getName() + ", migrating to new format...");
-			migrateLegacyData(player, legacyData);
+			// For player login upgrades, wait for them to commit successfully, even if that causes lag
+			migrateLegacyPluginData(player, legacyData, true /* Wait for commit */);
 			return; // Migration will continue the loading process
 		}
 
@@ -76,24 +94,23 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		loadBestiaryData(player, startMainTime);
 	}
 
-	private void migrateLegacyData(final Player player, final JsonObject legacyData) {
+	/* If waitForRedisCommit is true, wait for the Redis commit to complete before continuing, potentially holding up the shard */
+	private void migrateLegacyPluginData(final Player player, final JsonObject legacyData, boolean waitForRedisCommit) {
 		final UUID uuid = player.getUniqueId();
 		final SoulsDatabase database = SoulsDatabase.getInstance();
-		if (database == null) {
-			mLogger.severe("Player joined but SoulsDatabase not initialized!");
-			return;
-		}
 
 		final Map<String, String> migrationData = new HashMap<>();
 		final Map<SoulEntry, Integer> playerKills = new HashMap<>();
 
+		mLogger.fine("Legacy data migration for player " + player.getName() + " started");
+
 		/* Convert legacy hex-based data to index-based data */
 		for (final SoulEntry soul : database.getSouls()) {
 			if (soul.getIndex() <= 0) {
-				continue; // Skip souls without indices
+				continue; // Skip souls without indices - these should generate warnings elsewhere
 			}
 
-			final String legacyKey = nameToHex(soul.getLabel());
+			final String legacyKey = nameToLegacyHex(soul.getLabel());
 			final JsonElement element = legacyData.get(legacyKey);
 			if (element != null) {
 				final int kills = element.getAsInt();
@@ -104,80 +121,105 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 
 		/* Save migrated data to Redis */
 		if (!migrationData.isEmpty()) {
-			final RedisAsyncCommands<String, String> async = RedisAPI.getInstance().async();
-			final String bestiaryPath = getRedisBestiaryPath(uuid);
-			async.hmset(bestiaryPath, migrationData);
-			mLogger.info("Migrated " + migrationData.size() + " bestiary entries for player " + player.getName());
+			final RedisAsyncCommands<String, String> redis = RedisAPI.getInstance().async();
+		 	RedisFuture<String> future = redis.hmset(getRedisBestiaryPath(uuid), migrationData);
+			future.whenComplete((result, error) -> {
+				if (error != null) {
+					player.sendMessage(Component.text("Failed to migrate your bestiary data to redis. This is a critical problem - your bestiary has been wiped. Please log off and ping a moderator for assistance.", NamedTextColor.RED));
+					mLogger.severe("Failed to commit bestiary data for player " + player.getName() + ": " + error.getMessage());
+					return;
+				}
+				mLogger.info("Migrated " + migrationData.size() + " bestiary entries for player " + player.getName());
+			});
+			if (waitForRedisCommit) {
+				// Caller requested to wait until the commit is complete
+				try {
+					future.get();
+				} catch (InterruptedException | ExecutionException e) {
+					// If this happens, the future should also complete exceptionally and print a similar error
+					mLogger.severe("Timed out waiting to commit bestiary data for player " + player.getName() + ": " + e.getMessage());
+				}
+			}
 		}
 
 		/* Set up in-memory data */
 		mPlayerKills.put(uuid, playerKills);
 		mPlayerKillsSinceSave.put(uuid, new HashMap<>());
 
-		mLogger.fine("Legacy data migration complete");
+		mLogger.fine("Legacy data migration for player " + player.getName() + " complete");
 	}
 
 	private void loadBestiaryData(final Player player, final long startMainTime) {
 		final UUID uuid = player.getUniqueId();
-		final String bestiaryPath = getRedisBestiaryPath(uuid);
 
-		/* Get all bestiary data from Redis hashmap */
-		final RedisFuture<Map<String, String>> future = RedisAPI.getInstance().async().hgetall(bestiaryPath);
+		/* Start tracking new kills immediately */
+		mPlayerKillsSinceSave.put(uuid, new HashMap<>());
 
-		Bukkit.getScheduler().runTaskAsynchronously(mPlugin, () -> {
-			try {
-				final Map<String, String> redisData = future.get(30, TimeUnit.SECONDS);
-
+		/* Get all bestiary data from Redis hashmap, then parse it over the next several ticks */
+		RedisAPI.getInstance().async().hgetall(getRedisBestiaryPath(uuid)).whenComplete((redisData, error) -> {
+			if (error != null) {
 				Bukkit.getScheduler().runTask(mPlugin, () -> {
-					if (!player.isOnline()) {
-						return;
-					}
+					player.sendMessage(Component.text("Your bestiary data failed to load. You can probably fix this by relogging, if this persists please report this bug. No data has been lost.", NamedTextColor.RED));
+					mLogger.warning("Failed to load bestiary data (though no data was lost) for player " + player.getName() + ": " + error.getMessage());
+				});
 
-					final SoulsDatabase database = SoulsDatabase.getInstance();
-					if (database == null) {
-						mLogger.severe("Player joined but SoulsDatabase not initialized!");
-						return;
-					}
+				return;
+			}
 
-					final Map<SoulEntry, Integer> playerKills = new HashMap<>();
+			final Iterator<Map.Entry<String, String>> iter = redisData.entrySet().iterator();
+			final Map<SoulEntry, Integer> playerKills = new HashMap<>();
+			final SoulsDatabase database = SoulsDatabase.getInstance();
 
-					if (redisData != null && !redisData.isEmpty()) {
-						/* Convert Redis data back to SoulEntry -> Integer mapping */
-						for (final Map.Entry<String, String> entry : redisData.entrySet()) {
-							try {
-								final int mobIndex = Integer.parseInt(entry.getKey());
-								final int kills = Integer.parseInt(entry.getValue());
-								final SoulEntry soul = database.getSoulByIndex(mobIndex);
-								if (soul != null) {
-									playerKills.put(soul, kills);
-								}
-							} catch (NumberFormatException e) {
-								mLogger.warning("Invalid bestiary data for player " + uuid + ": " + entry.getKey() + " -> " + entry.getValue());
+			/* Load the data over the next several ticks, looking up the souls by index */
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					final long runnableTime = System.currentTimeMillis();
+
+					int stepCounter = 0;
+					while (iter.hasNext() && player.isOnline()) {
+						Map.Entry<String, String> entry = iter.next();
+
+						try {
+							final int mobIndex = Integer.parseInt(entry.getKey());
+							final int kills = Integer.parseInt(entry.getValue());
+							final SoulEntry soul = database.getSoulByIndex(mobIndex);
+							if (soul != null) {
+								playerKills.put(soul, kills);
 							}
+						} catch (NumberFormatException e) {
+							mLogger.warning("Invalid bestiary data for player " + uuid + ": " + entry.getKey() + " -> " + entry.getValue());
+						}
+
+						stepCounter++;
+						if (stepCounter >= MAX_LOAD_PER_TICK) {
+							/* Will continue where this left off on the next tick */
+							break;
 						}
 					}
 
-					mPlayerKills.put(uuid, playerKills);
-					mPlayerKillsSinceSave.put(uuid, new HashMap<>());
+					mLogger.fine("Bestiary loading iteration for player " + player.getName() + " took " + (System.currentTimeMillis() - runnableTime) + " milliseconds on main thread");
 
-					mLogger.fine("Bestiary data load complete, total time " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
-				});
-			} catch (Exception e) {
-				mLogger.severe("Failed to load bestiary data for player " + player.getName() + ": " + e.getMessage());
-				Bukkit.getScheduler().runTask(mPlugin, () -> {
-					if (player.isOnline()) {
-						mPlayerKills.put(uuid, new HashMap<>());
-						mPlayerKillsSinceSave.put(uuid, new HashMap<>());
+					if (!player.isOnline()) {
+						/* Player logged out before their data finished loading - abort */
+						this.cancel();
+					} else if (!iter.hasNext()) {
+						/* All done loading - make the player kills map accessible */
+						mPlayerKills.put(uuid, playerKills);
+						this.cancel();
 					}
-				});
-			}
+				}
+			}.runTaskTimer(mPlugin, 1, 1);
 		});
 	}
 
 	/* Whenever player data is saved, also save the incremental bestiary data */
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void playerSaveEvent(final PlayerSaveEvent event) {
-		final Player player = event.getPlayer();
+		savePlayerBestiaryData(event.getPlayer());
+	}
+
+	public void savePlayerBestiaryData(final Player player) {
 		final UUID uuid = player.getUniqueId();
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(uuid);
 
@@ -185,9 +227,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			/* No bestiary changes to save */
 			return;
 		}
-
-		mLogger.fine("Started saving redis bestiary data for " + uuid);
-		final long startMainTime = System.currentTimeMillis();
 
 		/* Use HINCRBY to increment kill counts in Redis */
 		final RedisAsyncCommands<String, String> async = RedisAPI.getInstance().async();
@@ -200,36 +239,44 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 				async.hincrby(bestiaryPath, String.valueOf(soul.getIndex()), entry.getValue());
 			}
 		}
-		async.exec();
+		RedisFuture<TransactionResult> future = async.exec();
+
+		future.whenComplete((result, error) -> {
+			if (error != null) {
+				mLogger.severe("Failed to save incremental bestiary kills for player " + player.getName() + ": " + error.getMessage());
+			} else {
+				mLogger.fine("Saved " + killsSinceSave.size() + " incremental bestiary mobs with recent kills for player " + player.getName());
+			}
+		});
+
+		if (Bukkit.getServer().isStopping()) {
+			// If the server is stopping, wait for data to commit before proceeding
+			try {
+				future.get();
+			} catch (InterruptedException | ExecutionException e) {
+				mLogger.warning("Timeout while waiting for bestiary data to commit during server shutdown");
+			}
+		}
 
 		/* Clear the since-save tracking */
 		killsSinceSave.clear();
-
-		mLogger.fine("Bestiary save took " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
 	}
 
 	/* When player leaves, remove it from the local storage a short bit later */
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void playerQuitEvent(final PlayerQuitEvent event) {
-		Bukkit.getScheduler().runTaskLater(mPlugin, () -> {
-			final Player player = event.getPlayer();
-			final UUID uuid = player.getUniqueId();
-			if (!player.isOnline() && Bukkit.getPlayer(uuid) == null) {
-				mPlayerKills.remove(uuid);
-				mPlayerKillsSinceSave.remove(uuid);
-			}
-		}, 100);
+		final Player player = event.getPlayer();
+		final UUID uuid = player.getUniqueId();
+
+		savePlayerBestiaryData(player);
+		mPlayerKills.remove(uuid);
+		mPlayerKillsSinceSave.remove(uuid);
 	}
 
 	@Override
 	public void recordKill(final Player player, final SoulEntry soul) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
-
-		if (playerKills == null || killsSinceSave == null) {
-			mLogger.severe("Attempted to record player kill but bestiary data hasn't finished loading yet");
-			return;
-		}
 
 		if (soul.getIndex() <= 0) {
 			mLogger.warning("Attempted to record kill for soul without index: " + soul.getLabel());
@@ -238,8 +285,19 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 
 		mLogger.fine("Recording kill for player " + player.getName() + " mob " + soul.getLabel());
 
-		playerKills.merge(soul, 1, Integer::sum);
-		killsSinceSave.merge(soul, 1, Integer::sum);
+		if (playerKills != null) {
+			playerKills.merge(soul, 1, Integer::sum);
+		} else {
+			// This isn't really a problem, as the data isn't actually written back anywhere, it may just appear to be less than it really is for this session
+			mLogger.info("Attempted to record bestiary kill for player '" + player.getName() + "' but their overall kills haven't finished loading yet.");
+		}
+
+		if (killsSinceSave != null) {
+			killsSinceSave.merge(soul, 1, Integer::sum);
+		} else {
+			// This shouldn't happen, as this map should be available immediately after login
+			mLogger.severe("Attempted to record bestiary kill for player '" + player.getName() + "' but they don't have a killsSinceSave map");
+		}
 	}
 
 	@Override
@@ -258,47 +316,69 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
 
-		if (playerKills == null || killsSinceSave == null) {
-			mLogger.severe("Attempted to set kills for mob but bestiary data hasn't finished loading yet");
-			return;
-		}
-
 		if (soul.getIndex() <= 0) {
 			mLogger.warning("Attempted to set kills for soul without index: " + soul.getLabel());
 			return;
 		}
 
-		/* Update in-memory data */
-		playerKills.put(soul, amount);
+		/* Set the value directly in Redis */
+		final String bestiaryPath = getRedisBestiaryPath(player.getUniqueId());
+		RedisAPI.getInstance().async().hset(bestiaryPath, String.valueOf(soul.getIndex()), String.valueOf(amount))
+		.whenComplete((result, error) -> {
+			if (error != null) {
+				mLogger.severe("Failed to set kills for mob in Redis for player " + player.getName() + ": " + error.getMessage());
+			} else {
+				mLogger.fine("Set kills for mob in Redis for player " + player.getName() + " to " + amount);
+			}
+		});
+
+		if (playerKills == null) {
+			mLogger.warning("Attempted to set kills for mob but bestiary data hasn't finished loading yet. The displayed value will be wrong until the player logs in again.");
+		} else {
+			/* Update in-memory data */
+			playerKills.put(soul, amount);
+		}
 
 		/* Clear any pending incremental save for this mob */
 		killsSinceSave.remove(soul);
-
-		/* Immediately set the value in Redis */
-		final String bestiaryPath = getRedisBestiaryPath(player.getUniqueId());
-		RedisAPI.getInstance().async().hset(bestiaryPath, String.valueOf(soul.getIndex()), String.valueOf(amount));
 	}
 
+	/**
+	 * Adds kills for a mob to the player's bestiary data.
+	 *
+	 * @param player the player whose bestiary data to update
+	 * @param soul the soul entry for the mob
+	 * @param amount the number of kills to ad
+	 * @return
+	 * > 0 : the new total number of kills for the mob. The returned value
+	 *   0 : if the player's bestiary data is still being loaded, which may
+	 *       take several seconds after login. Even if this happens the added kill
+	 *       count will be successfully recorded in redis
+	 *  -1 : the specified soul doesn't have an index, so there's no way to record this kill
+	 */
 	@Override
 	public int addKillsForMob(final Player player, final SoulEntry soul, int amount) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
 
-		if (playerKills == null || killsSinceSave == null) {
-			mLogger.severe("Attempted to add kills for mob but bestiary data hasn't finished loading yet");
-			return 0;
-		}
-
 		if (soul.getIndex() <= 0) {
-			mLogger.warning("Attempted to add kills for soul without index: " + soul.getLabel());
-			return playerKills.getOrDefault(soul, 0);
+			mLogger.severe("Attempted to add kills for soul without index: " + soul.getLabel());
+			return -1;
 		}
 
-		final int newAmount = playerKills.getOrDefault(soul, 0) + amount;
-		playerKills.put(soul, newAmount);
-		killsSinceSave.merge(soul, amount, Integer::sum);
+		if (killsSinceSave == null) {
+			// This shouldn't happen, as this map should be available immediately after login
+			mLogger.severe("Attempted to record bestiary kill for player '" + player.getName() + "' but they don't have a killsSinceSave map");
+		} else {
+			killsSinceSave.merge(soul, amount, Integer::sum);
+		}
 
-		return newAmount;
+		if (playerKills == null) {
+			mLogger.warning("Attempted to add kills for mob but overall bestiary data hasn't finished loading yet. The displayed value will be wrong until the player logs in again.");
+			return 0;
+		} else {
+			return playerKills.merge(soul, amount, Integer::sum);
+		}
 	}
 
 	@Override
@@ -318,7 +398,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		return map;
 	}
 
-	private static String nameToHex(final String name) {
+	private static String nameToLegacyHex(final String name) {
 		return Integer.toHexString(name.hashCode());
 	}
 }
