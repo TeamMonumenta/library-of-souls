@@ -120,7 +120,21 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).getLabel();
 	}
 
+	/*
+	 * Under normal usage, this will throw an exception and explode whatever is
+	 * working with this data if an index is ever encountered that's <= 0. This
+	 * eliminates a bunch of error handling from that code, since indexes should
+	 * always be > 0 except during initial mob upgrading, and that should happen
+	 * immediately on database reload
+	 */
 	public int getIndex() {
+		return getIndex(true);
+	}
+
+	public int getIndex(boolean throwExceptionOnInvalidIndex) {
+		if (mIndex <= 0 && throwExceptionOnInvalidIndex) {
+			throw new IllegalStateException("Invalid index= " + mIndex + " detected for " + mHistory.get(0).getLabel());
+		}
 		return mIndex;
 	}
 

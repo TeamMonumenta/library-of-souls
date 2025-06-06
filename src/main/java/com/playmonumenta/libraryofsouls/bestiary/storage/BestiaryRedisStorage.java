@@ -106,10 +106,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 
 		/* Convert legacy hex-based data to index-based data */
 		for (final SoulEntry soul : database.getSouls()) {
-			if (soul.getIndex() <= 0) {
-				continue; // Skip souls without indices - these should generate warnings elsewhere
-			}
-
 			final String legacyKey = nameToLegacyHex(soul.getLabel());
 			final JsonElement element = legacyData.get(legacyKey);
 			if (element != null) {
@@ -235,9 +231,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		async.multi();
 		for (final Map.Entry<SoulEntry, Integer> entry : killsSinceSave.entrySet()) {
 			final SoulEntry soul = entry.getKey();
-			if (soul.getIndex() > 0) {
-				async.hincrby(bestiaryPath, String.valueOf(soul.getIndex()), entry.getValue());
-			}
+			async.hincrby(bestiaryPath, String.valueOf(soul.getIndex()), entry.getValue());
 		}
 		RedisFuture<TransactionResult> future = async.exec();
 
@@ -278,11 +272,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
 
-		if (soul.getIndex() <= 0) {
-			mLogger.warning("Attempted to record kill for soul without index: " + soul.getLabel());
-			return;
-		}
-
 		mLogger.fine("Recording kill for player " + player.getName() + " mob " + soul.getLabel());
 
 		if (playerKills != null) {
@@ -315,11 +304,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	public void setKillsForMob(final Player player, final SoulEntry soul, final int amount) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
-
-		if (soul.getIndex() <= 0) {
-			mLogger.warning("Attempted to set kills for soul without index: " + soul.getLabel());
-			return;
-		}
 
 		/* Set the value directly in Redis */
 		final String bestiaryPath = getRedisBestiaryPath(player.getUniqueId());
@@ -360,11 +344,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	public int addKillsForMob(final Player player, final SoulEntry soul, int amount) {
 		final Map<SoulEntry, Integer> playerKills = mPlayerKills.get(player.getUniqueId());
 		final Map<SoulEntry, Integer> killsSinceSave = mPlayerKillsSinceSave.get(player.getUniqueId());
-
-		if (soul.getIndex() <= 0) {
-			mLogger.severe("Attempted to add kills for soul without index: " + soul.getLabel());
-			return -1;
-		}
 
 		if (killsSinceSave == null) {
 			// This shouldn't happen, as this map should be available immediately after login

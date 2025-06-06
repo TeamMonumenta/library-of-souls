@@ -265,7 +265,7 @@ public class SoulsDatabase {
 			}
 
 			// Check if soul has an index, if not assign one
-			if (soul.getIndex() <= 0) {
+			if (soul.getIndex(false) <= 0) {
 				setSoulIndex(soul, mNextIndex++);
 			}
 
@@ -296,8 +296,8 @@ public class SoulsDatabase {
 			sender.sendMessage(text("Mob '" + name + "' does not exist!", RED));
 		} else {
 			SoulEntry soul = mSouls.remove(name);
-			// Remove from index lookup if it has an index
-			if (soul != null && soul.getIndex() > 0) {
+			if (soul != null) {
+				// Remove from index lookup if it has an index
 				mIndexToSoul.remove(soul.getIndex());
 			}
 			sender.sendMessage(text("Removed " + name, GREEN));
@@ -666,9 +666,7 @@ public class SoulsDatabase {
 	private void refreshIndexToSoulMap() {
 		mIndexToSoul.clear();
 		for (SoulEntry soul : mSouls.values()) {
-			if (soul.getIndex() > 0) {
-				mIndexToSoul.put(soul.getIndex(), soul);
-			}
+			mIndexToSoul.put(soul.getIndex(), soul);
 		}
 	}
 
@@ -684,7 +682,7 @@ public class SoulsDatabase {
 
 		// First pass: find the highest existing index and check for duplicates
 		for (SoulEntry soul : mSouls.values()) {
-			int existingIndex = soul.getIndex();
+			int existingIndex = soul.getIndex(false);
 			if (existingIndex > 0) {
 				maxIndex = Math.max(maxIndex, existingIndex);
 
@@ -704,7 +702,7 @@ public class SoulsDatabase {
 
 		// Second pass: assign indices to souls that don't have them
 		for (SoulEntry soul : mSouls.values()) {
-			if (soul.getIndex() <= 0) {
+			if (soul.getIndex(false) <= 0) {
 				setSoulIndex(soul, mNextIndex);
 				mNextIndex++;
 				assignedCount++;
@@ -723,7 +721,7 @@ public class SoulsDatabase {
 	 * This ensures the index hashmap stays consistent with soul indices.
 	 */
 	private void setSoulIndex(SoulEntry soul, int newIndex) {
-		int oldIndex = soul.getIndex();
+		int oldIndex = soul.getIndex(false);
 
 		// Remove old index from hashmap if it exists
 		if (oldIndex > 0) {
