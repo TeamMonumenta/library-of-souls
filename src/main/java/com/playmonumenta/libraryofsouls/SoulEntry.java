@@ -138,7 +138,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mIndex;
 	}
 
-	public void setIndex(int index) {
+	protected void setIndex(int index) {
 		mIndex = index;
 	}
 
@@ -347,7 +347,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
 		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
 	}
 

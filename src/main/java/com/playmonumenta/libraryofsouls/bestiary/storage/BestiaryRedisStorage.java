@@ -11,7 +11,6 @@ import com.playmonumenta.redissync.event.PlayerSaveEvent;
 import io.lettuce.core.RedisFuture;
 import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.async.RedisAsyncCommands;
-import io.lettuce.core.api.sync.RedisCommands;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -118,7 +117,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		/* Save migrated data to Redis */
 		if (!migrationData.isEmpty()) {
 			final RedisAsyncCommands<String, String> redis = RedisAPI.getInstance().async();
-		 	RedisFuture<String> future = redis.hmset(getRedisBestiaryPath(uuid), migrationData);
+			RedisFuture<String> future = redis.hmset(getRedisBestiaryPath(uuid), migrationData);
 			future.whenComplete((result, error) -> {
 				if (error != null) {
 					player.sendMessage(Component.text("Failed to migrate your bestiary data to redis. This is a critical problem - your bestiary has been wiped. Please log off and ping a moderator for assistance.", NamedTextColor.RED));
@@ -201,6 +200,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 						this.cancel();
 					} else if (!iter.hasNext()) {
 						/* All done loading - make the player kills map accessible */
+						mLogger.fine("Bestiary loading for player " + player.getName() + " took " + (System.currentTimeMillis() - startMainTime) + " milliseconds overall");
 						mPlayerKills.put(uuid, playerKills);
 						this.cancel();
 					}
@@ -324,7 +324,12 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		}
 
 		/* Clear any pending incremental save for this mob */
-		killsSinceSave.remove(soul);
+		if (killsSinceSave != null) {
+			killsSinceSave.remove(soul);
+		} else {
+			// This shouldn't happen, as this map should be available immediately after login
+			mLogger.severe("While setting bestiary kills for player '" + player.getName() + "' they don't have a killsSinceSave map");
+		}
 	}
 
 	/**
