@@ -48,6 +48,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			if (souls == null || souls.isEmpty()) {
 				throw new Exception("Bestiary entry " + Utils.plainText(mName) + " specifies nonexistent location " + mLocation);
 			}
+			//Truly awful workaround. Big fan of ampersands
+			if (config.contains("ignored_souls")) {
+				String[] noSouls = config.getString("ignored_souls").split("&");
+				for (String s : noSouls) {
+					souls.remove(SoulsDatabase.getInstance().getSoul(s));
+				}
+			}
 			mChildren = new ArrayList<>(souls);
 		} else if (config.contains("children")) {
 			mLocation = null;
