@@ -50,7 +50,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			}
 			//Truly awful workaround. Big fan of ampersands
 			if (config.contains("ignored_souls")) {
-				String[] noSouls = config.getString("ignored_souls").split("&");
+				List<String> noSouls = config.getStringList("ignored_souls");
 				for (String s : noSouls) {
 					souls.remove(SoulsDatabase.getInstance().getSoul(s));
 				}
