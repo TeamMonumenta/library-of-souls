@@ -48,7 +48,6 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			if (souls == null || souls.isEmpty()) {
 				throw new Exception("Bestiary entry " + Utils.plainText(mName) + " specifies nonexistent location " + mLocation);
 			}
-			//Truly awful workaround. Big fan of ampersands
 			if (config.contains("ignored_souls")) {
 				List<String> noSouls = config.getStringList("ignored_souls");
 				for (String s : noSouls) {
