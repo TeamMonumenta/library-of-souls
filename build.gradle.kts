@@ -4,34 +4,20 @@ plugins {
 	id("com.playmonumenta.gradle-config") version "3+"
 }
 
-dependencies {
-	compileOnly(libs.commandapi)
-	compileOnly(libs.nbtapi)
-	compileOnly(libs.mixinapi)
-	compileOnly(libs.nbteditor) {
-		artifact {
-			classifier = "all"
-		}
-	}
-	compileOnly(libs.redissync) {
-		artifact {
-			classifier = "all"
-		}
-	}
-	compileOnly(libs.gson)
-}
-
 tasks.javadoc {
 	(options as StandardJavadocDocletOptions).addBooleanOption("Xdoclint:none", true)
 }
 
 monumenta {
-	name("LibraryOfSouls")
 	id("LibraryOfSouls")
+	name("LibraryOfSouls")
+	pluginProject(":LibraryOfSouls")
 	paper(
-		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.18",
+		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.20",
 		depends = listOf("CommandAPI", "NBTEditor"),
 		softDepends = listOf("MonumentaRedisSync"),
-		apiJarVersion = "1.20-R0.1-SNAPSHOT"
 	)
+	versionAdapterApi("adapter_api", paper = "1.20.4")
+	versionAdapter("adapter_v1_20_R3", "1.20.4")
+	versionAdapterUnsupported("adapter_unsupported")
 }
