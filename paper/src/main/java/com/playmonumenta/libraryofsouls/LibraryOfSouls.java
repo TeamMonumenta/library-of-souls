@@ -9,6 +9,9 @@ import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 import com.playmonumenta.libraryofsouls.utils.MMLog;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
+
+import com.playmonumenta.libraryofsouls.utils.NmsUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -70,9 +73,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
-		MMLog.init(getName());
-		MMLogPaper.registerCommand(MMLog.getLog());
-
+		NmsUtils.loadVersionAdapter(this.getServer().getClass(), getLogger());
 		/*
 		 * CommandAPI commands which register directly and are usable in functions
 		 *

@@ -36,12 +36,15 @@ tasks.javadoc {
 }
 
 monumenta {
-	name("LibraryOfSouls")
 	id("LibraryOfSouls")
+	name("LibraryOfSouls")
+	pluginProject(":LibraryOfSouls")
 	paper(
-		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.18",
+		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.20",
 		depends = listOf("CommandAPI", "MonumentaCommon", "NBTEditor"),
 		softDepends = listOf("MonumentaRedisSync"),
-		apiJarVersion = "1.20-R0.1-SNAPSHOT"
 	)
+	versionAdapterApi("adapter_api", paper = "1.20.4")
+	versionAdapter("adapter_v1_20_R3", "1.20.4")
+	versionAdapterUnsupported("adapter_unsupported")
 }
