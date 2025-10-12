@@ -7,11 +7,11 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 import com.playmonumenta.libraryofsouls.utils.MMLog;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSoulsListener;
+import com.playmonumenta.libraryofsouls.utils.NmsUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
-
-import com.playmonumenta.libraryofsouls.utils.NmsUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -73,7 +73,6 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
-		NmsUtils.loadVersionAdapter(this.getServer().getClass(), getLogger());
 		/*
 		 * CommandAPI commands which register directly and are usable in functions
 		 *
@@ -94,6 +93,8 @@ public class LibraryOfSouls extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		INSTANCE = this;
+
+		NmsUtils.loadVersionAdapter(this.getServer().getClass(), getLogger());
 
 		getServer().getPluginManager().registerEvents(new BestiaryManager(this), this);
 
@@ -117,6 +118,8 @@ public class LibraryOfSouls extends JavaPlugin {
 		} catch (Exception e) {
 			MMLog.severe("Failed to load souls database! This plugin will not function", e);
 		}
+
+		getServer().getPluginManager().registerEvents(new BookOfSoulsListener(), this);
 	}
 
 	@Override

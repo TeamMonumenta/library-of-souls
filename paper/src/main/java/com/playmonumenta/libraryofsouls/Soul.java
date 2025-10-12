@@ -1,6 +1,6 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -8,7 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
 public interface Soul extends SoulGroup {
-	NBTTagCompound getNBT();
+	ReadWriteNBT getNBT();
 
 	ItemStack getPlaceholder();
 

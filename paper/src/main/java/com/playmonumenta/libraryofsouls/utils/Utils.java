@@ -13,6 +13,7 @@ import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.ChatColor;
@@ -23,6 +24,9 @@ import org.bukkit.util.BoundingBox;
 public class Utils {
 	public static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
 	public static final PlainTextComponentSerializer PLAIN_SERIALIZER = PlainTextComponentSerializer.plainText();
+	public static final MiniMessage MINIMESSAGE = MiniMessage.builder()
+	.tags(StandardTags.defaults())
+	.build();
 
 	public static String plainText(Component formattedText) {
 		// This is only legacy text because we have a bunch of section symbols lying around that need to be updated.
