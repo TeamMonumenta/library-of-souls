@@ -8,6 +8,7 @@ project(":LibraryOfSouls").projectDir = file("paper")
 pluginManagement {
 	repositories {
 		gradlePluginPortal()
-		maven("https://maven.playmonumenta.com/releases/")
+		maven("https://repo.papermc.io/repository/maven-public/")
+		maven("https://maven.playmonumenta.com/releases")
 	}
 }

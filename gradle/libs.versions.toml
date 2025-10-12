@@ -1,11 +1,11 @@
 [versions]
 commandapi = "9.4.1"
-gson = "2.8.5"
 log4j = "2.17.1"
+nbtapi = "2.15.2"
+nbteditor = "4.1"
+gson = "2.13.2"
 mixinapi = "2.0.0"
 monumenta-common = "1.0.0"
-nbtapi = "2.12.0-SNAPSHOT"
-nbteditor = "4.1"
 redissync = "6.0.0"
 
 [libraries]
