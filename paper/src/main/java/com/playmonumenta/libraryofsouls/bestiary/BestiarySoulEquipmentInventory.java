@@ -1,19 +1,22 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -40,34 +43,25 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		mSoulPeers = soulPeers;
 		mSoulPeerIndex = soulPeerIndex;
 
-		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
-		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
-		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
-		ItemStack[] armorItems = ((ItemsVariable)itemsVar.bind(entityNBT.getData())).getItems();
-		ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
+		Entity entity = EntityNBTUtils.getFakeEntity(soul.getNBT());
 
 		for (int i = 0; i < 54; i++) {
 			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
 		}
-
-		for (int i = 0; i < 4; i++) {
-			ItemStack armorItem = armorItems[i];
-			if (armorItem == null || armorItem.getType() == Material.AIR) {
-				_inventory.setItem(22 - i, NULL_ITEM);
-				continue;
+		if (entity instanceof LivingEntity livingEntity) {
+			EntityEquipment equipment = livingEntity.getEquipment();
+			if (equipment != null) {
+				int i = -1;
+				for (EquipmentSlot slot : EquipmentSlot.values()) {
+					i++;
+					final var item = equipment.getItem(slot);
+					if (item == null || item.getType() == Material.AIR) {
+						_inventory.setItem(18 + i, NULL_ITEM);
+						continue;
+					}
+					_inventory.setItem(18 + i, item);
+				}
 			}
-
-			_inventory.setItem(22 - i, armorItem);
-		}
-
-		for (int i = 0; i < 2; i++) {
-			ItemStack handItem = handItems[i];
-			if (handItem == null || handItem.getType() == Material.AIR) {
-				_inventory.setItem(24 + i, NULL_ITEM);
-				continue;
-			}
-
-			_inventory.setItem(24 + i, handItem);
 		}
 
 		for (int i = mSoulPeerIndex - 1; i >= 0; i--) {

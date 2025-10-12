@@ -1,6 +1,5 @@
 package com.playmonumenta.libraryofsouls.commands;
 
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSoulsAPI;
 import com.playmonumenta.libraryofsouls.Soul;
@@ -11,6 +10,7 @@ import com.playmonumenta.libraryofsouls.SoulPoolEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;

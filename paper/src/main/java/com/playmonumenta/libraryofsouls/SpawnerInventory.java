@@ -1,12 +1,10 @@
 package com.playmonumenta.libraryofsouls;
 
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.SpawnerNBTWrapper;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -92,7 +90,6 @@ public class SpawnerInventory extends CustomInventory {
 
 	public static void openSpawnerInventory(Soul soul, Player player, @Nullable SoulsInventory previous) {
 		BookOfSouls book = BookOfSouls.getFromBook(soul.getBoS());
-		EntityNBT nbt = book.getEntityNBT();
 
 		Block block = findSafeAirBlock(player.getLocation());
 		if (block == null) {
@@ -105,17 +102,11 @@ public class SpawnerInventory extends CustomInventory {
 		block.setType(Material.SPAWNER);
 		block.setBlockData(Material.SPAWNER.createBlockData());
 
-		// Attach NBTEditor to the spawner
-		SpawnerNBTWrapper spawner = new SpawnerNBTWrapper(block);
-		SpawnerNBTWrapper.SpawnerEntity entity = new SpawnerNBTWrapper.SpawnerEntity(nbt, 1 /* weight */);
-
-		// Add the mob to the spawner
-		spawner.clearEntities();
-		spawner.addEntity(entity);
-		spawner.save();
 
 		// Get the new state from the spawner block
 		CreatureSpawner spawnerBlock = (CreatureSpawner)block.getState();
+
+		spawnerBlock.setSpawnedEntity(EntityNBTUtils.getFakeEntitySnapshot(book.getEntityNBT()));
 
 		// Set the block back to AIR
 		block.setType(Material.AIR);
@@ -137,7 +128,7 @@ public class SpawnerInventory extends CustomInventory {
 		ItemStack item = new ItemStack(Material.SPAWNER);
 		BlockStateMeta meta = (BlockStateMeta)item.getItemMeta();
 		meta.setBlockState(spawnerBlock);
-		meta.displayName(soul.getDisplayName().append(Component.text(" " + nbt.getEntityType().toString().toLowerCase(Locale.ROOT), NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false)));
+		meta.displayName(soul.getDisplayName().append(Component.text(" " + EntityNBTUtils.getEntityType(book.getEntityNBT()).orElseThrow().getKey().asMinimalString(), NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false)));
 		item.setItemMeta(meta);
 
 		// Update the item's lore/name

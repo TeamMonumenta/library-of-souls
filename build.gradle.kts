@@ -9,8 +9,8 @@ tasks.javadoc {
 }
 
 monumenta {
-	id("LibraryOfSouls")
 	name("LibraryOfSouls")
+	id("LibraryOfSouls")
 	pluginProject(":LibraryOfSouls")
 	paper(
 		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.20",
