@@ -1,17 +1,14 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.MobNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
-import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import java.util.*;
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -23,17 +20,22 @@ import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Ghast;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Slime;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionType;
 import org.jetbrains.annotations.Nullable;
@@ -268,47 +270,75 @@ public class BestiarySoulInventory extends CustomInventory {
 		mPeerIndex = peerIndex;
 		mNextEntry = mPeers.size();
 
-		NBTTagCompound vars = soul.getNBT();
-		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
-		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();
+		ReadWriteNBT nbt = soul.getNBT();
+		Entity entity = EntityNBTUtils.getFakeEntity(nbt);
 
 		double armor = 0;
 		double armorToughness = 0;
-		double health = vars.hasKey("Health") ? 0.0 + vars.getFloat("Health") : 0.0;
-		double speed = vars.hasKey("MovementSpeed") ? 0.0 + vars.getFloat("MovementSpeed") : 0;
-		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? Math.max(attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase(), 0.0) : 0.0;
+		double health = 0.0;
+		double speed = 0.0;
+		double damage = 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
 		double bowDamage = 0;
 		double explodePower = 0;
 		double horseJumpPower = 0;
 		double handDamage = 0;
-		EntityType entType = entityNBT.getEntityType();
+		EntityType entType = entity.getType();
 		DamageType type = null;
 
 		Double defHealth = DEFAULT_HEALTH.get(entType);
 		Double defDamage = DEFAULT_DAMAGE.get(entType);
 
+		if (entity instanceof LivingEntity livingEntity) {
+			health = livingEntity.getHealth();
+			final var speedAttr = livingEntity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+			if (speedAttr != null) {
+				speed = speedAttr.getValue();
+			}
+			final var attackAttr = livingEntity.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
+			if (attackAttr != null) {
+				damage = attackAttr.getValue();
+			}
+		}
+
 		//Stuff to throw errors before everything
 		if (defHealth != null && health == 0.0) {
 			health += defHealth;
 		} else if (health == 0) {
-			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entityNBT.getEntityType());
+			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entType.getKey().asMinimalString());
 		}
 
 		if (defDamage != null && damage == 0.0) {
 			damage += defDamage;
 		} else if (damage == 0.0) {
-			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the damage map: " + entityNBT.getEntityType());
+			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the damage map: " + entType.getKey().asMinimalString());
 		}
 
-		// Only need to create one of these
-		EffectsVariable effectVar = new EffectsVariable("active_effects");
-		ItemsVariable itemsVar = new ItemsVariable("ArmorItems", new String[] {"Feet Equipment", "Legs Equipment", "Chest Equipment", "Head Equipment"});
-		ItemsVariable handVar = new ItemsVariable("HandItems", new String[] {"Offhand", "Mainhand"});
 		// For each mob you want to work with:
-		ItemStack[] armorItems = ((ItemsVariable)itemsVar.bind(entityNBT.getData())).getItems();
-		ItemStack[] handItems = ((ItemsVariable)handVar.bind(entityNBT.getData())).getItems();
+		List<ItemStack> armorItems = new ArrayList<>(4);
+		List<ItemStack> handItems = new ArrayList<>(2);
+		ItemStack mainArmorItem = null;
+		ItemStack mainHandItem = null;
+		if (entity instanceof LivingEntity livingEntity) {
+			EntityEquipment equipment = livingEntity.getEquipment();
+			if (equipment != null) {
+				for (EquipmentSlot slot : EquipmentSlot.values()) {
+					final var item = equipment.getItem(slot);
+					if (slot.isArmor()) {
+						armorItems.add(item);
+						if (slot == EquipmentSlot.CHEST) {
+							mainArmorItem = item;
+						}
+					} else if (slot.isHand()) {
+						handItems.add(item);
+						if (slot == EquipmentSlot.HAND) {
+							mainHandItem = item;
+						}
+					}
+				}
+			}
+		}
 		if (armorItems != null) {
 			for (ItemStack item : armorItems) {
 				if (item != null && item.hasItemMeta()) {
@@ -377,40 +407,14 @@ public class BestiarySoulInventory extends CustomInventory {
 		}
 
 		// Does the mob attack primarily through explosions?
-		if (entType == EntityType.GHAST) {
-			NBTVariable nbtVar = entityNBT.getVariable("ExplosionPower");
-			if (nbtVar != null) {
-				String get = nbtVar.get();
-				if (get != null && !get.isEmpty()) {
-					type = DamageType.GHAST;
-					explodePower = Float.parseFloat(nbtVar.get());
-				} else {
-					type = DamageType.GHAST;
-					explodePower = 1;
-				}
-			} else {
-				type = DamageType.GHAST;
-				explodePower = 1;
-			}
-		} else if (entType == EntityType.CREEPER) {
-			NBTVariable nbtVar = entityNBT.getVariable("ExplosionRadius");
-			if (nbtVar == null) {
-				explodePower = 3;
-			} else {
-				String get = nbtVar.get();
-				if (get != null) {
-					explodePower = Double.parseDouble(get);
-				} else {
-					explodePower = 3;
-				}
-				type = DamageType.CREEPER;
-				NBTVariable powered = entityNBT.getVariable("Powered");
-				if (powered != null) {
-					get = powered.get();
-					if (get != null && !get.isEmpty()) {
-						explodePower = Boolean.parseBoolean(get) ? explodePower * 2 : explodePower;
-					}
-				}
+		if (entity instanceof Ghast ghast) {
+			type = DamageType.GHAST;
+			explodePower = ghast.getExplosionPower();
+		} else if (entity instanceof Creeper creeper) {
+			type = DamageType.CREEPER;
+			explodePower = creeper.getExplosionRadius();
+			if (creeper.isPowered()) {
+				explodePower *= 2;
 			}
 		} else if (entType == EntityType.BLAZE) {
 			type = DamageType.BLAZE;
@@ -426,11 +430,11 @@ public class BestiarySoulInventory extends CustomInventory {
 			armor += 2;
 		}
 		//This logic is in other methods, not because it repeats, but because its much easier to parse
-		ItemStack armorItem = getArmorItem(armorItems[1], armor, armorToughness);
+		ItemStack armorItem = getArmorItem(mainArmorItem, armor, armorToughness);
 
 		ItemStack healthItem = getHealthItem(health);
 
-		ItemStack damageItem = getDamageItem(handItems[0], damage, bowDamage, explodePower, horseJumpPower, handDamage, type);
+		ItemStack damageItem = getDamageItem(mainHandItem, damage, bowDamage, explodePower, horseJumpPower, handDamage, type);
 
 		for (int i = 0; i < 54; i++) {
 			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
@@ -468,9 +472,8 @@ public class BestiarySoulInventory extends CustomInventory {
 			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		} else {
 			// Higher tier of information
-			ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
-			effectItem = getEffectItem(effectItem);
-			ItemStack speedItem = getSpeedItem(entityNBT, speed, speedScalar, speedPercent);
+			ItemStack effectItem = getEffectItem(entity);
+			ItemStack speedItem = getSpeedItem(entity, speed, speedScalar, speedPercent);
 
 			ItemStack descriptionItem = getDescriptionItem(soul);
 			ItemStack equipmentPageItem = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
@@ -538,18 +541,23 @@ public class BestiarySoulInventory extends CustomInventory {
 
 	// Use this one if you do care about the slot
 	public static double getAttributeNumber(ItemStack item, Attribute attribute, AttributeModifier.Operation operation, @Nullable EquipmentSlot slot) {
-		ItemMeta meta = item.getItemMeta();
 		double attributeNum = 0;
-		if (meta.getAttributeModifiers(attribute) != null) {
-			for (AttributeModifier mod : meta.getAttributeModifiers(attribute)) {
-				if (mod.getOperation().equals(operation)) {
-					if (slot == null) {
-						attributeNum += mod.getAmount();
-					} else if (mod.getSlot() == slot) {
-						attributeNum += mod.getAmount();
+		ItemMeta meta = item.getItemMeta();
+		// ! Why does getAttributeModifiers(Attribute) throw NPE :c
+		final var allAttributeModifiers = meta.getAttributeModifiers();
+		if (allAttributeModifiers != null) {
+				final var attributeModifier = allAttributeModifiers.get(attribute);
+				if (attributeModifier != null) {
+					for (AttributeModifier mod : attributeModifier) {
+						if (mod.getOperation().equals(operation)) {
+							if (slot == null) {
+								attributeNum += mod.getAmount();
+							} else if (mod.getSlot() == slot) {
+								attributeNum += mod.getAmount();
+							}
+						}
 					}
 				}
-			}
 		}
 		return Math.round(attributeNum * 1000) / 1000.0;
 	}
@@ -668,53 +676,48 @@ public class BestiarySoulInventory extends CustomInventory {
 		return damageItem;
 	}
 
-	private static ItemStack getEffectItem(ItemStack effectItem) {
+	private static ItemStack getEffectItem(Entity entity) {
 		List<Component> lore = new ArrayList<>();
-		if (effectItem != null && effectItem.hasItemMeta()) {
-			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
-
-			for (PotionEffect effect : potionMeta.getCustomEffects()) {
+		ItemStack effectItem = new ItemStack(Material.POTION);
+		PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
+		if (entity instanceof LivingEntity livingEntity && livingEntity.getActivePotionEffects().size() > 0) {
+			potionMeta.setBasePotionType(PotionType.MUNDANE);
+			for (PotionEffect effect : livingEntity.getActivePotionEffects()) {
 				lore.add(Component.text(formatWell(effect.toString().substring(0, effect.toString().indexOf(":")).toLowerCase(Locale.ROOT)) + " (∞)", NamedTextColor.DARK_BLUE).decoration(TextDecoration.ITALIC, false));
 			}
 
-			potionMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 			potionMeta.lore(lore);
 			potionMeta.displayName(Component.text("Effects", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-			potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-			potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-			effectItem.setItemMeta(potionMeta);
 		} else {
-			effectItem = new ItemStack(Material.POTION);
-			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
-			potionMeta.setBasePotionData(new PotionData(PotionType.WATER));
+			potionMeta.setBasePotionType(PotionType.WATER);
 			potionMeta.displayName(Component.text("Effects", NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false));
-
-			potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
-			potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-
-			effectItem.setItemMeta(potionMeta);
 		}
+
+		potionMeta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+		potionMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+					potionMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+		effectItem.setItemMeta(potionMeta);
 
 		return effectItem;
 	}
 
-	private static ItemStack getSpeedItem(EntityNBT entityNBT, double speed, double speedScalar, double speedPercent) {
+	private static ItemStack getSpeedItem(Entity entity, double speed, double speedScalar, double speedPercent) {
 		ItemStack speedItem = new ItemStack(Material.SUGAR);
 		ItemMeta speedMeta = speedItem.getItemMeta();
 		List<Component> lore = new ArrayList<>();
+		EntityType type = entity.getType();
 
-		if (DEFAULT_SPEED.containsKey(entityNBT.getEntityType()) && speed == 0) {
-
-			if (DEFAULT_SPEED.get(entityNBT.getEntityType()) != null) {
-				speedScalar += DEFAULT_SPEED.get(entityNBT.getEntityType());
+		if (DEFAULT_SPEED.containsKey(type) && speed == 0) {
+			if (DEFAULT_SPEED.get(type) != null) {
+				speedScalar += DEFAULT_SPEED.get(type);
 			} else {
-				LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the speed map: " + entityNBT.getEntityType());
+				LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the speed map: " + type.getKey().asMinimalString());
 			}
 
 			speed += speedScalar;
 			speed *= speedPercent;
-		} else if (entityNBT.getEntityType().equals(EntityType.SLIME)) {
-			int size = Integer.parseInt(entityNBT.getVariable("Size").get());
+		} else if (entity instanceof Slime slime) {
+			int size = slime.getSize();
 			speed = 0.2 + (0.1 * size);
 			speed += speedScalar;
 			speed *= speedPercent;

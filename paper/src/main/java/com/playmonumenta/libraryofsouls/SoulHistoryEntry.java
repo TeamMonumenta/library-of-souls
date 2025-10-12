@@ -1,13 +1,13 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.reflect.NBTTagList;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -31,6 +31,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -42,8 +43,8 @@ public class SoulHistoryEntry implements Soul {
 		private final double mWidth;
 		private final double mHeight;
 
-		public HitboxSize(Location origin, NBTTagCompound nbt) {
-			Entity entity = EntityNBT.fromEntityData(nbt).spawn(origin);
+		public HitboxSize(Location origin, ReadWriteNBT nbt) {
+			Entity entity = EntityNBTUtils.getFakeEntity(nbt);
 			BoundingBox bb = getRecursiveBoundingBox(entity);
 
 			// TODO get width and height of bounding box relative to origin (ignore height below origin, because boats are whack)
@@ -59,7 +60,6 @@ public class SoulHistoryEntry implements Soul {
 			for (Entity passenger : entity.getPassengers()) {
 				bb.union(getRecursiveBoundingBox(passenger));
 			}
-			entity.remove();
 			return bb;
 		}
 
@@ -72,7 +72,7 @@ public class SoulHistoryEntry implements Soul {
 		}
 	}
 
-	private final NBTTagCompound mNBT;
+	private final ReadWriteNBT mNBT;
 	private final long mModifiedOn;
 	private final String mModifiedBy;
 	private final Component mName;
@@ -87,12 +87,12 @@ public class SoulHistoryEntry implements Soul {
 	private @Nullable ItemStack mBoS = null;
 
 	/* Create a SoulHistoryEntry object with existing history */
-	public SoulHistoryEntry(NBTTagCompound nbt, long modifiedOn, String modifiedBy, Set<String> locations, List<Component> lore, List<Component> description, @Nullable Double width, @Nullable Double height) throws Exception {
+	public SoulHistoryEntry(ReadWriteNBT nbt, long modifiedOn, String modifiedBy, Set<String> locations, List<Component> lore, List<Component> description, @Nullable Double width, @Nullable Double height) throws Exception {
 		mNBT = nbt;
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
-		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mId = EntityNBTUtils.getEntityType(nbt).orElseThrow().getKey();
 		mLore = lore;
 		mDescription = description;
 		mWidth = width;
@@ -106,7 +106,7 @@ public class SoulHistoryEntry implements Soul {
 	}
 
 	/* Create a new SoulHistoryEntry object from NBT */
-	public SoulHistoryEntry(Player player, NBTTagCompound nbt) throws Exception {
+	public SoulHistoryEntry(Player player, ReadWriteNBT nbt) throws Exception {
 		Location loc = player.getLocation().clone();
 		loc.setY(loc.getWorld().getMaxHeight());
 		HitboxSize hitboxSize = new HitboxSize(loc, nbt);
@@ -115,7 +115,7 @@ public class SoulHistoryEntry implements Soul {
 		mModifiedOn = Instant.now().getEpochSecond();
 		mModifiedBy = player.getName();
 		mLocs = new HashSet<>();
-		mId = EntityNBT.fromEntityData(mNBT).getEntityType().getKey();
+		mId = EntityNBTUtils.getEntityType(nbt).orElseThrow().getKey();
 		mLore = new ArrayList<>();
 		mDescription = new ArrayList<>();
 		mWidth = hitboxSize.width();
@@ -241,7 +241,7 @@ public class SoulHistoryEntry implements Soul {
 	 */
 
 	@Override
-	public NBTTagCompound getNBT() {
+	public ReadWriteNBT getNBT() {
 		return mNBT;
 	}
 
@@ -284,13 +284,14 @@ public class SoulHistoryEntry implements Soul {
 
 	@Override
 	public boolean isBoss() {
-		NBTTagList tags = mNBT.getList("Tags");
+		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
+		final var tags = entity.getScoreboardTags();
 
 		if (tags == null || tags.size() <= 0) {
 			return false;
 		}
 
-		for (Object obj : tags.getAsArray()) {
+		for (Object obj : tags) {
 			if (obj.equals("Boss")) {
 				return true;
 			}
@@ -301,13 +302,14 @@ public class SoulHistoryEntry implements Soul {
 
 	@Override
 	public boolean isElite() {
-		NBTTagList tags = mNBT.getList("Tags");
+		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
+		final var tags = entity.getScoreboardTags();
 
 		if (tags == null || tags.size() <= 0) {
 			return false;
 		}
 
-		for (Object obj : tags.getAsArray()) {
+		for (Object obj : tags) {
 			if (obj.equals("Elite")) {
 				return true;
 			}
@@ -318,7 +320,8 @@ public class SoulHistoryEntry implements Soul {
 
 	@Override
 	public Entity summon(Location loc) {
-		return EntityNBT.fromEntityData(mNBT).spawn(loc);
+		final var snapshot = EntityNBTUtils.getFakeEntitySnapshot(mNBT);
+		return snapshot.createEntity(loc);
 	}
 
 	/*
@@ -338,15 +341,15 @@ public class SoulHistoryEntry implements Soul {
 
 	private List<Component> renderItemLore(boolean isPlaceholder) {
 		List<Component> lore = new ArrayList<>();
+		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
 
-		final var id = mNBT.getString("id");
-		lore.add(Component.text("Type: " + (id.startsWith("minecraft:") ? id.substring(10) : id)).color(NamedTextColor.WHITE));
-		lore.add(Component.text("Health: " + mNBT.getDouble("Health")).color(NamedTextColor.WHITE));
+		lore.add(Component.text("Type: " + mId.asMinimalString()).color(NamedTextColor.WHITE));
+		lore.add(Component.text("Health: " + entity.getHeight()).color(NamedTextColor.WHITE));
 
-		NBTTagList tags = mNBT.getList("Tags");
+		final var tags = Set.copyOf(entity.getScoreboardTags());
 		if (tags != null && tags.size() > 0) {
 			lore.add(Component.text("Tags:").color(NamedTextColor.WHITE));
-			lore.addAll(stringifyWrapList("  ", 50, 30, tags.getAsArray()));
+			lore.addAll(stringifyWrapList("  ", 50, 30, tags.toArray()));
 		}
 
 		if (mLocs != null && !mLocs.isEmpty()) {
@@ -379,10 +382,8 @@ public class SoulHistoryEntry implements Soul {
 	}
 
 	private void regenerateItems() {
-		EntityNBT entityNBT = EntityNBT.fromEntityData(mNBT);
-
 		try {
-			mBoS = new BookOfSouls(entityNBT).getBook();
+			mBoS = new BookOfSouls(mNBT).getBook();
 		} catch (Exception ex) {
 			Logger logger = LibraryOfSouls.getInstance().getLogger();
 			logger.warning("Library of souls entry for '" + mName + "' failed to load: " + ex.getMessage());
@@ -394,7 +395,9 @@ public class SoulHistoryEntry implements Soul {
 			return;
 		}
 
-		Material material = switch (entityNBT.getEntityType()) {
+		@Nullable EntityType type = EntityNBTUtils.getEntityType(mNBT).orElse(null);
+
+		Material material = switch (type) {
 			case ALLAY -> Material.AMETHYST_SHARD;
 			case ARMOR_STAND -> Material.ARMOR_STAND;
 			case AXOLOTL -> Material.AXOLOTL_BUCKET;
@@ -544,7 +547,7 @@ public class SoulHistoryEntry implements Soul {
 	public static SoulHistoryEntry fromJson(JsonObject obj, Set<String> locations, List<Component> lore, List<Component> description) throws Exception {
 		JsonElement elem = obj.get("mojangson");
 
-		NBTTagCompound nbt = NBTTagCompound.fromString(elem.getAsString());
+		ReadWriteNBT nbt = NBT.parseNBT(elem.getAsString());
 		long modifiedOn = obj.get("modified_on").getAsLong();
 		String modifiedBy = "";
 		if (obj.has("modified_by")) {

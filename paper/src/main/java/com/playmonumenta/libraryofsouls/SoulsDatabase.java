@@ -1,16 +1,16 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import com.playmonumenta.mixinapi.v1.DataFix;
 import de.tr7zw.nbtapi.NBTContainer;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import java.nio.file.Files;
@@ -216,7 +216,7 @@ public class SoulsDatabase {
 		SoulEntry soul;
 
 		try {
-			NBTTagCompound nbt = bos.getEntityNBT().getData();
+			ReadWriteNBT nbt = bos.getEntityNBT();
 			Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 			String label = Utils.getLabelFromName(name);
 
@@ -241,7 +241,7 @@ public class SoulsDatabase {
 		SoulEntry soul;
 
 		try {
-			NBTTagCompound nbt = bos.getEntityNBT().getData();
+			ReadWriteNBT nbt = bos.getEntityNBT();
 			Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
 			String label = Utils.getLabelFromName(name);
 

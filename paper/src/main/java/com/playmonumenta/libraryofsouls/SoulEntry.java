@@ -1,9 +1,5 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.BooleanVariable;
-import com.goncalomb.bukkit.nbteditor.nbt.variables.EffectsVariable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -13,6 +9,8 @@ import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryEntryInterface;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.bestiary.BestiarySoulInventory;
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,12 +28,11 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.util.BoundingBox;
@@ -82,7 +79,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	/* Create a new SoulEntry object from NBT */
-	public SoulEntry(Player player, NBTTagCompound nbt) throws Exception {
+	public SoulEntry(Player player, ReadWriteNBT nbt) throws Exception {
 		SoulHistoryEntry newHist = new SoulHistoryEntry(player, nbt);
 
 		mLocs = new HashSet<>();
@@ -93,7 +90,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	/* Update this SoulEntry so new soul is now current; preserve history */
-	public void update(Player player, NBTTagCompound nbt) throws Exception {
+	public void update(Player player, ReadWriteNBT nbt) throws Exception {
 		mHistory.add(0, new SoulHistoryEntry(player, nbt));
 	}
 
@@ -177,7 +174,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	 */
 
 	@Override
-	public NBTTagCompound getNBT() {
+	public ReadWriteNBT getNBT() {
 		return mHistory.get(0).getNBT();
 	}
 
@@ -389,24 +386,20 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 
 	//Checks if the mob is invlunerable, for bestiary purposes
 	public boolean isInvulnerable() {
-		EntityNBT entityNBT = EntityNBT.fromEntityData(this.getNBT());
-		EffectsVariable effectVar = new EffectsVariable("active_effects");
-		BooleanVariable booVar = new BooleanVariable("Invulnerable");
+		final var entity = EntityNBTUtils.getFakeEntity(this.getNBT());
+		if (entity.isInvulnerable()) {
+			return true;
+		}
 
-		String ret = booVar.bind(entityNBT.getData()).get();
-		boolean override = (ret != null && ret.equalsIgnoreCase("true"));
-
-		ItemStack effectItem = ((EffectsVariable)effectVar.bind(entityNBT.getData())).getItem();
-		if (effectItem != null && effectItem.hasItemMeta()) {
-			PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
-			for (PotionEffect effect : potionMeta.getCustomEffects()) {
-				if (effect.getType().equals(PotionEffectType.DAMAGE_RESISTANCE) && effect.getAmplifier() >= 4) {
-					override = true;
+		if (entity instanceof LivingEntity livingEntity) {
+			if (livingEntity.hasPotionEffect(PotionEffectType.DAMAGE_RESISTANCE)) {
+				final var res = livingEntity.getPotionEffect(PotionEffectType.DAMAGE_RESISTANCE);
+				if (res.getAmplifier() >= 4) {
+					return true;
 				}
 			}
 		}
-
-		return override;
+		return false;
 	}
 
 	public MobType getMobType() {

@@ -1,12 +1,14 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.reflect.NBTTagCompound;
-import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-import java.util.*;
+import de.tr7zw.nbtapi.NBT;
+import de.tr7zw.nbtapi.iface.ReadWriteNBT;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -88,9 +90,9 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		if (config.contains("item")) {
-			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
+			ReadWriteNBT compound = NBT.parseNBT(config.getString("item"));
 			compound.setByte("Count", (byte) 1);
-			mItem = NBTUtils.itemStackFromNBTData(compound);
+			mItem = NBT.itemStackFromNBT(compound);
 			if (mItem == null || mItem.getType().isAir()) {
 				throw new Exception("Item for " + Utils.plainText(mName) + " failed to parse, was: " + config.getString("item"));
 			}
