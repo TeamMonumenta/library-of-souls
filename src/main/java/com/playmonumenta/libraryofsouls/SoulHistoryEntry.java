@@ -30,8 +30,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
@@ -318,7 +320,12 @@ public class SoulHistoryEntry implements Soul {
 
 	@Override
 	public Entity summon(Location loc) {
-		return EntityNBT.fromEntityData(mNBT).spawn(loc);
+		Entity entity = EntityNBT.fromEntityData(mNBT).spawn(loc);
+		if (entity instanceof ArmorStand armorStand) {
+			armorStand.addDisabledSlots(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS,
+				EquipmentSlot.FEET, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND);
+		}
+		return entity;
 	}
 
 	/*
