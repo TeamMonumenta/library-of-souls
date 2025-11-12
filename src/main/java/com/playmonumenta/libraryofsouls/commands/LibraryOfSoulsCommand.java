@@ -22,12 +22,14 @@ import dev.jorel.commandapi.arguments.LocationArgument;
 import dev.jorel.commandapi.arguments.ScoreHolderArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ProxiedCommandSender;
@@ -45,10 +47,6 @@ public class LibraryOfSoulsCommand {
 	private static final String COMMAND = "los";
 	private static final Pattern VALID_SOUL_GROUP_LABEL = Pattern.compile("[0-9A-Za-z_]+");
 
-	public static final Argument<String> mobLabelArg = new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION);
-	public static final Argument<String> partyLabelArg = new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION);
-	public static final Argument<String> poolLabelArg = new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION);
-	public static final Argument<String> groupLabelArg = new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION);
 	// No clue why these are scoreholder arguments, but not going to take the risk of changing them
 
 	public static void register() {
@@ -73,13 +71,13 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.get"))
 			.withArguments(new LiteralArgument("get"))
-			.withArguments(mobLabelArg)
+			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
 				PlayerInventory inv = getPlayer(sender).getInventory();
 				if (inv.firstEmpty() == -1) {
 					throw CommandAPI.failWithString("Your inventory is full!");
 				}
-				inv.addItem(getSoul(args.getByArgument(mobLabelArg)).getBoS());
+				inv.addItem(getSoul(args.getByArgument(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))).getBoS());
 			})
 			.register();
 
@@ -87,9 +85,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.party"))
 			.withArguments(new LiteralArgument("party"))
-			.withArguments(partyLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION))
 			.executes((sender, args) -> {
-				String partyLabel = args.getByArgument(partyLabelArg);
+				String partyLabel = args.getByArgument(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Party counts:"));
 				SoulPartyEntry party = database.getSoulParty(partyLabel);
@@ -111,9 +109,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.pool"))
 			.withArguments(new LiteralArgument("pool"))
-			.withArguments(poolLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION))
 			.executes((sender, args) -> {
-				String poolLabel = args.getByArgument(poolLabelArg);
+				String poolLabel = args.getByArgument(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
 				SoulsDatabase database = SoulsDatabase.getInstance();
 				sender.sendMessage(Component.text("Pool weights:"));
 				long totalWeight = 0;
@@ -139,9 +137,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.averagegroup"))
 			.withArguments(new LiteralArgument("averagegroup"))
-			.withArguments(groupLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION))
 			.executes((sender, args) -> {
-				String groupLabel = args.getByArgument(groupLabelArg);
+				String groupLabel = args.getByArgument(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 				sender.sendMessage(Component.text("Pool weights:"));
 				for (Map.Entry<Soul, Double> entry : getSoulGroup(groupLabel).getAverageSouls().entrySet()) {
 					Component name = entry.getKey().getName();
@@ -155,10 +153,10 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.history"))
 			.withArguments(new LiteralArgument("history"))
-			.withArguments(mobLabelArg)
+			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				new SoulsInventory(player, getSoul(args.getByArgument(mobLabelArg)).getHistory(), "History")
+				new SoulsInventory(player, getSoul(args.getByArgument(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))).getHistory(), "History")
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
@@ -168,9 +166,9 @@ public class LibraryOfSoulsCommand {
 			.withPermission(CommandPermission.fromString("los.summon"))
 			.withArguments(new LiteralArgument("summon"))
 			.withArguments(locationArg)
-			.withArguments(mobLabelArg)
+			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
-				getSoul(args.getByArgument(mobLabelArg)).summon(args.getByArgument(locationArg));
+				getSoul(args.getByArgument(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))).summon(args.getByArgument(locationArg));
 			})
 			.register();
 
@@ -178,14 +176,14 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.summongroup"))
 			.withArguments(new LiteralArgument("summongroup"))
-			.withArguments(groupLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION))
 			.withArguments(pos1Arg)
 			.withArguments(pos2Arg)
 			.executes((sender, args) -> {
 				Location pos1 = args.getByArgument(pos1Arg);
 				Location pos2 = args.getByArgument(pos2Arg);
 				BoundingBox bb = BoundingBox.of(pos1, pos2);
-				getSoulGroup(args.getByArgument(groupLabelArg)).summonGroup(new Random(), pos1.getWorld(), bb);
+				getSoulGroup(args.getByArgument(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION))).summonGroup(new Random(), pos1.getWorld(), bb);
 			})
 			.register();
 
@@ -242,10 +240,10 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.spawner"))
 			.withArguments(new LiteralArgument("spawner"))
-			.withArguments(mobLabelArg)
+			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String name = args.getByArgument(mobLabelArg);
+				String name = args.getByArgument(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION));
 				Soul soul = SoulsDatabase.getInstance().getSoul(name);
 				if (soul == null) {
 					throw CommandAPI.failWithString("Soul '" + name + "' not found");
@@ -296,9 +294,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.del"))
 			.withArguments(new LiteralArgument("del"))
-			.withArguments(mobLabelArg)
+			.withArguments(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION))
 			.executes((sender, args) -> {
-				SoulsDatabase.getInstance().del(sender, args.getByArgument(mobLabelArg));
+				SoulsDatabase.getInstance().del(sender, args.getByArgument(new StringArgument("mobLabel").replaceSuggestions(LIST_MOBS_FUNCTION)));
 			})
 			.register();
 
@@ -306,10 +304,10 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.addparty"))
 			.withArguments(new LiteralArgument("addparty"))
-			.withArguments(partyLabelArg.replaceSuggestions(ArgumentSuggestions.empty()))
+			.withArguments(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION).replaceSuggestions(ArgumentSuggestions.empty()))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String partyLabel = args.getByArgument(partyLabelArg);
+				String partyLabel = args.getByArgument(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
 				String partyLabelNoPrefix = partyLabel;
 				if (partyLabelNoPrefix.startsWith(LibraryOfSoulsAPI.SOUL_PARTY_PREFIX)) {
 					partyLabelNoPrefix = partyLabelNoPrefix.substring(1);
@@ -326,13 +324,13 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updateparty"))
 			.withArguments(new LiteralArgument("updateparty"))
-			.withArguments(partyLabelArg)
-			.withArguments(groupLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION))
+			.withArguments(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION))
 			.withArguments(countArg)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String partyLabel = args.getByArgument(partyLabelArg);
-				String entryLabel = args.getByArgument(groupLabelArg);
+				String partyLabel = args.getByArgument(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
+				String entryLabel = args.getByArgument(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 				int count = args.getByArgument(countArg);
 
 				SoulsDatabase.getInstance().updateParty(player, partyLabel, entryLabel, count);
@@ -343,9 +341,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.delparty"))
 			.withArguments(new LiteralArgument("delparty"))
-			.withArguments(partyLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION))
 			.executes((sender, args) -> {
-				String partyLabel = args.getByArgument(partyLabelArg);
+				String partyLabel = args.getByArgument(new ScoreHolderArgument.Single("partyLabel").replaceSuggestions(LIST_SOUL_PARTIES_FUNCTION));
 				SoulsDatabase.getInstance().delParty(sender, partyLabel);
 			})
 			.register();
@@ -354,10 +352,10 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.addpool"))
 			.withArguments(new LiteralArgument("addpool"))
-			.withArguments(poolLabelArg.replaceSuggestions(ArgumentSuggestions.empty()))
+			.withArguments(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION).replaceSuggestions(ArgumentSuggestions.empty()))
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String poolLabel = args.getByArgument(poolLabelArg);
+				String poolLabel = args.getByArgument(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
 				String poolLabelNoPrefix = poolLabel;
 				if (poolLabelNoPrefix.startsWith(LibraryOfSoulsAPI.SOUL_POOL_PREFIX)) {
 					poolLabelNoPrefix = poolLabelNoPrefix.substring(1);
@@ -374,13 +372,13 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.updatepool"))
 			.withArguments(new LiteralArgument("updatepool"))
-			.withArguments(poolLabelArg)
-			.withArguments(groupLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION))
+			.withArguments(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION))
 			.withArguments(weightArg)
 			.executes((sender, args) -> {
 				Player player = getPlayer(sender);
-				String poolLabel = args.getByArgument(poolLabelArg);
-				String entryLabel = args.getByArgument(groupLabelArg);
+				String poolLabel = args.getByArgument(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
+				String entryLabel = args.getByArgument(new ScoreHolderArgument.Single("groupLabel").replaceSuggestions(LIST_SOUL_GROUPS_FUNCTION));
 				int count = args.getByArgument(weightArg);
 
 				SoulsDatabase.getInstance().updatePool(player, poolLabel, entryLabel, count);
@@ -391,9 +389,9 @@ public class LibraryOfSoulsCommand {
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.fromString("los.delpool"))
 			.withArguments(new LiteralArgument("delpool"))
-			.withArguments(poolLabelArg)
+			.withArguments(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION))
 			.executes((sender, args) -> {
-				String poolLabel = args.getByArgument(poolLabelArg);
+				String poolLabel = args.getByArgument(new ScoreHolderArgument.Single("poolLabel").replaceSuggestions(LIST_SOUL_POOLS_FUNCTION));
 				SoulsDatabase.getInstance().delPool(sender, poolLabel);
 			})
 			.register();
