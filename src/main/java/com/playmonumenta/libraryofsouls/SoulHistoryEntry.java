@@ -322,8 +322,12 @@ public class SoulHistoryEntry implements Soul {
 	public Entity summon(Location loc) {
 		Entity entity = EntityNBT.fromEntityData(mNBT).spawn(loc);
 		if (entity instanceof ArmorStand armorStand) {
-			armorStand.addDisabledSlots(EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS,
-				EquipmentSlot.FEET, EquipmentSlot.HAND, EquipmentSlot.OFF_HAND);
+			// equivalent of setting DisabledSlots: 4144959
+			for (EquipmentSlot slot : EquipmentSlot.values()) {
+				armorStand.addEquipmentLock(slot, ArmorStand.LockType.ADDING);
+				armorStand.addEquipmentLock(slot, ArmorStand.LockType.ADDING_OR_CHANGING);
+				armorStand.addEquipmentLock(slot, ArmorStand.LockType.REMOVING_OR_CHANGING);
+			}
 		}
 		return entity;
 	}
