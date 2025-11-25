@@ -10,7 +10,9 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
@@ -168,10 +170,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		return mChildren;
 	}
 
-	public String getInventoryName() {
+	public String getInventoryTitle() {
+		Component component = Component.text("Bestiary: ", NamedTextColor.BLACK);
 		if (mInventoryName != null) {
-			return mInventoryName;
+			component = component.append(GsonComponentSerializer.gson().deserialize(mInventoryName));
+		} else {
+			component = component.append(Component.text(Utils.plainText(getBestiaryName())));
 		}
-		return Utils.plainText(getBestiaryName());
+		return Utils.LEGACY_SERIALIZER.serialize(component);
 	}
 }
