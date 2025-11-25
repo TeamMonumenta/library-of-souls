@@ -511,8 +511,6 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		Component bestiaryDisplayName = null;
 		elem = obj.get("bestiary_display_name");
 		if (elem != null && elem.isJsonPrimitive()) {
-			LibraryOfSouls.getInstance().getLogger().info("display name found");
-			LibraryOfSouls.getInstance().getLogger().info("it is "+elem.getAsString());
 			bestiaryDisplayName = GSON_SERIALIZER.deserialize(elem.getAsString());
 		}
 
