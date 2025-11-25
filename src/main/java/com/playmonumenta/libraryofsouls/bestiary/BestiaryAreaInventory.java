@@ -3,7 +3,6 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
