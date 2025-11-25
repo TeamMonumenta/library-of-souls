@@ -34,7 +34,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private int mNextEntry = 40000;
 
 	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
-		super(player, 54, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()) + "'s Equipment");
+		super(player, 54, LegacyComponentSerializer.legacySection().serialize(soul.getBestiaryName()) + "'s Equipment");
 		mSoul = soul;
 		mSoulsParent = soulsParent;
 		mSoulPeers = soulPeers;

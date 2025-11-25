@@ -50,9 +50,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private @Nullable String mLorePrereqObjective;
 	private int mLorePrereqMinScore = 0;
 	private List<Component> mDescription;
+	private @Nullable Component mBestiaryDisplayName;
 
 	/* Create a SoulEntry object with existing history */
-	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description) throws Exception {
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description, @Nullable Component bestiaryDisplayName) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -71,6 +72,8 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mLorePrereqMinScore = lorePrereqMinScore;
 
 		mDescription = Objects.requireNonNullElseGet(description, ArrayList::new);
+
+		mBestiaryDisplayName = bestiaryDisplayName;
 
 		String refLabel = history.get(0).getLabel();
 
@@ -291,6 +294,9 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		if (info.allowsAccessTo(InfoTier.MINIMAL)) {
 			ItemStack item = new ItemStack(getPlaceholder());
 			ItemMeta meta = item.getItemMeta();
+			if (mBestiaryDisplayName != null) {
+				meta.displayName(mBestiaryDisplayName);
+			}
 			List<Component> lore = new ArrayList<>();
 
 			lore.add(Component.text(BestiarySoulInventory.formatWell(getId().getKey()), NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false));
@@ -320,6 +326,14 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	@Override
 	public void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
 		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
+	}
+
+	@Override
+	public Component getBestiaryName() {
+		if (mBestiaryDisplayName != null) {
+			return mBestiaryDisplayName;
+		}
+		return getDisplayName();
 	}
 
 	/*
@@ -494,6 +508,14 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			description.add(Component.text(elem.getAsString()));
 		}
 
+		Component bestiaryDisplayName = null;
+		elem = obj.get("bestiary_display_name");
+		if (elem != null && elem.isJsonPrimitive()) {
+			LibraryOfSouls.getInstance().getLogger().info("display name found");
+			LibraryOfSouls.getInstance().getLogger().info("it is "+elem.getAsString());
+			bestiaryDisplayName = GSON_SERIALIZER.deserialize(elem.getAsString());
+		}
+
 		List<SoulHistoryEntry> history = new ArrayList<>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -522,7 +544,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
-		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description);
+		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description, bestiaryDisplayName);
 	}
 
 	public JsonObject toJson() {

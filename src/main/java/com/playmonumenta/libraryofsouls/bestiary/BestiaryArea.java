@@ -119,7 +119,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	 */
 
 	@Override
-	public Component getName() {
+	public Component getBestiaryName() {
 		return mName;
 	}
 

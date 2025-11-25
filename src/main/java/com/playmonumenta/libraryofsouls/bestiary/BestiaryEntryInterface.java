@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 public interface BestiaryEntryInterface {
 	/* Name of this bestiary entry for display purposes */
-	Component getName();
+	Component getBestiaryName();
 
 	/* Checks whether the player has permission to open this bestiary entry */
 	boolean canOpenBestiary(Player player);
