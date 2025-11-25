@@ -51,7 +51,7 @@ public class BestiaryCommand {
 					sender.sendMessage(Component.text().append(Component.text(player.getName(), NamedTextColor.BLUE))
 						                   .append(Component.text(" has killed "))
 						                   .append(Component.text(kills + " ", NamedTextColor.GREEN))
-						                   .append(soul.getDisplayName()));
+						                   .append(soul.getBestiaryName()));
 					return kills;
 				}))
 			.withSubcommand(new CommandAPICommand("set")

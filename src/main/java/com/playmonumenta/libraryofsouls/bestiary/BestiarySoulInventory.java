@@ -260,7 +260,7 @@ public class BestiarySoulInventory extends CustomInventory {
 	private int mNextEntry;
 
 	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
-		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getDisplayName())));
+		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getBestiaryName())));
 
 		mSoul = soul;
 		mParent = parent;
