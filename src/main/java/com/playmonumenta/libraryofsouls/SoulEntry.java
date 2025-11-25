@@ -50,9 +50,15 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	private @Nullable String mLorePrereqObjective;
 	private int mLorePrereqMinScore = 0;
 	private List<Component> mDescription;
+	private int mIndex = 0; // Numeric index for this soul (0 means unassigned)
 
 	/* Create a SoulEntry object with existing history */
 	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description) throws Exception {
+		this(history, locationNames, lore, lorePrereqObjective, lorePrereqMinScore, description, 0);
+	}
+
+	/* Create a SoulEntry object with existing history and index */
+	public SoulEntry(List<SoulHistoryEntry> history, Set<String> locationNames, @Nullable List<Component> lore, @Nullable String lorePrereqObjective, int lorePrereqMinScore, List<Component> description, int index) throws Exception {
 		mHistory = history;
 
 		if (locationNames == null) {
@@ -71,6 +77,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		mLorePrereqMinScore = lorePrereqMinScore;
 
 		mDescription = Objects.requireNonNullElseGet(description, ArrayList::new);
+		mIndex = index;
 
 		String refLabel = history.get(0).getLabel();
 
@@ -111,6 +118,28 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	@Override
 	public String getLabel() {
 		return mHistory.get(0).getLabel();
+	}
+
+	/*
+	 * Under normal usage, this will throw an exception and explode whatever is
+	 * working with this data if an index is ever encountered that's <= 0. This
+	 * eliminates a bunch of error handling from that code, since indexes should
+	 * always be > 0 except during initial mob upgrading, and that should happen
+	 * immediately on database reload
+	 */
+	public int getIndex() {
+		return getIndex(true);
+	}
+
+	public int getIndex(boolean throwExceptionOnInvalidIndex) {
+		if (mIndex <= 0 && throwExceptionOnInvalidIndex) {
+			throw new IllegalStateException("Invalid index= " + mIndex + " detected for " + mHistory.get(0).getLabel());
+		}
+		return mIndex;
+	}
+
+	protected void setIndex(int index) {
+		mIndex = index;
 	}
 
 	@Override
@@ -318,7 +347,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 	}
 
 	@Override
-	public void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
+	public void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex) {
 		new BestiarySoulInventory(player, this, parent, !getInfoTier(player).allowsAccessTo(InfoTier.EVERYTHING), peers, peerIndex).openInventory(player, LibraryOfSouls.getInstance());
 	}
 
@@ -494,6 +523,12 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			description.add(Component.text(elem.getAsString()));
 		}
 
+		int index = 0;
+		elem = obj.get("index");
+		if (elem != null && elem.isJsonPrimitive()) {
+			index = elem.getAsInt();
+		}
+
 		List<SoulHistoryEntry> history = new ArrayList<>();
 		elem = obj.get("history");
 		if (elem != null) {
@@ -522,7 +557,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			}
 		}
 
-		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description);
+		return new SoulEntry(history, locs, lore, lorePrereqObjective, lorePrereqMinScore, description, index);
 	}
 
 	public JsonObject toJson() {
@@ -557,6 +592,10 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 			locsArray.add(location);
 		}
 		obj.add("location_names", locsArray);
+
+		if (mIndex > 0) {
+			obj.addProperty("index", mIndex);
+		}
 
 		return obj;
 	}

@@ -77,6 +77,11 @@ public class SoulsDatabase {
 	 */
 	private final Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
 
+	/* Next available index for new souls */
+	private int mNextIndex = 1;
+
+	private final Map<Integer, SoulEntry> mIndexToSoul = new HashMap<>();
+
 	public SoulsDatabase(Plugin plugin, boolean loadHistory) throws Exception {
 		mPlugin = plugin;
 		mLoadHistory = loadHistory;
@@ -226,6 +231,7 @@ public class SoulsDatabase {
 			}
 
 			soul = new SoulEntry(sender, nbt);
+			setSoulIndex(soul, mNextIndex++);
 		} catch (Exception ex) {
 			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
 			return;
@@ -258,6 +264,11 @@ public class SoulsDatabase {
 				return;
 			}
 
+			// Check if soul has an index, if not assign one
+			if (soul.getIndex(false) <= 0) {
+				setSoulIndex(soul, mNextIndex++);
+			}
+
 			soul.update(sender, nbt);
 		} catch (Exception ex) {
 			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
@@ -284,7 +295,11 @@ public class SoulsDatabase {
 		if (!mSouls.containsKey(name)) {
 			sender.sendMessage(text("Mob '" + name + "' does not exist!", RED));
 		} else {
-			mSouls.remove(name);
+			SoulEntry soul = mSouls.remove(name);
+			if (soul != null) {
+				// Remove from index lookup if it has an index
+				mIndexToSoul.remove(soul.getIndex());
+			}
 			sender.sendMessage(text("Removed " + name, GREEN));
 			updateIndex();
 			save();
@@ -364,9 +379,14 @@ public class SoulsDatabase {
 
 		final JsonArray souls;
 		int dataVersion = 3337;
+		mNextIndex = 1; // Default starting index
 		if (soulsArray instanceof JsonObject object) {
 			if (object.has("data_version")) {
 				dataVersion = object.get("data_version").getAsInt();
+			}
+
+			if (object.has("next_index")) {
+				mNextIndex = object.get("next_index").getAsInt();
 			}
 
 			souls = object.getAsJsonArray("souls");
@@ -404,6 +424,7 @@ public class SoulsDatabase {
 	private String writeSouls(JsonArray soulArray, Gson gson) {
 		final var object = new JsonObject();
 		object.add("souls", soulArray);
+		object.addProperty("next_index", mNextIndex);
 
 		try {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
@@ -521,6 +542,8 @@ public class SoulsDatabase {
 			mSouls = newSouls;
 			mSoulParties = newSoulParties;
 			mSoulPools = newSoulPools;
+			refreshIndexToSoulMap();
+			assignMissingIndices();
 			updateIndex();
 
 			/* Reload the main plugin config / bestiary also after reloading the database */
@@ -634,5 +657,87 @@ public class SoulsDatabase {
 
 	public Set<String> listMobTypes() {
 		return mTypesIndex.keySet();
+	}
+
+	/**
+	 * Rebuilds the index lookup hashmap from current souls.
+	 * Called after loading the database to ensure consistency.
+	 */
+	private void refreshIndexToSoulMap() {
+		mIndexToSoul.clear();
+		for (SoulEntry soul : mSouls.values()) {
+			mIndexToSoul.put(soul.getIndex(), soul);
+		}
+	}
+
+	/**
+	 * Assigns unique indices to souls that don't have them and updates next_index.
+	 * Validates that no duplicate indices exist and throws RuntimeException if found.
+	 * This ensures backwards compatibility by automatically assigning indices to existing souls.
+	 */
+	private void assignMissingIndices() {
+		int maxIndex = 0;
+		int assignedCount = 0;
+		Map<Integer, String> indexToName = new HashMap<>();
+
+		// First pass: find the highest existing index and check for duplicates
+		for (SoulEntry soul : mSouls.values()) {
+			int existingIndex = soul.getIndex(false);
+			if (existingIndex > 0) {
+				maxIndex = Math.max(maxIndex, existingIndex);
+
+				// Check for duplicate indices
+				String existingName = indexToName.get(existingIndex);
+				if (existingName != null) {
+					// This is an important error - throw an exception that will cause the parent to explode and the LoS to fail to load
+					// This should make it much more obvious when this happens
+					throw new RuntimeException("Duplicate index " + existingIndex + " found on souls: '" + existingName + "' and '" + soul.getLabel() + "'");
+				}
+				indexToName.put(existingIndex, soul.getLabel());
+			}
+		}
+
+		// Set next_index to be higher than any existing index
+		mNextIndex = Math.max(mNextIndex, maxIndex + 1);
+
+		// Second pass: assign indices to souls that don't have them
+		for (SoulEntry soul : mSouls.values()) {
+			if (soul.getIndex(false) <= 0) {
+				setSoulIndex(soul, mNextIndex);
+				mNextIndex++;
+				assignedCount++;
+			}
+		}
+
+		if (assignedCount > 0) {
+			mPlugin.getLogger().info("Assigned numeric indices to " + assignedCount + " souls");
+			// Save the database to persist the new indices
+			save();
+		}
+	}
+
+	/**
+	 * Sets a soul's index and updates the lookup hashmap atomically.
+	 * This ensures the index hashmap stays consistent with soul indices.
+	 */
+	private void setSoulIndex(SoulEntry soul, int newIndex) {
+		int oldIndex = soul.getIndex(false);
+
+		// Remove old index from hashmap if it exists
+		if (oldIndex > 0) {
+			mIndexToSoul.remove(oldIndex);
+		}
+
+		// Update the soul's index
+		soul.setIndex(newIndex);
+
+		// Add new index to hashmap if it's valid
+		if (newIndex > 0) {
+			mIndexToSoul.put(newIndex, soul);
+		}
+	}
+
+	public @Nullable SoulEntry getSoulByIndex(int index) {
+		return mIndexToSoul.get(index);
 	}
 }

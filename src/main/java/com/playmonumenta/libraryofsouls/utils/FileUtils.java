@@ -23,23 +23,17 @@ public class FileUtils {
 			throw new FileNotFoundException("File '" + fileName + "' does not exist");
 		}
 
-		InputStreamReader reader = null;
 		final int bufferSize = 1024;
 		final char[] buffer = new char[bufferSize];
 		final StringBuilder content = new StringBuilder();
 
-		try {
-			reader = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8);
+		try (InputStreamReader reader = new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8)) {
 			while (true) {
 				int rsz = reader.read(buffer, 0, buffer.length);
 				if (rsz < 0) {
 					break;
 				}
 				content.append(buffer, 0, rsz);
-			}
-		} finally {
-			if (reader != null) {
-				reader.close();
 			}
 		}
 
