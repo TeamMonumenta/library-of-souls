@@ -27,6 +27,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	private final @Nullable NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
 	private final List<BestiaryEntryInterface> mChildren;
+	private final @Nullable String mInventoryName;
 
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
 
@@ -85,6 +86,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			}
 		} else {
 			mAdvancementKey = null;
+		}
+
+		if (config.contains("inventory_name")) {
+			// lets you skip the Utils.plainText() for the name of the BestiaryAreaInventory
+			mInventoryName = config.getString("inventory_name");
+		} else {
+			mInventoryName = null;
 		}
 
 		if (config.contains("item")) {
@@ -158,5 +166,12 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	/* Only intermediate nodes have children */
 	public List<BestiaryEntryInterface> getBestiaryChildren() {
 		return mChildren;
+	}
+
+	public String getInventoryName() {
+		if (mInventoryName != null) {
+			return mInventoryName;
+		}
+		return Utils.plainText(getBestiaryName());
 	}
 }
