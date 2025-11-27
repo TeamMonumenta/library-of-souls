@@ -7,6 +7,10 @@ import org.bukkit.inventory.ItemStack;
 
 public interface BestiaryEntryInterface {
 	/* Name of this bestiary entry for display purposes */
+	Component getBestiaryName();
+
+	/* Deprecated, renamed to getBestiaryName() to avoid conflict with Soul#getName() */
+	@Deprecated
 	Component getName();
 
 	/* Checks whether the player has permission to open this bestiary entry */

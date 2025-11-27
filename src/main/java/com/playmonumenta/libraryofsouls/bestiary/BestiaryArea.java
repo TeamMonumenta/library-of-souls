@@ -10,6 +10,7 @@ import java.util.*;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -27,6 +28,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	private final @Nullable NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
 	private final List<BestiaryEntryInterface> mChildren;
+	private final @Nullable String mInventoryName;
 
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
 
@@ -87,6 +89,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 			mAdvancementKey = null;
 		}
 
+		if (config.contains("inventory_name")) {
+			// lets you skip the Utils.plainText() for the name of the BestiaryAreaInventory
+			mInventoryName = config.getString("inventory_name");
+		} else {
+			mInventoryName = null;
+		}
+
 		if (config.contains("item")) {
 			NBTTagCompound compound = NBTTagCompound.fromString(config.getString("item"));
 			compound.setByte("Count", (byte) 1);
@@ -119,8 +128,15 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	 */
 
 	@Override
-	public Component getName() {
+	public Component getBestiaryName() {
 		return mName;
+	}
+
+	/* Deprecated because of name conflict with Soul#getName(), use getBestiaryName() */
+	@Override
+	@Deprecated
+	public Component getName() {
+		return getBestiaryName();
 	}
 
 	@Override
@@ -158,5 +174,15 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	/* Only intermediate nodes have children */
 	public List<BestiaryEntryInterface> getBestiaryChildren() {
 		return mChildren;
+	}
+
+	public String getInventoryTitle() {
+		Component component = Component.text("Bestiary: ", NamedTextColor.BLACK);
+		if (mInventoryName != null) {
+			component = component.append(GsonComponentSerializer.gson().deserialize(mInventoryName));
+		} else {
+			component = component.append(Component.text(Utils.plainText(getBestiaryName())));
+		}
+		return Utils.LEGACY_SERIALIZER.serialize(component);
 	}
 }

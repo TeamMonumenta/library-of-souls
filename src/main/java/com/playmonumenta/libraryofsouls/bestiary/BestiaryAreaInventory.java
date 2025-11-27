@@ -3,13 +3,11 @@ package com.playmonumenta.libraryofsouls.bestiary;
 import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
-import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -50,9 +48,8 @@ public class BestiaryAreaInventory extends CustomInventory {
 	private final BestiaryArea mArea;
 	private final List<BestiaryEntryInterface> mChildren;
 
-	@SuppressWarnings("deprecation")
 	public BestiaryAreaInventory(Player player, BestiaryArea area, int offset) {
-		super(player, 54, ChatColor.BLACK + "Bestiary: " + Utils.plainText(area.getName()));
+		super(player, 54, area.getInventoryTitle());
 		mOffset = offset;
 		mArea = area;
 		mChildren = mArea.getBestiaryChildren();
