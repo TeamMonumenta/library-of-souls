@@ -30,9 +30,11 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
@@ -344,9 +346,16 @@ public class SoulHistoryEntry implements Soul {
 	private List<Component> renderItemLore(boolean isPlaceholder) {
 		List<Component> lore = new ArrayList<>();
 		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
+		var health = 0.0;
+		if (entity instanceof LivingEntity livingEntity) {
+			final var maxHealth = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+			if (maxHealth != null) {
+				health = maxHealth.getValue();
+			}
+		}
 
 		lore.add(Component.text("Type: " + mId.asMinimalString()).color(NamedTextColor.WHITE));
-		lore.add(Component.text("Health: " + entity.getHeight()).color(NamedTextColor.WHITE));
+		lore.add(Component.text("Health: " + health).color(NamedTextColor.WHITE));
 
 		final var tags = Set.copyOf(entity.getScoreboardTags());
 		if (tags != null && tags.size() > 0) {
