@@ -4,7 +4,7 @@ nbtapi = "2.15.2"
 redissync = "4.1"
 nbteditor = "4.1"
 gson = "2.13.2"
-mixinapi = "2.0.0"
+mixinapi = "2.0.5"
 
 [libraries]
 commandapi = { module = "dev.jorel:commandapi-bukkit-core", version.ref = "commandapi" }

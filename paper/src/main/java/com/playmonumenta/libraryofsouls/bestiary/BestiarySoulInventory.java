@@ -291,7 +291,10 @@ public class BestiarySoulInventory extends CustomInventory {
 		Double defDamage = DEFAULT_DAMAGE.get(entType);
 
 		if (entity instanceof LivingEntity livingEntity) {
-			health = livingEntity.getHealth();
+			final var healthAttr = livingEntity.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+			if (healthAttr != null) {
+				health = healthAttr.getValue();
+			}
 			final var speedAttr = livingEntity.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
 			if (speedAttr != null) {
 				speed = speedAttr.getValue();
