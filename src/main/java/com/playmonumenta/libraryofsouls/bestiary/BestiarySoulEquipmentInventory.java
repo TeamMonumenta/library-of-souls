@@ -16,6 +16,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private static final ItemStack NULL_ITEM = new ItemStack(Material.BARRIER);
@@ -27,13 +28,13 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 	}
 
 	private final SoulEntry mSoul;
-	private final BestiaryArea mSoulsParent;
+	private final @Nullable BestiaryArea mSoulsParent;
 	private final List<BestiaryEntryInterface> mSoulPeers;
 	private final int mSoulPeerIndex;
 	private int mPrevEntry = -1;
 	private int mNextEntry = 40000;
 
-	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
+	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, @Nullable BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
 		super(player, 54, LegacyComponentSerializer.legacySection().serialize(soul.getBestiaryName()) + "'s Equipment");
 		mSoul = soul;
 		mSoulsParent = soulsParent;
@@ -115,7 +116,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		}
 	}
 
-	public BestiaryArea getParent() {
+	public @Nullable BestiaryArea getParent() {
 		return mSoulsParent;
 	}
 }
