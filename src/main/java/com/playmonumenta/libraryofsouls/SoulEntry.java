@@ -199,6 +199,7 @@ public class SoulEntry implements Soul, BestiaryEntryInterface {
 		return mHistory.get(0).getId();
 	}
 
+	@Deprecated
 	@Override
 	public Component getName() {
 		return mHistory.get(0).getName();
