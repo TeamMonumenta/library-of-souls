@@ -270,13 +270,13 @@ public class BestiarySoulInventory extends CustomInventory {
 
 		NBTTagCompound vars = soul.getNBT();
 		EntityNBT entityNBT = EntityNBT.fromEntityData(soul.getNBT());
-		AttributeContainer attr = ((MobNBT)entityNBT).getAttributes();
+		@Nullable AttributeContainer attr = entityNBT instanceof MobNBT ? ((MobNBT)entityNBT).getAttributes() : null;
 
 		double armor = 0;
 		double armorToughness = 0;
 		double health = vars.hasKey("Health") ? 0.0 + vars.getFloat("Health") : 0.0;
 		double speed = vars.hasKey("MovementSpeed") ? 0.0 + vars.getFloat("MovementSpeed") : 0;
-		double damage = attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? Math.max(attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase(), 0.0) : 0.0;
+		double damage = attr != null && attr.getAttribute(AttributeType.ATTACK_DAMAGE) != null ? Math.max(attr.getAttribute(AttributeType.ATTACK_DAMAGE).getBase(), 0.0) : 0.0;
 		double speedScalar = 0;
 		double speedPercent = 1;
 		double bowDamage = 0;
