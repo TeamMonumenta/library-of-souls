@@ -251,9 +251,9 @@ public class SoulsDatabase {
 				return;
 			}
 
-			if (!soul.getDisplayName().equals(name)) {
+			if (!soul.getName().equals(name)) {
 				sender.sendMessage(text("BoS name mismatches with existing name! Fix name capitalization and formatting.", RED));
-				sender.sendMessage(text("LoS name: ", RED).append(soul.getDisplayName()));
+				sender.sendMessage(text("LoS name: ", RED).append(soul.getName()));
 				sender.sendMessage(text("BoS name: ", RED).append(name));
 				return;
 			}
