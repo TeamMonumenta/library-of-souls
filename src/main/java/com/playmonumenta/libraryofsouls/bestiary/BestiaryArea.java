@@ -6,7 +6,9 @@ import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.utils.Utils;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -130,13 +132,6 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	@Override
 	public Component getBestiaryName() {
 		return mName;
-	}
-
-	/* Deprecated because of name conflict with Soul#getName(), use getBestiaryName() */
-	@Override
-	@Deprecated
-	public Component getName() {
-		return getBestiaryName();
 	}
 
 	@Override
