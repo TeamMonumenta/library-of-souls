@@ -6,10 +6,10 @@ import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
-import net.iharder.Base64;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
@@ -67,7 +67,7 @@ public class BookOfSouls {
 					}
 
 					// decode it
-					final var decoded = Base64.decode(data);
+					final var decoded = Base64.getDecoder().decode(data);
 					try (var in = new ByteArrayInputStream(decoded)) {
 						return NBT.readNBT(in);
 					}

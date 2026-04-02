@@ -171,13 +171,13 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		return mChildren;
 	}
 
-	public String getInventoryTitle() {
+	public Component getInventoryTitle() {
 		Component component = Component.text("Bestiary: ", NamedTextColor.BLACK);
 		if (mInventoryName != null) {
 			component = component.append(GsonComponentSerializer.gson().deserialize(mInventoryName));
 		} else {
 			component = component.append(Component.text(Utils.plainText(getBestiaryName())));
 		}
-		return Utils.LEGACY_SERIALIZER.serialize(component);
+		return component;
 	}
 }

@@ -1,14 +1,13 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import com.playmonumenta.libraryofsouls.utils.CustomInventory;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -38,7 +37,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 	private int mNextEntry = 40000;
 
 	public BestiarySoulEquipmentInventory(Player player, SoulEntry soul, @Nullable BestiaryArea soulsParent, List<BestiaryEntryInterface> soulPeers, int soulPeerIndex) {
-		super(player, 54, LegacyComponentSerializer.legacySection().serialize(soul.getBestiaryName()) + "'s Equipment");
+		super(player, 54, soul.getBestiaryName().append(Component.text("'s Equipment")));
 		mSoul = soul;
 		mSoulsParent = soulsParent;
 		mSoulPeers = soulPeers;
@@ -47,7 +46,7 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		Entity entity = EntityNBTUtils.getFakeEntity(soul.getNBT());
 
 		for (int i = 0; i < 54; i++) {
-			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
+			mInventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
 		}
 		if (entity instanceof LivingEntity livingEntity) {
 			EntityEquipment equipment = livingEntity.getEquipment();
@@ -57,10 +56,10 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 					i++;
 					final var item = equipment.getItem(slot);
 					if (item == null || item.getType() == Material.AIR) {
-						_inventory.setItem(18 + i, NULL_ITEM);
+						mInventory.setItem(18 + i, NULL_ITEM);
 						continue;
 					}
-					_inventory.setItem(18 + i, item);
+					mInventory.setItem(18 + i, item);
 				}
 			}
 		}
@@ -80,14 +79,14 @@ public class BestiarySoulEquipmentInventory extends CustomInventory {
 		}
 
 		if (mPrevEntry >= 0) {
-			_inventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
+			mInventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
 		}
 
 		if (mNextEntry < mSoulPeers.size()) {
-			_inventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
+			mInventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
 		}
 
-		_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
+		mInventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 	}
 
 	@Override

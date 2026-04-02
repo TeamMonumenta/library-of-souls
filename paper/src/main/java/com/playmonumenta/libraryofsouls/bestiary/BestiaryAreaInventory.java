@@ -1,8 +1,8 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.utils.CustomInventory;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
@@ -55,7 +55,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 		mChildren = mArea.getBestiaryChildren();
 
 		for (int i = 0; i < 54; i++) {
-			_inventory.setItem(i, EMPTY_ITEM);
+			mInventory.setItem(i, EMPTY_ITEM);
 		}
 
 		int offsetOffset = 10;
@@ -98,7 +98,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 						item.setItemMeta(meta);
 					}
 				}
-				_inventory.setItem(i - mOffset, item);
+				mInventory.setItem(i - mOffset, item);
 			}
 		}
 
@@ -107,7 +107,7 @@ public class BestiaryAreaInventory extends CustomInventory {
 			ItemMeta meta = item.getItemMeta();
 			meta.displayName(Component.text("Previous Page", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
 			item.setItemMeta(meta);
-			_inventory.setItem(45, item);
+			mInventory.setItem(45, item);
 		}
 
 		if (27 + mOffset < mChildren.size()) {
@@ -115,11 +115,11 @@ public class BestiaryAreaInventory extends CustomInventory {
 			ItemMeta meta = item.getItemMeta();
 			meta.displayName(Component.text("Next Page", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
 			item.setItemMeta(meta);
-			_inventory.setItem(53, item);
+			mInventory.setItem(53, item);
 		}
 
 		if (area.getBestiaryParent() != null) {
-			_inventory.setItem(49, GO_BACK_ITEM);
+			mInventory.setItem(49, GO_BACK_ITEM);
 		}
 	}
 
