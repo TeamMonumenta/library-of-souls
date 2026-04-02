@@ -45,7 +45,7 @@ public final class EntityNBTUtils {
 		return NmsUtils.getVersionAdapter().getNBTFromEntitySnapshot(snapshot);
 	}
 
-	public final class EntityWrapper implements AutoCloseable {
+	public static final class EntityWrapper implements AutoCloseable {
 		public final EntitySnapshot mOldSnapshot;
 		public final Entity mEntity;
 		public ReadWriteNBT newNBT = null;
