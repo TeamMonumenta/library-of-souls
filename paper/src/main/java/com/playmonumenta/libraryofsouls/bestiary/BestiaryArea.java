@@ -134,13 +134,6 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		return mName;
 	}
 
-	/* Deprecated because of name conflict with Soul#getName(), use getBestiaryName() */
-	@Override
-	@Deprecated
-	public Component getName() {
-		return getBestiaryName();
-	}
-
 	@Override
 	public boolean canOpenBestiary(Player player) {
 		return mAdvancementKey == null || player.getAdvancementProgress(Bukkit.getAdvancement(mAdvancementKey)).isDone() || player.hasPermission("los.bestiary.viewall");

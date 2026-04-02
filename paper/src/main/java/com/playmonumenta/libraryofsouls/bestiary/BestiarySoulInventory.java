@@ -6,6 +6,7 @@ import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -255,18 +256,18 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	private final SoulEntry mSoul;
-	private final BestiaryArea mParent;
+	private final @Nullable BestiaryArea mParent;
 	private final List<BestiaryEntryInterface> mPeers;
 	private final int mPeerIndex;
 	private int mPrevEntry = -1;
 	private int mNextEntry;
 
-	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
+	public BestiarySoulInventory(Player player, SoulEntry soul, @Nullable BestiaryArea parent, boolean lowerInfoTier, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
 		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getBestiaryName())));
 
 		mSoul = soul;
 		mParent = parent;
-		mPeers = peers;
+		mPeers = peers != null ? peers : Collections.emptyList();
 		mPeerIndex = peerIndex;
 		mNextEntry = mPeers.size();
 
@@ -522,7 +523,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		Player player = (Player)event.getWhoClicked();
 		int slot = event.getRawSlot();
 
-		if (slot == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
+		if (slot == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT) && mParent != null) {
 			/* Go Back
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here
