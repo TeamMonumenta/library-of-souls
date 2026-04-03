@@ -1,11 +1,12 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import com.playmonumenta.libraryofsouls.utils.CustomInventory;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -14,7 +15,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -255,18 +255,18 @@ public class BestiarySoulInventory extends CustomInventory {
 	}
 
 	private final SoulEntry mSoul;
-	private final BestiaryArea mParent;
+	private final @Nullable BestiaryArea mParent;
 	private final List<BestiaryEntryInterface> mPeers;
 	private final int mPeerIndex;
 	private int mPrevEntry = -1;
 	private int mNextEntry;
 
-	public BestiarySoulInventory(Player player, SoulEntry soul, BestiaryArea parent, boolean lowerInfoTier, List<BestiaryEntryInterface> peers, int peerIndex) {
-		super(player, 54, LegacyComponentSerializer.legacySection().serialize(blackIfWhite(soul.getBestiaryName())));
+	public BestiarySoulInventory(Player player, SoulEntry soul, @Nullable BestiaryArea parent, boolean lowerInfoTier, @Nullable List<BestiaryEntryInterface> peers, int peerIndex) {
+		super(player, 54, blackIfWhite(soul.getBestiaryName()));
 
 		mSoul = soul;
 		mParent = parent;
-		mPeers = peers;
+		mPeers = peers != null ? peers : Collections.emptyList();
 		mPeerIndex = peerIndex;
 		mNextEntry = mPeers.size();
 
@@ -440,7 +440,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		ItemStack damageItem = getDamageItem(mainHandItem, damage, bowDamage, explodePower, horseJumpPower, handDamage, type);
 
 		for (int i = 0; i < 54; i++) {
-			_inventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
+			mInventory.setItem(i, BestiaryAreaInventory.EMPTY_ITEM);
 		}
 
 		// Outside of the checking for tier since if you can see the entry, you can hopefully move between them (If there are mobs there)
@@ -460,19 +460,19 @@ public class BestiarySoulInventory extends CustomInventory {
 		}
 
 		if (mPrevEntry >= 0) {
-			_inventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
+			mInventory.setItem(45, BestiaryAreaInventory.MOVE_ENTRY_PREV_ITEM);
 		}
 
 		if (mNextEntry < mPeers.size()) {
-			_inventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
+			mInventory.setItem(53, BestiaryAreaInventory.MOVE_ENTRY_NEXT_ITEM);
 		}
 
 		if (lowerInfoTier) {
 			// Lower tier of information
-			_inventory.setItem(20, healthItem);
-			_inventory.setItem(22, armorItem);
-			_inventory.setItem(24, damageItem);
-			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
+			mInventory.setItem(20, healthItem);
+			mInventory.setItem(22, armorItem);
+			mInventory.setItem(24, damageItem);
+			mInventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		} else {
 			// Higher tier of information
 			ItemStack effectItem = getEffectItem(entity);
@@ -484,23 +484,23 @@ public class BestiarySoulInventory extends CustomInventory {
 			meta.displayName(Component.text("View Equipment Items", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
 			equipmentPageItem.setItemMeta(meta);
 
-			_inventory.setItem(11, healthItem);
-			_inventory.setItem(13, armorItem);
-			_inventory.setItem(15, damageItem);
+			mInventory.setItem(11, healthItem);
+			mInventory.setItem(13, armorItem);
+			mInventory.setItem(15, damageItem);
 			if (!soul.getDescription().isEmpty()) {
-				_inventory.setItem(16, descriptionItem);
+				mInventory.setItem(16, descriptionItem);
 			}
-			_inventory.setItem(22, equipmentPageItem);
+			mInventory.setItem(22, equipmentPageItem);
 			if (!soul.getLore().isEmpty() && soul.canSeeLore(player)) {
 				ItemStack loreItem = getLoreItem(soul);
-				_inventory.setItem(29, speedItem);
-				_inventory.setItem(31, effectItem);
-				_inventory.setItem(33, loreItem);
+				mInventory.setItem(29, speedItem);
+				mInventory.setItem(31, effectItem);
+				mInventory.setItem(33, loreItem);
 			} else {
-				_inventory.setItem(30, speedItem);
-				_inventory.setItem(32, effectItem);
+				mInventory.setItem(30, speedItem);
+				mInventory.setItem(32, effectItem);
 			}
-			_inventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
+			mInventory.setItem(49, BestiaryAreaInventory.GO_BACK_ITEM);
 		}
 	}
 
@@ -522,7 +522,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		Player player = (Player)event.getWhoClicked();
 		int slot = event.getRawSlot();
 
-		if (slot == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT)) {
+		if (slot == 49 && event.getCurrentItem().getType().equals(BestiaryAreaInventory.GO_BACK_MAT) && mParent != null) {
 			/* Go Back
 			 * Note that parent's parent is passed as null here - must rely on the class to figure out its own parent
 			 * That information isn't practical to determine here

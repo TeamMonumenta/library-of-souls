@@ -14,7 +14,7 @@ monumenta {
 	pluginProject(":LibraryOfSouls")
 	paper(
 		"com.playmonumenta.libraryofsouls.LibraryOfSouls", BukkitPluginDescription.PluginLoadOrder.POSTWORLD, "1.20",
-		depends = listOf("CommandAPI", "NBTEditor"),
+		depends = listOf("CommandAPI"),
 		softDepends = listOf("MonumentaRedisSync"),
 	)
 	versionAdapterApi("adapter_api", paper = "1.20.4")

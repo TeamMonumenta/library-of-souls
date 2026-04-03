@@ -1,15 +1,14 @@
 package com.playmonumenta.libraryofsouls;
 
-import com.goncalomb.bukkit.mylib.utils.CustomInventory;
 import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
 import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import com.playmonumenta.libraryofsouls.utils.CustomInventory;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextReplacementConfig;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -27,7 +26,7 @@ public class SpawnerInventory extends CustomInventory {
 	private final @Nullable SoulsInventory mGoBackInventory;
 
 	public SpawnerInventory(Player owner, Soul soul, ItemStack spawner, @Nullable SoulsInventory previous) {
-		super(owner, 9, LegacyComponentSerializer.legacySection().serialize(soul.getDisplayName()));
+		super(owner, 9, soul.getDisplayName());
 
 		mGoBackInventory = previous;
 		loadWindow(spawner);
@@ -35,20 +34,20 @@ public class SpawnerInventory extends CustomInventory {
 
 	private void loadWindow(ItemStack spawnerItem) {
 		spawnerItem = changeActivationRange(spawnerItem, 10);
-		_inventory.setItem(2, spawnerItem);
+		mInventory.setItem(2, spawnerItem);
 
 		spawnerItem = changeActivationRange(spawnerItem, 12);
-		_inventory.setItem(4, spawnerItem);
+		mInventory.setItem(4, spawnerItem);
 
 		spawnerItem = changeActivationRange(spawnerItem, 16);
-		_inventory.setItem(6, spawnerItem);
+		mInventory.setItem(6, spawnerItem);
 
 		if (mGoBackInventory != null) {
 			ItemStack goBackItem = new ItemStack(Material.RED_STAINED_GLASS_PANE);
 			ItemMeta meta = goBackItem.getItemMeta();
 			meta.displayName(Component.text("Go Back", NamedTextColor.RED).decoration(TextDecoration.ITALIC, false));
 			goBackItem.setItemMeta(meta);
-			_inventory.setItem(0, goBackItem);
+			mInventory.setItem(0, goBackItem);
 		}
 
 	}

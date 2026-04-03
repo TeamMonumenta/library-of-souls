@@ -249,6 +249,7 @@ public class LibraryOfSoulsCommand {
 				SpawnerInventory.openSpawnerInventory(soul, player, null);
 			})
 			.register();
+
 	}
 
 	public static void registerWriteAccessCommands() {
