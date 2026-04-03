@@ -1,14 +1,18 @@
 package com.playmonumenta.libraryofsouls.nbt;
 
+import com.playmonumenta.libraryofsouls.nbt.EntityNBTGroups.Group;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
+import de.tr7zw.nbtapi.iface.ReadableNBT;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -17,6 +21,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntitySnapshot;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -35,13 +40,19 @@ public class BookOfSouls {
 		Component.text("Right-click an entity to capture the soul.", NamedTextColor.AQUA)
 	);
 
+	private static final List<String> TRANSIENT_KEYS = List.of(
+		"Pos", "Motion", "Rotation", "UUID", "FallDistance", "Fire", "Air",
+		"OnGround", "PortalCooldown", "WorldUUIDLeast", "WorldUUIDMost");
+
 	private static Plugin _plugin = null;
 
 	private ItemStack _book;
 	private ReadWriteNBT _entityNbt;
 
 	public static void initialize(Plugin plugin) {
-		if (_plugin != null) return;
+		if (_plugin != null) {
+			return;
+		}
 		_plugin = plugin;
 	}
 
@@ -100,12 +111,29 @@ public class BookOfSouls {
 
 	}
 
+	/** Strips transient entity keys (position, UUID, etc.) from captured entity NBT in-place. */
+	public static ReadWriteNBT stripTransientKeys(ReadWriteNBT nbt) {
+		for (String key : TRANSIENT_KEYS) {
+			nbt.removeKey(key);
+		}
+		ReadWriteNBT paper = nbt.getCompound("Paper");
+		if (paper != null) {
+			paper.removeKey("Origin");
+			paper.removeKey("FromMobSpawner");
+		}
+		return nbt;
+	}
+
+	private static ReadWriteNBT fromSnapshot(EntitySnapshot snapshot) {
+		return stripTransientKeys(EntityNBTUtils.getNBTFromEntitySnapshot(snapshot));
+	}
+
 	public BookOfSouls(final Entity entity) {
 		this(null, entity.createSnapshot());
 	}
 
 	public BookOfSouls(final EntitySnapshot snapshot) {
-		this(null, EntityNBTUtils.getNBTFromEntitySnapshot(snapshot));
+		this(null, fromSnapshot(snapshot));
 	}
 
 	public BookOfSouls(ReadWriteNBT entityNBT) {
@@ -117,7 +145,7 @@ public class BookOfSouls {
 	}
 
 	public BookOfSouls(ItemStack book, final EntitySnapshot snapshot) {
-		this(book, EntityNBTUtils.getNBTFromEntitySnapshot(snapshot));
+		this(book, fromSnapshot(snapshot));
 	}
 
 	private BookOfSouls(ItemStack book, ReadWriteNBT entityNBT) {
@@ -179,8 +207,8 @@ public class BookOfSouls {
 
 	public void saveBook(boolean resetName) {
 		BookMeta meta = (BookMeta) _book.getItemMeta();
-		final var entity = EntityNBTUtils.getFakeEntity(_entityNbt);
-		String entityName = entity.getType().getKey().asMinimalString();
+		EntityType entityType = EntityNBTUtils.getEntityType(_entityNbt).orElse(null);
+		String entityName = entityType != null ? entityType.getKey().asMinimalString() : "unknown";
 
 		if (resetName) {
 			meta.displayName(Component.empty().append(mTitle).append(Component.text(" - ", Style.empty())).append(Component.text(entityName, NamedTextColor.RED)));
@@ -190,84 +218,96 @@ public class BookOfSouls {
 
 		meta.setPages(new ArrayList<String>());
 
-		/**
-			* TODO: Maybe a way of recursively displaying all of the values you can get via paper api (flowey probably has a better way of doing this)
-		*/
-		/*
 		StringBuilder sb = new StringBuilder();
-		sb.append("This book contains the soul of a " + ChatColor.RED + ChatColor.BOLD + entityName + "\n\n");
-
+		sb.append("Soul: " + ChatColor.RED + ChatColor.BOLD + entityName + "\n\n");
 		int x = 7;
-		if (entity instanceof MinecartSpawnerNBT) {
-			sb.append(ChatColor.BLACK + "Left-click a existing spawner to copy the entities and variables from the spawner, left-click while sneaking to copy them back to the spawner.");
-			meta.addPage(sb.toString());
-			sb = new StringBuilder();
-			x = 11;
-		} else if (_entityNbt instanceof FallingBlockNBT) {
-			sb.append(ChatColor.BLACK + "Left-click a block while sneaking to copy block data.\n\n");
-			x = 5;
-		}
 
-		for (NBTVariableContainer container : _entityNbt.getAllVariables()) {
+		List<Group> groups = entityType != null ? EntityNBTGroups.getGroupsForType(entityType) : List.of();
+		Set<String> allGroupKeys = entityType != null ? EntityNBTGroups.getAllKeysForType(entityType) : Set.of();
+
+		for (Group group : groups) {
+			boolean hasAny = group.nbtKeys().stream().anyMatch(_entityNbt::hasTag);
+			if (!hasAny) {
+				continue;
+			}
 			if (x == 1) {
 				meta.addPage(sb.toString());
 				sb = new StringBuilder();
 				x = 11;
 			}
-			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + container.getName() + ":\n");
-			for (String name : container.getVariableNames()) {
+			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + group.displayName() + ":\n");
+			for (String key : group.nbtKeys()) {
+				if (!_entityNbt.hasTag(key)) {
+					continue;
+				}
 				if (--x == 0) {
 					meta.addPage(sb.toString());
 					sb = new StringBuilder();
 					x = 10;
 				}
-				String value = container.getVariable(name).get();
-				sb.append("  " + ChatColor.DARK_BLUE + name + ": " + ChatColor.BLACK + (value != null ? value : ChatColor.ITALIC + "-") + "\n");
+				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatNbtValue(_entityNbt, key) + "\n");
+			}
+		}
+
+		// Other: keys not covered by any group (except Attributes which gets its own section)
+		Set<String> otherKeys = new LinkedHashSet<>(_entityNbt.getKeys());
+		otherKeys.removeAll(allGroupKeys);
+		otherKeys.remove("Attributes");
+		if (!otherKeys.isEmpty()) {
+			if (x == 1) {
+				meta.addPage(sb.toString());
+				sb = new StringBuilder();
+				x = 11;
+			}
+			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + "Other:\n");
+			for (String key : otherKeys) {
+				if (--x == 0) {
+					meta.addPage(sb.toString());
+					sb = new StringBuilder();
+					x = 10;
+				}
+				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatNbtValue(_entityNbt, key) + "\n");
 			}
 		}
 		meta.addPage(sb.toString());
 
-		if (_entityNbt instanceof MobNBT) {
-			MobNBT mob = (MobNBT) _entityNbt;
+		// Attributes section
+		var attributesList = _entityNbt.getCompoundList("Attributes");
+		if (!attributesList.isEmpty()) {
 			sb = new StringBuilder();
 			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.BOLD + "Attributes:\n");
-			Collection<Attribute> attributes = mob.getAttributes().values();
-			if (attributes.size() == 0) {
-				sb.append("  " + ChatColor.BLACK + ChatColor.ITALIC +"none\n");
-			} else {
-				x = 11;
-				for (Attribute attribute : attributes) {
-					if (x <= 3) {
-						meta.addPage(sb.toString());
-						sb = new StringBuilder();
-						x = 11;
-					}
-					sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + attribute.getType().getName() + ":\n");
-					sb.append("  " + ChatColor.DARK_BLUE + "Base: " + ChatColor.BLACK + attribute.getBase() + "\n");
-					sb.append("  " + ChatColor.DARK_BLUE + "Modifiers:\n");
-					x -= 3;
-					List<Modifier> modifiers = attribute.getModifiers();
-					if (modifiers.size() == 0) {
-						sb.append("    " + ChatColor.BLACK + ChatColor.ITALIC +"none\n");
-					} else {
-						for (Modifier modifier : modifiers) {
-							if (x <= 3) {
-								meta.addPage(sb.toString());
-								sb = new StringBuilder();
-								x = 11;
-							}
-							sb.append("    " + ChatColor.RED + modifier.getName() + ChatColor.DARK_GREEN + " Op: " + ChatColor.BLACK + modifier.getOperation() + "\n");
-							sb.append("      " + ChatColor.DARK_GREEN + "Amount: " + ChatColor.BLACK + modifier.getAmount() + "\n");
-							x -= 3;
-						}
-					}
-					sb.append("\n");
-					--x;
+			x = 11;
+			for (ReadWriteNBT attr : attributesList) {
+				if (x <= 3) {
+					meta.addPage(sb.toString());
+					sb = new StringBuilder();
+					x = 11;
 				}
+				sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + attr.getString("Name") + ":\n");
+				sb.append("  " + ChatColor.DARK_BLUE + "Base: " + ChatColor.BLACK + attr.getDouble("Base") + "\n");
+				sb.append("  " + ChatColor.DARK_BLUE + "Modifiers:\n");
+				x -= 3;
+				var modifiers = attr.getCompoundList("Modifiers");
+				if (modifiers.isEmpty()) {
+					sb.append("    " + ChatColor.BLACK + "" + ChatColor.ITALIC + "none\n");
+					x--;
+				} else {
+					for (ReadWriteNBT mod : modifiers) {
+						if (x <= 2) {
+							meta.addPage(sb.toString());
+							sb = new StringBuilder();
+							x = 11;
+						}
+						sb.append("    " + ChatColor.RED + mod.getString("Name") + ChatColor.DARK_GREEN + " Op: " + ChatColor.BLACK + mod.getInteger("Operation") + "\n");
+						sb.append("      " + ChatColor.DARK_GREEN + "Amount: " + ChatColor.BLACK + mod.getDouble("Amount") + "\n");
+						x -= 2;
+					}
+				}
+				sb.append("\n");
+				x--;
 			}
 			meta.addPage(sb.toString());
 		}
-		*/
 
 		// LegacyBookSerialize.saveToBook(meta, _entityNbt.serialize(), _dataTitle);
 		meta.addPage("RandomId: " + Integer.toHexString((new Random()).nextInt()) + "\n\n\n"
@@ -277,6 +317,31 @@ public class BookOfSouls {
 		NBT.modify(_book, nbt -> {
 			nbt.setByteArray("BOS", mojangson.getBytes(StandardCharsets.UTF_8));
 		});
+	}
+
+	public static String formatNbtValue(ReadableNBT nbt, String key) {
+		String raw = switch (nbt.getType(key)) {
+			case NBTTagByte -> nbt.getByte(key) + "b";
+			case NBTTagShort -> nbt.getShort(key) + "s";
+			case NBTTagInt -> String.valueOf(nbt.getInteger(key));
+			case NBTTagLong -> nbt.getLong(key) + "L";
+			case NBTTagFloat -> nbt.getFloat(key) + "f";
+			case NBTTagDouble -> nbt.getDouble(key) + "d";
+			case NBTTagString -> "\"" + nbt.getString(key) + "\"";
+			case NBTTagByteArray -> "[B;" + nbt.getByteArray(key).length + "]";
+			case NBTTagIntArray -> "[I;" + nbt.getIntArray(key).length + "]";
+			case NBTTagLongArray -> "[L;" + nbt.getLongArray(key).length + "]";
+			case NBTTagList -> "[" + nbt.getListType(key).name().replace("NBTTag", "") + " list]";
+			case NBTTagCompound -> {
+				ReadableNBT sub = nbt.getCompound(key);
+				yield sub != null ? sub.toString() : "{}";
+			}
+			default -> "?";
+		};
+		if (raw.length() > 60) {
+			raw = raw.substring(0, 59) + "\u2026";
+		}
+		return raw;
 	}
 
 }
