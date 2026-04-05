@@ -45,22 +45,4 @@ public final class EntityNBTUtils {
 		return NmsUtils.getVersionAdapter().getNBTFromEntitySnapshot(snapshot);
 	}
 
-	public static final class EntityWrapper implements AutoCloseable {
-		public final EntitySnapshot mOldSnapshot;
-		public final Entity mEntity;
-		public ReadWriteNBT newNBT = null;
-
-		public EntityWrapper(ReadWriteNBT nbt) {
-			final var snapshot = NmsUtils.getVersionAdapter().createEntitySnapshot(nbt);
-			final var entity = snapshot.createEntity(Bukkit.getWorlds().get(0));
-			mOldSnapshot = snapshot;
-			mEntity = entity;
-		}
-
-		@Override
-		public void close() {
-			final var newSnapshot = mEntity.createSnapshot();
-			newNBT = NmsUtils.getVersionAdapter().getNBTFromEntitySnapshot(newSnapshot);
-		}
-	}
 }

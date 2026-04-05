@@ -31,12 +31,10 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BoundingBox;
@@ -291,7 +289,7 @@ public class SoulHistoryEntry implements Soul {
 		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
 		final var tags = entity.getScoreboardTags();
 
-		if (tags == null || tags.size() <= 0) {
+		if (tags == null || tags.isEmpty()) {
 			return false;
 		}
 
@@ -309,7 +307,7 @@ public class SoulHistoryEntry implements Soul {
 		final var entity = EntityNBTUtils.getFakeEntity(mNBT);
 		final var tags = entity.getScoreboardTags();
 
-		if (tags == null || tags.size() <= 0) {
+		if (tags == null || tags.isEmpty()) {
 			return false;
 		}
 
@@ -358,7 +356,7 @@ public class SoulHistoryEntry implements Soul {
 		lore.add(Component.text("Health: " + health).color(NamedTextColor.WHITE));
 
 		final var tags = Set.copyOf(entity.getScoreboardTags());
-		if (tags != null && tags.size() > 0) {
+		if (tags != null && !tags.isEmpty()) {
 			lore.add(Component.text("Tags:").color(NamedTextColor.WHITE));
 			lore.addAll(stringifyWrapList("  ", 50, 30, tags.toArray()));
 		}

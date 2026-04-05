@@ -17,7 +17,7 @@ import org.bukkit.inventory.EquipmentSlot;
 
 public class BookOfSoulsListener implements Listener {
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInteractAtEntity(final PlayerInteractAtEntityEvent event) {
 		if (event.getHand() == EquipmentSlot.OFF_HAND) {
 			return;
@@ -37,7 +37,7 @@ public class BookOfSoulsListener implements Listener {
 
 
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onLeftClick(PlayerInteractEvent event) {
 		final var action = event.getAction();
 		if (!action.isLeftClick() || event.getHand() == EquipmentSlot.OFF_HAND) {
@@ -88,7 +88,7 @@ public class BookOfSoulsListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onDispense(BlockDispenseEvent event) {
 		final var item = event.getItem();
 		if (!BookOfSouls.isValidBook(item)) {
@@ -100,6 +100,7 @@ public class BookOfSoulsListener implements Listener {
 			EntityNBTUtils.getFakeEntitySnapshot(bos.getEntityNBT()).createEntity(getLocation(event.getBlock()));
 		}
 	}
+
 	private Location getLocation(Block block) {
 		final var data = block.getBlockData();
 		if (data instanceof Directional directional) {
@@ -109,8 +110,8 @@ public class BookOfSoulsListener implements Listener {
 		// Fallback?
 		return block.getLocation();
 		// if (_location == null) {
-		// 	BlockFace face = ((Dispenser) _block.getState().getData()).getFacing();
-		// 	_location = _block.getLocation().add(UtilsMc.faceToDelta(face, 0.2)).add(0, -0.3, 0);
+		//     BlockFace face = ((Dispenser) _block.getState().getData()).getFacing();
+		//     _location = _block.getLocation().add(UtilsMc.faceToDelta(face, 0.2)).add(0, -0.3, 0);
 		// }
 		// return _location;
 	}

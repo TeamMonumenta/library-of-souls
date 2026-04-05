@@ -36,7 +36,6 @@ public class BookOfSouls {
 
 	private static final String _author = ChatColor.GOLD + "The Creator";
 	private static final String _dataTitle = "" + ChatColor.DARK_PURPLE + ChatColor.BOLD + "Soul Data v0.2" + ChatColor.BLACK + "\n";
-	private static final String _dataTitleOLD = "" + ChatColor.DARK_PURPLE + ChatColor.BOLD + "Soul Data v0.1" + ChatColor.BLACK + "\n";
 	private static final String mKey = "Book of Souls";
 	private static final Component mTitle = Component.text(mKey, NamedTextColor.AQUA);
 	private static final Component mEmptyTitle = Component.text(mKey, NamedTextColor.GREEN).append(Component.text(" - ", Style.empty())).append(Component.text("Empty", NamedTextColor.RED));
@@ -51,8 +50,8 @@ public class BookOfSouls {
 
 	private static Plugin _plugin = null;
 
-	private ItemStack _book;
-	private ReadWriteNBT _entityNbt;
+	private ItemStack mBook;
+	private ReadWriteNBT mEntityNbt;
 
 	public static void initialize(Plugin plugin) {
 		if (_plugin != null) {
@@ -154,8 +153,8 @@ public class BookOfSouls {
 	}
 
 	private BookOfSouls(ItemStack book, ReadWriteNBT entityNBT) {
-		_book = book;
-		_entityNbt = entityNBT;
+		mBook = book;
+		mEntityNbt = entityNBT;
 	}
 
 	public static boolean isValidBook(ItemStack book) {
@@ -189,21 +188,21 @@ public class BookOfSouls {
 	}
 
 	public ReadWriteNBT getEntityNBT() {
-		return _entityNbt;
+		return mEntityNbt;
 	}
 
 	public void saveEntityNBT(Entity entity) {
 		final var snapshot = entity.createSnapshot();
 		final var newNBT = EntityNBTUtils.getNBTFromEntitySnapshot(snapshot);
-		_entityNbt = newNBT;
+		mEntityNbt = newNBT;
 	}
 
 	public ItemStack getBook() {
-		if (_book == null) {
-			_book = new ItemStack(Material.WRITTEN_BOOK);
+		if (mBook == null) {
+			mBook = new ItemStack(Material.WRITTEN_BOOK);
 			saveBook(true);
 		}
-		return _book;
+		return mBook;
 	}
 
 	public void saveBook() {
@@ -211,8 +210,8 @@ public class BookOfSouls {
 	}
 
 	public void saveBook(boolean resetName) {
-		BookMeta meta = (BookMeta) _book.getItemMeta();
-		EntityType entityType = EntityNBTUtils.getEntityType(_entityNbt).orElse(null);
+		BookMeta meta = (BookMeta) mBook.getItemMeta();
+		EntityType entityType = EntityNBTUtils.getEntityType(mEntityNbt).orElse(null);
 		String entityName = entityType != null ? entityType.getKey().asMinimalString() : "unknown";
 
 		if (resetName) {
@@ -221,7 +220,7 @@ public class BookOfSouls {
 			meta.setAuthor(_author);
 		}
 
-		meta.setPages(new ArrayList<String>());
+		meta.setPages(new ArrayList<>());
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("Soul: " + ChatColor.RED + ChatColor.BOLD + entityName + "\n\n");
@@ -233,7 +232,7 @@ public class BookOfSouls {
 			: Map.of();
 
 		for (Group group : groups) {
-			boolean hasAny = group.fields().stream().map(NbtField::key).anyMatch(_entityNbt::hasTag);
+			boolean hasAny = group.fields().stream().map(NbtField::key).anyMatch(mEntityNbt::hasTag);
 			if (!hasAny) {
 				continue;
 			}
@@ -244,7 +243,7 @@ public class BookOfSouls {
 			}
 			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + group.displayName() + ":\n");
 			for (NbtField field : group.fields()) {
-				if (!_entityNbt.hasTag(field.key())) {
+				if (!mEntityNbt.hasTag(field.key())) {
 					continue;
 				}
 				if (--x == 0) {
@@ -252,13 +251,13 @@ public class BookOfSouls {
 					sb = new StringBuilder();
 					x = 10;
 				}
-				String formatted = legacyFormat(field.type(), _entityNbt, field.key());
+				String formatted = legacyFormat(field.type(), mEntityNbt, field.key());
 				sb.append("  " + ChatColor.DARK_BLUE + field.key() + ": " + ChatColor.BLACK + formatted + "\n");
 			}
 		}
 
 		// Other: keys not covered by any group (except Attributes which gets its own section)
-		Set<String> otherKeys = new LinkedHashSet<>(_entityNbt.getKeys());
+		Set<String> otherKeys = new LinkedHashSet<>(mEntityNbt.getKeys());
 		otherKeys.removeAll(fieldTypeMap.keySet());
 		otherKeys.remove("Attributes");
 		if (!otherKeys.isEmpty()) {
@@ -274,14 +273,14 @@ public class BookOfSouls {
 					sb = new StringBuilder();
 					x = 10;
 				}
-				String formatted = legacyFormat(NbtFieldType.generic(), _entityNbt, key);
+				String formatted = legacyFormat(NbtFieldType.generic(), mEntityNbt, key);
 				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatted + "\n");
 			}
 		}
 		meta.addPage(sb.toString());
 
 		// Attributes section
-		var attributesList = _entityNbt.getCompoundList("Attributes");
+		var attributesList = mEntityNbt.getCompoundList("Attributes");
 		if (!attributesList.isEmpty()) {
 			sb = new StringBuilder();
 			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.BOLD + "Attributes:\n");
@@ -318,12 +317,12 @@ public class BookOfSouls {
 			meta.addPage(sb.toString());
 		}
 
-		// LegacyBookSerialize.saveToBook(meta, _entityNbt.serialize(), _dataTitle);
-		meta.addPage("RandomId: " + Integer.toHexString((new Random()).nextInt()) + "\n\n\n"
+		// LegacyBookSerialize.saveToBook(meta, mEntityNbt.serialize(), _dataTitle);
+		meta.addPage("RandomId: " + Integer.toHexString(new Random().nextInt()) + "\n\n\n"
 				+ ChatColor.DARK_BLUE + ChatColor.BOLD + "      The END.");
-		_book.setItemMeta(meta);
-		final var mojangson = _entityNbt.toString();
-		NBT.modify(_book, nbt -> {
+		mBook.setItemMeta(meta);
+		final var mojangson = mEntityNbt.toString();
+		NBT.modify(mBook, nbt -> {
 			nbt.setByteArray("BOS", mojangson.getBytes(StandardCharsets.UTF_8));
 		});
 	}

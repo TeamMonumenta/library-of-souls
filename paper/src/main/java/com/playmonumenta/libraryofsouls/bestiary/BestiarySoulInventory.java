@@ -683,7 +683,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		List<Component> lore = new ArrayList<>();
 		ItemStack effectItem = new ItemStack(Material.POTION);
 		PotionMeta potionMeta = (PotionMeta)effectItem.getItemMeta();
-		if (entity instanceof LivingEntity livingEntity && livingEntity.getActivePotionEffects().size() > 0) {
+		if (entity instanceof LivingEntity livingEntity && !livingEntity.getActivePotionEffects().isEmpty()) {
 			potionMeta.setBasePotionType(PotionType.MUNDANE);
 			for (PotionEffect effect : livingEntity.getActivePotionEffects()) {
 				lore.add(Component.text(formatWell(effect.toString().substring(0, effect.toString().indexOf(":")).toLowerCase(Locale.ROOT)) + " (∞)", NamedTextColor.DARK_BLUE).decoration(TextDecoration.ITALIC, false));
