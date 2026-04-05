@@ -1,6 +1,9 @@
 package com.playmonumenta.libraryofsouls.nbt;
 
-import com.playmonumenta.libraryofsouls.nbt.EntityNBTGroups.Group;
+import com.playmonumenta.libraryofsouls.nbt.types.EntityNBTGroups;
+import com.playmonumenta.libraryofsouls.nbt.types.EntityNBTGroups.Group;
+import com.playmonumenta.libraryofsouls.nbt.types.EntityNBTGroups.NbtField;
+import com.playmonumenta.libraryofsouls.nbt.types.NbtFieldType;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
@@ -11,12 +14,14 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.Style;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -223,10 +228,12 @@ public class BookOfSouls {
 		int x = 7;
 
 		List<Group> groups = entityType != null ? EntityNBTGroups.getGroupsForType(entityType) : List.of();
-		Set<String> allGroupKeys = entityType != null ? EntityNBTGroups.getAllKeysForType(entityType) : Set.of();
+		Map<String, NbtFieldType> fieldTypeMap = entityType != null
+			? EntityNBTGroups.getFieldTypeMap(entityType)
+			: Map.of();
 
 		for (Group group : groups) {
-			boolean hasAny = group.nbtKeys().stream().anyMatch(_entityNbt::hasTag);
+			boolean hasAny = group.fields().stream().map(NbtField::key).anyMatch(_entityNbt::hasTag);
 			if (!hasAny) {
 				continue;
 			}
@@ -236,8 +243,8 @@ public class BookOfSouls {
 				x = 11;
 			}
 			sb.append("" + ChatColor.DARK_PURPLE + ChatColor.ITALIC + group.displayName() + ":\n");
-			for (String key : group.nbtKeys()) {
-				if (!_entityNbt.hasTag(key)) {
+			for (NbtField field : group.fields()) {
+				if (!_entityNbt.hasTag(field.key())) {
 					continue;
 				}
 				if (--x == 0) {
@@ -245,13 +252,14 @@ public class BookOfSouls {
 					sb = new StringBuilder();
 					x = 10;
 				}
-				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatNbtValue(_entityNbt, key) + "\n");
+				String formatted = legacyFormat(field.type(), _entityNbt, field.key());
+				sb.append("  " + ChatColor.DARK_BLUE + field.key() + ": " + ChatColor.BLACK + formatted + "\n");
 			}
 		}
 
 		// Other: keys not covered by any group (except Attributes which gets its own section)
 		Set<String> otherKeys = new LinkedHashSet<>(_entityNbt.getKeys());
-		otherKeys.removeAll(allGroupKeys);
+		otherKeys.removeAll(fieldTypeMap.keySet());
 		otherKeys.remove("Attributes");
 		if (!otherKeys.isEmpty()) {
 			if (x == 1) {
@@ -266,7 +274,8 @@ public class BookOfSouls {
 					sb = new StringBuilder();
 					x = 10;
 				}
-				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatNbtValue(_entityNbt, key) + "\n");
+				String formatted = legacyFormat(NbtFieldType.generic(), _entityNbt, key);
+				sb.append("  " + ChatColor.DARK_BLUE + key + ": " + ChatColor.BLACK + formatted + "\n");
 			}
 		}
 		meta.addPage(sb.toString());
@@ -319,29 +328,13 @@ public class BookOfSouls {
 		});
 	}
 
-	public static String formatNbtValue(ReadableNBT nbt, String key) {
-		String raw = switch (nbt.getType(key)) {
-			case NBTTagByte -> nbt.getByte(key) + "b";
-			case NBTTagShort -> nbt.getShort(key) + "s";
-			case NBTTagInt -> String.valueOf(nbt.getInteger(key));
-			case NBTTagLong -> nbt.getLong(key) + "L";
-			case NBTTagFloat -> nbt.getFloat(key) + "f";
-			case NBTTagDouble -> nbt.getDouble(key) + "d";
-			case NBTTagString -> "\"" + nbt.getString(key) + "\"";
-			case NBTTagByteArray -> "[B;" + nbt.getByteArray(key).length + "]";
-			case NBTTagIntArray -> "[I;" + nbt.getIntArray(key).length + "]";
-			case NBTTagLongArray -> "[L;" + nbt.getLongArray(key).length + "]";
-			case NBTTagList -> "[" + nbt.getListType(key).name().replace("NBTTag", "") + " list]";
-			case NBTTagCompound -> {
-				ReadableNBT sub = nbt.getCompound(key);
-				yield sub != null ? sub.toString() : "{}";
-			}
-			default -> "?";
-		};
-		if (raw.length() > 60) {
-			raw = raw.substring(0, 59) + "\u2026";
+	/** Shim: formats a field value as a legacy ChatColor string for use in book pages. */
+	private static String legacyFormat(NbtFieldType type, ReadableNBT nbt, String key) {
+		Component component = type.formatForBook(nbt, key);
+		String s = LegacyComponentSerializer.legacySection().serialize(component);
+		if (s.length() > 60) {
+			s = s.substring(0, 59) + "\u2026";
 		}
-		return raw;
+		return s;
 	}
-
 }

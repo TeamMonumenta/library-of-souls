@@ -2,8 +2,9 @@ package com.playmonumenta.libraryofsouls.commands;
 
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
-import com.playmonumenta.libraryofsouls.nbt.EntityNBTGroups;
 import com.playmonumenta.libraryofsouls.nbt.EntityNBTUtils;
+import com.playmonumenta.libraryofsouls.nbt.types.EntityNBTGroups;
+import com.playmonumenta.libraryofsouls.nbt.types.NbtFieldType;
 import com.playmonumenta.libraryofsouls.utils.NmsUtils;
 import com.playmonumenta.libraryofsouls.utils.UtilsMc;
 import de.tr7zw.nbtapi.NBT;
@@ -78,7 +79,7 @@ public class BookOfSoulsCommand {
 			return names.toArray(String[]::new);
 		});
 
-		// Tab-completes NBT variable names: group keys for the entity type + already-set keys
+		// Tab-completes NBT variable names: annotated group keys + already-set keys in the BoS
 		ArgumentSuggestions<CommandSender> varNameSuggestions = ArgumentSuggestions.strings((info) -> {
 			if (!(info.sender() instanceof Player player)) {
 				return new String[0];
@@ -95,10 +96,38 @@ public class BookOfSoulsCommand {
 			EntityType type = EntityNBTUtils.getEntityType(nbt).orElse(null);
 			Set<String> suggestions = new LinkedHashSet<>();
 			if (type != null) {
-				suggestions.addAll(EntityNBTGroups.getAllKeysForType(type));
+				suggestions.addAll(EntityNBTGroups.getFieldTypeMap(type).keySet());
 			}
 			suggestions.addAll(nbt.getKeys());
 			return suggestions.toArray(String[]::new);
+		});
+
+		// Tab-completes possible values based on the field type of the already-typed key
+		ArgumentSuggestions<CommandSender> varValueSuggestions = ArgumentSuggestions.strings((info) -> {
+			if (!(info.sender() instanceof Player player)) {
+				return new String[0];
+			}
+			ItemStack item = player.getInventory().getItemInMainHand();
+			if (!BookOfSouls.isValidBook(item)) {
+				return new String[0];
+			}
+			BookOfSouls bos = BookOfSouls.getFromBook(item);
+			if (bos == null) {
+				return new String[0];
+			}
+			Object keyArg = info.previousArgs().get("name");
+			if (!(keyArg instanceof String key)) {
+				return new String[0];
+			}
+			EntityType type = EntityNBTUtils.getEntityType(bos.getEntityNBT()).orElse(null);
+			Map<String, NbtFieldType> typeMap = type != null
+				? EntityNBTGroups.getFieldTypeMap(type)
+				: Map.of();
+			NbtFieldType fieldType = typeMap.get(key);
+			if (fieldType == null) {
+				return new String[0];
+			}
+			return fieldType.possibleValues().toArray(String[]::new);
 		});
 
 		/* nbos get <entityType> */
@@ -217,7 +246,7 @@ public class BookOfSoulsCommand {
 			})
 			.register();
 
-		/* nbos var <name> — get current value */
+		/* nbos var <name> — interact with field (display value or open GUI) */
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.OP)
 			.withArguments(new LiteralArgument("var"))
@@ -226,36 +255,24 @@ public class BookOfSoulsCommand {
 				checkCreative(sender);
 				BookOfSouls bos = getBos(sender);
 				String name = (String) args.get(0);
-				ReadWriteNBT nbt = bos.getEntityNBT();
-				if (!nbt.hasTag(name)) {
-					sender.sendMessage(Component.text("Variable '" + name + "' is not set.", NamedTextColor.RED));
-					return;
-				}
-				sender.sendMessage(Component.text(name + ": " + BookOfSouls.formatNbtValue(nbt, name), NamedTextColor.AQUA));
+				NbtFieldType fieldType = resolveFieldType(bos, name);
+				fieldType.interact(sender, bos, name);
 			})
 			.register();
 
-		/* nbos var <name> <value> — set via SNBT */
+		/* nbos var <name> <value> — set field from SNBT (type-checked and coerced) */
 		new CommandAPICommand(COMMAND)
 			.withPermission(CommandPermission.OP)
 			.withArguments(new LiteralArgument("var"))
 			.withArguments(new StringArgument("name").replaceSuggestions(varNameSuggestions))
-			.withArguments(new GreedyStringArgument("value"))
+			.withArguments(new GreedyStringArgument("value").replaceSuggestions(varValueSuggestions))
 			.executesPlayer((sender, args) -> {
 				checkCreative(sender);
 				BookOfSouls bos = getBos(sender);
 				String name = (String) args.get(0);
 				String value = (String) args.get(1);
-				ReadWriteNBT parsed;
-				try {
-					parsed = NBT.parseNBT("{" + name + ":" + value + "}");
-				} catch (Exception e) {
-					throw CommandAPI.failWithString("Invalid SNBT value: " + e.getMessage());
-				}
-				bos.getEntityNBT().mergeCompound(parsed);
-				bos.saveBook();
-				sender.getInventory().setItemInMainHand(bos.getBook());
-				sender.sendMessage(Component.text("Variable '" + name + "' set.", NamedTextColor.GREEN));
+				NbtFieldType fieldType = resolveFieldType(bos, name);
+				fieldType.setFromInput(sender, bos, name, value);
 			})
 			.register();
 
@@ -363,6 +380,17 @@ public class BookOfSoulsCommand {
 		}
 	}
 
+	private static NbtFieldType resolveFieldType(BookOfSouls bos, String key) {
+		EntityType type = EntityNBTUtils.getEntityType(bos.getEntityNBT()).orElse(null);
+		if (type != null) {
+			NbtFieldType fieldType = EntityNBTGroups.getFieldTypeMap(type).get(key);
+			if (fieldType != null) {
+				return fieldType;
+			}
+		}
+		return NbtFieldType.generic();
+	}
+
 	// Accepts either full key ("minecraft:generic.max_health") or short form ("generic.max_health")
 	private static String resolveAttributeName(String input) {
 		for (Attribute attr : Attribute.values()) {
@@ -380,13 +408,11 @@ public class BookOfSoulsCommand {
 		// Section 1: unhandled keys per entity type
 		// Section 2: entity types with no specific group (only Entity/LivingEntity/Mob)
 		// Section 3: group keys that appear in no entity's default NBT
-		Set<String> generalGroupNames = Set.of("Entity", "LivingEntity", "Mob");
+		Set<String> generalGroupNames = Set.of("Entity (general)", "Entity", "LivingEntity", "Mob");
 		// Collect every key defined across all groups (used for stale-key detection)
 		Set<String> allGroupKeys = new TreeSet<>();
 		for (EntityType type : EntityType.values()) {
-			for (EntityNBTGroups.Group g : EntityNBTGroups.getGroupsForType(type)) {
-				allGroupKeys.addAll(g.nbtKeys());
-			}
+			allGroupKeys.addAll(EntityNBTGroups.getFieldTypeMap(type).keySet());
 		}
 
 		TreeMap<String, List<String>> unhandledByType = new TreeMap<>();
@@ -409,10 +435,10 @@ public class BookOfSoulsCommand {
 			}
 			seenDefaultKeys.addAll(defaultKeys);
 
-			Set<String> typeGroupKeys = EntityNBTGroups.getAllKeysForType(type);
+			Map<String, NbtFieldType> typeMap = EntityNBTGroups.getFieldTypeMap(type);
 			List<String> unhandled = new ArrayList<>();
 			for (String key : new TreeSet<>(defaultKeys)) {
-				if (!typeGroupKeys.contains(key) && !noise.contains(key)) {
+				if (!typeMap.containsKey(key) && !noise.contains(key)) {
 					unhandled.add(key);
 				}
 			}
@@ -421,7 +447,7 @@ public class BookOfSoulsCommand {
 			}
 
 			List<EntityNBTGroups.Group> groups = EntityNBTGroups.getGroupsForType(type);
-			boolean isMob = groups.stream().anyMatch(g -> g.displayName().equals("Mob"));
+			boolean isMob = Mob.class.isAssignableFrom(type.getEntityClass());
 			boolean hasSpecificGroup = groups.stream().anyMatch(g -> !generalGroupNames.contains(g.displayName()));
 			if (isMob && !hasSpecificGroup) {
 				noSpecificGroup.add(type.getKey().asMinimalString());
