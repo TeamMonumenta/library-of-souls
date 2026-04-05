@@ -89,6 +89,10 @@ public class SpawnerInventory extends CustomInventory {
 
 	public static void openSpawnerInventory(Soul soul, Player player, @Nullable SoulsInventory previous) {
 		BookOfSouls book = BookOfSouls.getFromBook(soul.getBoS());
+		if (book == null) {
+			player.sendMessage(Component.text("Could not read soul data from Book of Souls").color(NamedTextColor.RED));
+			return;
+		}
 
 		Block block = findSafeAirBlock(player.getLocation());
 		if (block == null) {

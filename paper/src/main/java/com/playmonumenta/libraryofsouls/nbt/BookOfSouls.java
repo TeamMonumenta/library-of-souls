@@ -31,6 +31,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 public class BookOfSouls {
 
@@ -48,19 +49,19 @@ public class BookOfSouls {
 		"Pos", "Motion", "Rotation", "UUID", "FallDistance", "Fire", "Air",
 		"OnGround", "PortalCooldown", "WorldUUIDLeast", "WorldUUIDMost");
 
-	private static Plugin _plugin = null;
+	private static @Nullable Plugin mPlugin = null;
 
-	private ItemStack mBook;
+	private @Nullable ItemStack mBook;
 	private ReadWriteNBT mEntityNbt;
 
 	public static void initialize(Plugin plugin) {
-		if (_plugin != null) {
+		if (mPlugin != null) {
 			return;
 		}
-		_plugin = plugin;
+		mPlugin = plugin;
 	}
 
-	public static ReadWriteNBT bookToEntityNBT(ItemStack book) {
+	public static @Nullable ReadWriteNBT bookToEntityNBT(ItemStack book) {
 		if (isValidBook(book)) {
 			try {
 				final var newData = NBT.get(book, nbt -> {
@@ -88,14 +89,16 @@ public class BookOfSouls {
 					}
 				}
 			} catch (Exception e) {
-				_plugin.getLogger().log(Level.WARNING, "Corrupt Book of Souls.", e);
+				if (mPlugin != null) {
+					mPlugin.getLogger().log(Level.WARNING, "Corrupt Book of Souls.", e);
+				}
 				return null;
 			}
 		}
 		return null;
 	}
 
-	public static BookOfSouls getFromBook(ItemStack book) {
+	public static @Nullable BookOfSouls getFromBook(ItemStack book) {
 		ReadWriteNBT entityNbt = bookToEntityNBT(book);
 		if (entityNbt != null) {
 			return new BookOfSouls(book, entityNbt);
@@ -144,15 +147,15 @@ public class BookOfSouls {
 		this(null, entityNBT);
 	}
 
-	public BookOfSouls(ItemStack book, final Entity entity) {
+	public BookOfSouls(@Nullable ItemStack book, final Entity entity) {
 		this(book, entity.createSnapshot());
 	}
 
-	public BookOfSouls(ItemStack book, final EntitySnapshot snapshot) {
+	public BookOfSouls(@Nullable ItemStack book, final EntitySnapshot snapshot) {
 		this(book, fromSnapshot(snapshot));
 	}
 
-	private BookOfSouls(ItemStack book, ReadWriteNBT entityNBT) {
+	private BookOfSouls(@Nullable ItemStack book, ReadWriteNBT entityNBT) {
 		mBook = book;
 		mEntityNbt = entityNBT;
 	}
@@ -210,6 +213,9 @@ public class BookOfSouls {
 	}
 
 	public void saveBook(boolean resetName) {
+		if (mBook == null) {
+			mBook = new ItemStack(Material.WRITTEN_BOOK);
+		}
 		BookMeta meta = (BookMeta) mBook.getItemMeta();
 		EntityType entityType = EntityNBTUtils.getEntityType(mEntityNbt).orElse(null);
 		String entityName = entityType != null ? entityType.getKey().asMinimalString() : "unknown";

@@ -580,7 +580,7 @@ public class BestiarySoulInventory extends CustomInventory {
 		return healthItem;
 	}
 
-	private static ItemStack getArmorItem(ItemStack item, double armor, double armorToughness) {
+	private static ItemStack getArmorItem(@Nullable ItemStack item, double armor, double armorToughness) {
 		ItemStack armorItem = item != null && item.getItemMeta() != null ? item : new ItemStack(Material.IRON_CHESTPLATE);
 		ItemMeta armorMeta = armorItem.getItemMeta();
 		List<Component> lore = new ArrayList<>();
