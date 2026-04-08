@@ -1,7 +1,7 @@
 [versions]
 commandapi = "9.4.1"
 nbtapi = "2.15.2"
-redissync = "4.1"
+redissync = "6.0.0"
 nbteditor = "4.1"
 gson = "2.13.2"
 mixinapi = "2.0.5"

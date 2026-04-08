@@ -4,14 +4,11 @@ import java.util.List;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public interface BestiaryEntryInterface {
 	/* Name of this bestiary entry for display purposes */
 	Component getBestiaryName();
-
-	/* Deprecated, renamed to getBestiaryName() to avoid conflict with Soul#getName() */
-	@Deprecated
-	Component getName();
 
 	/* Checks whether the player has permission to open this bestiary entry */
 	boolean canOpenBestiary(Player player);
@@ -20,8 +17,8 @@ public interface BestiaryEntryInterface {
 	ItemStack getBestiaryItem(Player player);
 
 	/* Open the contents of this entry for a specific player
-	 * Note that parent must be provided here so a mob bestiary page can get
-	 * back to the index page that accessed it
+	 * Note that parent must be provided here for the bestiary page to get
+	 * back to the index page that accessed it.
 	 */
-	void openBestiary(Player player, BestiaryArea parent, List<BestiaryEntryInterface> peers, int peerIndex);
+	void openBestiary(Player player, @Nullable BestiaryArea parent, @Nullable List<BestiaryEntryInterface> peers, int peerIndex);
 }

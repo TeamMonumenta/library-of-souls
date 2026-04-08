@@ -3,8 +3,10 @@ package com.playmonumenta.libraryofsouls;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
+import com.playmonumenta.libraryofsouls.commands.BookOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
+import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
 import com.playmonumenta.libraryofsouls.nbt.BookOfSoulsListener;
 import com.playmonumenta.libraryofsouls.utils.NmsUtils;
 import java.io.File;
@@ -77,6 +79,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		 *
 		 * These need to register immediately on load to prevent function loading errors
 		 */
+		BookOfSoulsCommand.register();
 		LibraryOfSoulsCommand.register();
 		SpawnerNBTCommand.register();
 		BestiaryCommand.register();
@@ -112,6 +115,7 @@ public class LibraryOfSouls extends JavaPlugin {
 			e.printStackTrace();
 		}
 
+		BookOfSouls.initialize(this);
 		getServer().getPluginManager().registerEvents(new BookOfSoulsListener(), this);
 	}
 

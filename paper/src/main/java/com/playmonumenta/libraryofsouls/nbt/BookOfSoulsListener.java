@@ -17,13 +17,18 @@ import org.bukkit.inventory.EquipmentSlot;
 
 public class BookOfSoulsListener implements Listener {
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onInteractAtEntity(final PlayerInteractAtEntityEvent event) {
 		if (event.getHand() == EquipmentSlot.OFF_HAND) {
 			return;
 		}
 		final var player = event.getPlayer();
 		final var item = player.getInventory().getItemInMainHand();
+		if (BookOfSouls.isValidBook(item)) {
+			// Filled BoS right-click on entity: cancel to prevent accidental spawning
+			event.setCancelled(true);
+			return;
+		}
 		if (!BookOfSouls.isValidEmptyBook(item)) {
 			return;
 		}
@@ -37,7 +42,7 @@ public class BookOfSoulsListener implements Listener {
 
 
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = false)
 	public void onLeftClick(PlayerInteractEvent event) {
 		final var action = event.getAction();
 		if (!action.isLeftClick() || event.getHand() == EquipmentSlot.OFF_HAND) {
@@ -63,12 +68,15 @@ public class BookOfSoulsListener implements Listener {
 			case LEFT_CLICK_BLOCK: {
 				Block block = event.getClickedBlock();
 				if (block != null && block.getType() != Material.AIR) {
-					location = block.getLocation().add(event.getBlockFace().getDirection());
+					Location candidate = block.getLocation().add(event.getBlockFace().getDirection());
+					if (candidate.distanceSquared(player.getLocation()) <= 400) {
+						location = candidate;
+					}
 				}
 				break;
 			}
 			case LEFT_CLICK_AIR: {
-				Block block = player.getTargetBlockExact(50);
+				Block block = player.getTargetBlockExact(20);
 				if (block != null && block.getType() != Material.AIR) {
 					location = block.getLocation().add(event.getBlockFace().getDirection()).add(0.0d, 0.3d, 0.0d);
 				}
@@ -88,7 +96,7 @@ public class BookOfSoulsListener implements Listener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.LOW)
+	@EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	public void onDispense(BlockDispenseEvent event) {
 		final var item = event.getItem();
 		if (!BookOfSouls.isValidBook(item)) {
@@ -100,6 +108,7 @@ public class BookOfSoulsListener implements Listener {
 			EntityNBTUtils.getFakeEntitySnapshot(bos.getEntityNBT()).createEntity(getLocation(event.getBlock()));
 		}
 	}
+
 	private Location getLocation(Block block) {
 		final var data = block.getBlockData();
 		if (data instanceof Directional directional) {
@@ -109,8 +118,8 @@ public class BookOfSoulsListener implements Listener {
 		// Fallback?
 		return block.getLocation();
 		// if (_location == null) {
-		// 	BlockFace face = ((Dispenser) _block.getState().getData()).getFacing();
-		// 	_location = _block.getLocation().add(UtilsMc.faceToDelta(face, 0.2)).add(0, -0.3, 0);
+		//     BlockFace face = ((Dispenser) _block.getState().getData()).getFacing();
+		//     _location = _block.getLocation().add(UtilsMc.faceToDelta(face, 0.2)).add(0, -0.3, 0);
 		// }
 		// return _location;
 	}

@@ -1,16 +1,17 @@
 package com.playmonumenta.libraryofsouls.nbt;
 
-import org.bukkit.ChatColor;
 import org.bukkit.inventory.meta.BookMeta;
+import org.jetbrains.annotations.Nullable;
 
+// TODO: remove LegacyBookSerialize when legacy v0.1 BoS serialization is no longer needed
 public final class LegacyBookSerialize {
 
-	private static final String _dataPre = ChatColor.MAGIC.toString();
+	private static final String _dataPre = "§k";
 
 	private LegacyBookSerialize() {
 	}
 
-	public static String loadData(BookMeta meta, String dataTitle) {
+	public static @Nullable String loadData(BookMeta meta, String dataTitle) {
 		int pageCount = meta.getPageCount();
 		if (pageCount == 0) {
 			return null;
