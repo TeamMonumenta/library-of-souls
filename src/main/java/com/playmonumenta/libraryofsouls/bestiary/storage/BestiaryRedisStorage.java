@@ -8,7 +8,6 @@ import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
 import com.playmonumenta.redissync.event.PlayerSaveEvent;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -20,11 +19,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	private static final String IDENTIFIER = "LOS";
-	private static final int MAX_LOAD_PER_TICK = 25;
 
 	/*
 	 * This stores the original JSON string containing the player's data. Data is merged into
@@ -37,6 +34,7 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	 */
 	private final Map<UUID, JsonObject> mPlayerOriginalData = new HashMap<>();
 	private final Map<UUID, Map<SoulEntry, Integer>> mPlayerKills = new HashMap<>();
+	private final Map<String, SoulEntry> mSoulLookupCache = new HashMap<>();
 	private final Plugin mPlugin;
 	private final Logger mLogger;
 
@@ -66,59 +64,29 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 			mPlayerOriginalData.put(uuid, new JsonObject());
 		} else {
 			mPlayerOriginalData.put(uuid, obj);
-			/*
-			 * This is a bit fancy.
-			 *
-			 * For each soul in the souls database, we compute the minified soul identifier, then see if it was in the JSON data
-			 *
-			 * Because we don't want to introduce lag when the player logs in, this is spread out over many ticks, but runs on the main thread
-			 */
 			final SoulsDatabase database = SoulsDatabase.getInstance();
 			if (database == null) {
 				mLogger.severe("Player joined but SoulsDatabase not initialized!");
 				return;
 			}
 
-			final Iterator<SoulEntry> iter = database.getSouls().iterator();
+			if (mSoulLookupCache.isEmpty()) {
+				for (SoulEntry soul : database.getSouls()) {
+					mSoulLookupCache.put(nameToHex(soul.getLabel()), soul);
+				}
+			}
+
 			final Map<SoulEntry, Integer> playerKills = new HashMap<>();
 
-			new BukkitRunnable() {
-				@Override
-				public void run() {
-					final long runnableTime = System.currentTimeMillis();
-					int stepCounter = 0;
-					while (iter.hasNext() && player.isOnline()) {
-						final SoulEntry soul = iter.next();
-
-						/*
-						 * Check if the player's JSON data contains the hashed/hex mob label.
-						 * If so, store how many kills in the active player data
-						 */
-						final String key = nameToHex(soul.getLabel());
-						final JsonElement element = obj.get(key);
-						if (element != null) {
-							playerKills.put(soul, element.getAsInt());
-						}
-
-						stepCounter++;
-						if (stepCounter >= MAX_LOAD_PER_TICK) {
-							/* Will continue where this left off on the next tick */
-							break;
-						}
-					}
-					mLogger.fine("Main thread data loading loop took " + (System.currentTimeMillis() - runnableTime) + " milliseconds");
-
-					if (!player.isOnline()) {
-						/* Player logged out before their data finished loading - abort */
-						this.cancel();
-					} else if (!iter.hasNext()) {
-						/* All done loading - make the player kills map accessible */
-						mPlayerKills.put(uuid, playerKills);
-						this.cancel();
-						mLogger.fine("Data load complete, total time " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
-					}
+			for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+				final SoulEntry soul = mSoulLookupCache.get(entry.getKey());
+				if (soul != null) {
+					playerKills.put(soul, entry.getValue().getAsInt());
 				}
-			}.runTaskTimer(mPlugin, 1, 1);
+			}
+
+			mPlayerKills.put(uuid, playerKills);
+			mLogger.fine("Data load complete, total time " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
 		}
 	}
 
