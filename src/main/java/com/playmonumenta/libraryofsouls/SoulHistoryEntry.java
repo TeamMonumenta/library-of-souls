@@ -409,6 +409,7 @@ public class SoulHistoryEntry implements Soul {
 			case ALLAY -> Material.AMETHYST_SHARD;
 			case ARMOR_STAND -> Material.ARMOR_STAND;
 			case AXOLOTL -> Material.AXOLOTL_BUCKET;
+			case BAT -> Material.BLACK_DYE;
 			case BLAZE -> Material.BLAZE_POWDER;
 			case BEE -> Material.HONEYCOMB;
 			case CAT -> Material.STRING;
@@ -432,13 +433,15 @@ public class SoulHistoryEntry implements Soul {
 			case GHAST -> Material.GHAST_TEAR;
 			case GIANT -> Material.ANCIENT_DEBRIS;
 			case GLOW_SQUID -> Material.GLOW_INK_SAC;
+			case GOAT -> Material.GOAT_HORN;
 			case GUARDIAN -> Material.PRISMARINE_SHARD;
 			case HOGLIN -> Material.WARPED_FUNGUS;
 			case ZOGLIN -> Material.CRIMSON_FUNGUS;
-			case HORSE -> Material.SADDLE;
+			case HORSE, DONKEY, MULE -> Material.SADDLE;
 			case HUSK -> Material.ROTTEN_FLESH;
 			case ILLUSIONER, STRAY -> Material.BOW;
 			case IRON_GOLEM -> Material.IRON_BLOCK;
+			case LLAMA -> Material.ORANGE_CARPET;
 			case MAGMA_CUBE -> Material.MAGMA_CREAM;
 			case MUSHROOM_COW -> Material.RED_MUSHROOM;
 			case OCELOT -> Material.COOKED_CHICKEN;
@@ -468,11 +471,12 @@ public class SoulHistoryEntry implements Soul {
 			case STRIDER -> Material.WARPED_FUNGUS_ON_A_STICK;
 			case SQUID -> Material.INK_SAC;
 			case TADPOLE -> Material.FROGSPAWN;
+			case TRADER_LLAMA -> Material.BLUE_CARPET;
 			case TROPICAL_FISH -> Material.TROPICAL_FISH;
 			case TURTLE -> Material.TURTLE_HELMET;
 			case VEX -> Material.IRON_SWORD;
 			case VINDICATOR -> Material.STONE_AXE;
-			case VILLAGER -> Material.EMERALD;
+			case VILLAGER, WANDERING_TRADER -> Material.EMERALD;
 			case WARDEN -> Material.SCULK_SHRIEKER;
 			case WITCH -> Material.POISONOUS_POTATO;
 			case WITHER -> Material.NETHER_STAR;
