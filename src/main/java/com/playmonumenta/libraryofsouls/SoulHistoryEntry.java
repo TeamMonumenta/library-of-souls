@@ -465,7 +465,7 @@ public class SoulHistoryEntry implements Soul {
 			case SKELETON -> Material.SKELETON_SKULL;
 			case SKELETON_HORSE -> Material.IRON_HORSE_ARMOR;
 			case SLIME -> Material.SLIME_BALL;
-			case SNIFFER -> Material.TORCHFLOWER;
+			case SNIFFER -> Material.SNIFFER_EGG;
 			case SNOWMAN -> Material.CARVED_PUMPKIN;
 			case SPIDER -> Material.SPIDER_EYE;
 			case STRIDER -> Material.WARPED_FUNGUS_ON_A_STICK;
