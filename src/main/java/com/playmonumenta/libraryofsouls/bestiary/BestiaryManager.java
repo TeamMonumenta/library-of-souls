@@ -5,9 +5,9 @@ import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryScoreboardStorage;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryStorage;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.*;
-import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
@@ -25,7 +25,6 @@ public class BestiaryManager implements Listener {
 	private static @Nullable BestiaryManager INSTANCE = null;
 
 	private final BestiaryStorage mStorage;
-	private final Logger mLogger;
 
 	private static final int MAX_BOSS_TRACK_ENTRIES = 30;
 
@@ -45,7 +44,6 @@ public class BestiaryManager implements Listener {
 
 	public BestiaryManager(Plugin plugin) {
 		INSTANCE = this;
-		mLogger = plugin.getLogger();
 
 		/*
 		 * If MonumentaRedisSync is available, use it for storage
@@ -53,10 +51,10 @@ public class BestiaryManager implements Listener {
 		 */
 		if (Bukkit.getPluginManager().isPluginEnabled("MonumentaRedisSync")) {
 			mStorage = new BestiaryRedisStorage(plugin);
-			mLogger.info("Using MonumentaRedisSync for bestiary storage");
+			MMLog.info("Using MonumentaRedisSync for bestiary storage");
 		} else {
 			mStorage = new BestiaryScoreboardStorage();
-			mLogger.info("Using scoreboard for bestiary storage");
+			MMLog.info("Using scoreboard for bestiary storage");
 		}
 	}
 
@@ -172,7 +170,7 @@ public class BestiaryManager implements Listener {
 						try {
 							mStorage.recordKill(damager, soul);
 						} catch (Exception ex) {
-							mLogger.warning(ex.getMessage());
+							MMLog.warning("Failed to record kill", ex);
 						}
 					});
 				} else {
@@ -180,7 +178,7 @@ public class BestiaryManager implements Listener {
 					try {
 						mStorage.recordKill(player, soul);
 					} catch (Exception ex) {
-						mLogger.warning(ex.getMessage());
+						MMLog.warning("Failed to record kill", ex);
 					}
 
 					// also check if any nearby player has not killed that mob before, and give them the kill
@@ -194,13 +192,13 @@ public class BestiaryManager implements Listener {
 						try {
 							mStorage.recordKill(p, soul);
 						} catch (Exception ex) {
-							mLogger.warning(ex.getMessage());
+							MMLog.warning("Failed to record kill", ex);
 						}
 					}
 				}
 			}
 		} catch (Exception ex) {
-			mLogger.warning(ex.getMessage());
+			MMLog.warning("Failed to process entity death event", ex);
 		}
 	}
 }

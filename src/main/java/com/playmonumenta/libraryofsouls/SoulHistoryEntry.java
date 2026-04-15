@@ -7,6 +7,7 @@ import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.logging.Logger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -395,9 +395,7 @@ public class SoulHistoryEntry implements Soul {
 		try {
 			mBoS = new BookOfSouls(entityNBT).getBook();
 		} catch (Exception ex) {
-			Logger logger = LibraryOfSouls.getInstance().getLogger();
-			logger.warning("Library of souls entry for '" + mName + "' failed to load: " + ex.getMessage());
-			ex.printStackTrace();
+			MMLog.warning("Library of souls entry for '" + mName + "' failed to load", ex);
 
 			mPlaceholder = new ItemStack(Material.BARRIER);
 			mPlaceholder.editMeta(itemMeta -> itemMeta.displayName(Component.text("FAILED TO LOAD: ").append(getDisplayName())));
