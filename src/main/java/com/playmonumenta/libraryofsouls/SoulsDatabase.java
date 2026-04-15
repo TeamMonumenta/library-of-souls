@@ -8,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.playmonumenta.libraryofsouls.utils.FileUtils;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import com.playmonumenta.mixinapi.v1.DataFix;
 import de.tr7zw.nbtapi.NBTContainer;
@@ -87,7 +88,7 @@ public class SoulsDatabase {
 		/* Periodically check the file to see if it has changed */
 		Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
 			try {
-				mPlugin.getLogger().fine("Polling souls database file...");
+				MMLog.debug("Polling souls database file...");
 				long lastModMs = Files.getLastModifiedTime(mSoulsDatabasePath).toMillis();
 				lastModMs = Math.max(lastModMs, Files.getLastModifiedTime(mSoulPartiesDatabasePath).toMillis());
 				lastModMs = Math.max(lastModMs, Files.getLastModifiedTime(mSoulPoolsDatabasePath).toMillis());
@@ -102,8 +103,7 @@ public class SoulsDatabase {
 					mIgnoreNextChange = false;
 				}
 			} catch (Exception e) {
-				mPlugin.getLogger().warning("Caught exception while polling database file: " + e.getMessage());
-				e.printStackTrace();
+				MMLog.warning("Caught exception while polling database file", e);
 			}
 		}, 200, 200);
 
@@ -371,7 +371,7 @@ public class SoulsDatabase {
 
 			souls = object.getAsJsonArray("souls");
 		} else {
-			mPlugin.getLogger().info("Database is in legacy format, assuming data version: " + dataVersion);
+			MMLog.info("Database is in legacy format, assuming data version: " + dataVersion);
 			souls = (JsonArray) soulsArray;
 		}
 
@@ -379,7 +379,7 @@ public class SoulsDatabase {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
 			final var latestVersion = DataFix.getInstance().currentDataVersion();
 			if (dataVersion < latestVersion) {
-				mPlugin.getLogger().info("Performing datafix...");
+				MMLog.info("Performing datafix...");
 				int entries = 0;
 				for (JsonElement soul : souls) {
 					for (JsonElement h : soul.getAsJsonObject().get("history").getAsJsonArray()) {
@@ -392,10 +392,10 @@ public class SoulsDatabase {
 						history.addProperty("mojangson", result.toString());
 					}
 				}
-				mPlugin.getLogger().info("Datafixed " + entries + " entries");
+				MMLog.info("Datafixed " + entries + " entries");
 			}
 		} catch (ClassNotFoundException e) {
-			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+			MMLog.info("Monumenta mixin DFU api not found, skipping auto upgrade!");
 		}
 
 		return souls;
@@ -408,17 +408,17 @@ public class SoulsDatabase {
 		try {
 			Class.forName("com.playmonumenta.mixinapi.v1.DataFix");
 			final var dfuVersion = DataFix.getInstance().currentDataVersion();
-			mPlugin.getLogger().info("Writing souls with DFU version: " + dfuVersion);
+			MMLog.info("Writing souls with DFU version: " + dfuVersion);
 			object.addProperty("data_version", dfuVersion);
 		} catch (ClassNotFoundException e) {
-			mPlugin.getLogger().info("Monumenta mixin DFU api not found, skipping auto upgrade!");
+			MMLog.info("Monumenta mixin DFU api not found, skipping auto upgrade!");
 		}
 
 		return gson.toJson(object);
 	}
 
 	public void reloadAsync() throws Exception {
-		mPlugin.getLogger().info("Reloading souls library...");
+		MMLog.info("Reloading souls library...");
 		Map<String, SoulEntry> newSouls = new TreeMap<>(COMPARATOR);
 		Map<String, SoulPartyEntry> newSoulParties = new TreeMap<>(COMPARATOR);
 		Map<String, SoulPoolEntry> newSoulPools = new TreeMap<>(COMPARATOR);
@@ -454,7 +454,7 @@ public class SoulsDatabase {
 			throw new Exception("Failed to parse soul pools database as JSON array");
 		}
 
-		mPlugin.getLogger().info("Souls:");
+		MMLog.info("Souls:");
 		int soulCount = 0;
 		for (JsonElement entry : soulsArray) {
 			JsonObject obj = entry.getAsJsonObject();
@@ -463,18 +463,18 @@ public class SoulsDatabase {
 			String label = soul.getLabel();
 
 			if (newSouls.get(label) != null) {
-				mPlugin.getLogger().severe("Refused to load Library of Souls duplicate mob '" + label + "'");
+				MMLog.severe("Refused to load Library of Souls duplicate mob '" + label + "'");
 				continue;
 			}
 
-			mPlugin.getLogger().fine("  " + label);
+			MMLog.debug("  " + label);
 
 			newSouls.put(label, soul);
 
 			soulCount++;
 		}
 
-		mPlugin.getLogger().info("Soul parties:");
+		MMLog.info("Soul parties:");
 		int soulPartyCount = 0;
 		for (JsonElement entry : soulPartiesArray) {
 			JsonObject obj = entry.getAsJsonObject();
@@ -483,18 +483,18 @@ public class SoulsDatabase {
 			String label = soulParty.getLabel();
 
 			if (newSoulParties.get(label) != null) {
-				mPlugin.getLogger().severe("Refused to load Library of Souls duplicate soul party '" + label + "'");
+				MMLog.severe("Refused to load Library of Souls duplicate soul party '" + label + "'");
 				continue;
 			}
 
-			mPlugin.getLogger().fine("  " + label);
+			MMLog.debug("  " + label);
 
 			newSoulParties.put(label, soulParty);
 
 			soulPartyCount++;
 		}
 
-		mPlugin.getLogger().info("Soul pools:");
+		MMLog.info("Soul pools:");
 		int soulPoolCount = 0;
 		for (JsonElement entry : soulPoolsArray) {
 			JsonObject obj = entry.getAsJsonObject();
@@ -503,11 +503,11 @@ public class SoulsDatabase {
 			String label = soulPool.getLabel();
 
 			if (newSoulPools.get(label) != null) {
-				mPlugin.getLogger().severe("Refused to load Library of Souls duplicate soul pool '" + label + "'");
+				MMLog.severe("Refused to load Library of Souls duplicate soul pool '" + label + "'");
 				continue;
 			}
 
-			mPlugin.getLogger().fine("  " + label);
+			MMLog.debug("  " + label);
 
 			newSoulPools.put(label, soulPool);
 
@@ -524,12 +524,12 @@ public class SoulsDatabase {
 			updateIndex();
 
 			/* Reload the main plugin config / bestiary also after reloading the database */
-			LibraryOfSouls.Config.load(mPlugin.getLogger(), mPlugin.getDataFolder(), true);
+			LibraryOfSouls.Config.load(mPlugin.getDataFolder(), true);
 
-			mPlugin.getLogger().info("Finished parsing souls library");
-			mPlugin.getLogger().info("Loaded " + finalSoulCount + " mob souls");
-			mPlugin.getLogger().info("Loaded " + finalSoulPartyCount + " mob soul parties");
-			mPlugin.getLogger().info("Loaded " + finalSoulPoolCount + " mob soul pools");
+			MMLog.info("Finished parsing souls library");
+			MMLog.info("Loaded " + finalSoulCount + " mob souls");
+			MMLog.info("Loaded " + finalSoulPartyCount + " mob soul parties");
+			MMLog.info("Loaded " + finalSoulPoolCount + " mob soul pools");
 		});
 	}
 
@@ -586,19 +586,19 @@ public class SoulsDatabase {
 		try {
 			FileUtils.writeFile(soulsDatabasePath, writeSouls(soulArray, gson));
 		} catch (Exception ex) {
-			mPlugin.getLogger().severe("Failed to save souls database to '" + soulsDatabasePath + "': " + ex.getMessage());
+			MMLog.severe("Failed to save souls database to '" + soulsDatabasePath + "'", ex);
 		}
 
 		try {
 			FileUtils.writeFile(soulPartiesDatabasePath, gson.toJson(soulPartyArray));
 		} catch (Exception ex) {
-			mPlugin.getLogger().severe("Failed to save soul parties database to '" + soulPartiesDatabasePath + "': " + ex.getMessage());
+			MMLog.severe("Failed to save soul parties database to '" + soulPartiesDatabasePath + "'", ex);
 		}
 
 		try {
 			FileUtils.writeFile(soulPoolsDatabasePath, gson.toJson(soulPoolArray));
 		} catch (Exception ex) {
-			mPlugin.getLogger().severe("Failed to save soul pools database to '" + soulPoolsDatabasePath + "': " + ex.getMessage());
+			MMLog.severe("Failed to save soul pools database to '" + soulPoolsDatabasePath + "'", ex);
 		}
 	}
 

@@ -11,8 +11,8 @@ import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import java.util.*;
-import java.util.logging.Level;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -293,13 +293,13 @@ public class BestiarySoulInventory extends CustomInventory {
 		if (defHealth != null && health == 0.0) {
 			health += defHealth;
 		} else if (health == 0) {
-			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the health map: " + entityNBT.getEntityType());
+			MMLog.info("This mob type is not contained in the health map: " + entityNBT.getEntityType());
 		}
 
 		if (defDamage != null && damage == 0.0) {
 			damage += defDamage;
 		} else if (damage == 0.0) {
-			LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the damage map: " + entityNBT.getEntityType());
+			MMLog.info("This mob type is not contained in the damage map: " + entityNBT.getEntityType());
 		}
 
 		// Only need to create one of these
@@ -708,7 +708,7 @@ public class BestiarySoulInventory extends CustomInventory {
 			if (DEFAULT_SPEED.get(entityNBT.getEntityType()) != null) {
 				speedScalar += DEFAULT_SPEED.get(entityNBT.getEntityType());
 			} else {
-				LibraryOfSouls.getInstance().getLogger().log(Level.INFO, "This mob type is not contained in the speed map: " + entityNBT.getEntityType());
+				MMLog.info("This mob type is not contained in the speed map: " + entityNBT.getEntityType());
 			}
 
 			speed += speedScalar;

@@ -5,6 +5,7 @@ import com.goncalomb.bukkit.mylib.reflect.NBTUtils;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.libraryofsouls.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +70,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 				try {
 					mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
 				} catch (Exception ex) {
-					LibraryOfSouls.getInstance().getLogger().warning("Failed to load bestiary area " + childKey + ": " + ex.getMessage());
+					MMLog.warning("Failed to load bestiary area " + childKey, ex);
 				}
 			}
 		} else {

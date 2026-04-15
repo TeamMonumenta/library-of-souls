@@ -1,13 +1,14 @@
 package com.playmonumenta.libraryofsouls;
 
+import com.playmonumenta.common.MMLogPaper;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryArea;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryCommand;
 import com.playmonumenta.libraryofsouls.bestiary.BestiaryManager;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
 import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import java.io.File;
 import java.io.IOException;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -21,7 +22,7 @@ public class LibraryOfSouls extends JavaPlugin {
 		private static boolean mReadOnly = true;
 		private static @Nullable BestiaryArea mBestiary = null;
 
-		static void load(Logger logger, File dataFolder, boolean loadBestiary) {
+		static void load(File dataFolder, boolean loadBestiary) {
 			/* Main config file, currently mostly unused */
 			File configFile = new File(dataFolder, "config.yml");
 			if (configFile.exists() && configFile.isFile()) {
@@ -37,7 +38,7 @@ public class LibraryOfSouls extends JavaPlugin {
 					yamlConfig.set("read_only", mReadOnly);
 					yamlConfig.save(configFile);
 				} catch (IOException ex) {
-					logger.warning("Failed to save default config to '" + configFile.getPath() + "': " + ex.getMessage());
+					MMLog.warning("Failed to save default config to '" + configFile.getPath() + "'", ex);
 				}
 			}
 
@@ -52,8 +53,7 @@ public class LibraryOfSouls extends JavaPlugin {
 							mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
 						}
 					} catch (Exception ex) {
-						logger.severe("Failed to load bestiary configuration: " + ex.getMessage());
-						ex.printStackTrace();
+						MMLog.severe("Failed to load bestiary configuration", ex);
 					}
 				}
 			}
@@ -70,6 +70,9 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
+		MMLog.init(getName());
+		MMLogPaper.registerCommand(MMLog.getLog());
+
 		/*
 		 * CommandAPI commands which register directly and are usable in functions
 		 *
@@ -78,6 +81,13 @@ public class LibraryOfSouls extends JavaPlugin {
 		LibraryOfSoulsCommand.register();
 		SpawnerNBTCommand.register();
 		BestiaryCommand.register();
+	}
+
+	/** @deprecated Use {@link MMLog} static methods instead. */
+	@Deprecated
+	@Override
+	public java.util.logging.Logger getLogger() {
+		return super.getLogger();
 	}
 
 	@Override
@@ -93,9 +103,9 @@ public class LibraryOfSouls extends JavaPlugin {
 
 		try {
 			/* Don't load the bestiary config initially - this will happen when the souls database loads */
-			Config.load(getLogger(), getDataFolder(), false);
+			Config.load(getDataFolder(), false);
 
-			getLogger().info("Library of Souls read only: " + Config.isReadOnly());
+			MMLog.info("Library of Souls read only: " + Config.isReadOnly());
 
 			if (!Config.isReadOnly()) {
 				LibraryOfSoulsCommand.registerWriteAccessCommands();
@@ -104,8 +114,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 			new SoulsDatabase(this, !Config.isReadOnly());
 		} catch (Exception e) {
-			getLogger().severe("Failed to load souls database! This plugin will not function");
-			e.printStackTrace();
+			MMLog.severe("Failed to load souls database! This plugin will not function", e);
 		}
 	}
 
