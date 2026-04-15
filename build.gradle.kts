@@ -4,6 +4,10 @@ plugins {
 	id("com.playmonumenta.gradle-config") version "4.+"
 }
 
+tasks.withType<JavaCompile> {
+	options.compilerArgs.add("-Werror")
+}
+
 repositories {
 	mavenLocal()
 }
