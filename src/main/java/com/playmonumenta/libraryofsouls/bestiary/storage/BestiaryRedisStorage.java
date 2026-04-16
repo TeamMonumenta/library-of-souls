@@ -34,7 +34,6 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 	 */
 	private final Map<UUID, JsonObject> mPlayerOriginalData = new HashMap<>();
 	private final Map<UUID, Map<SoulEntry, Integer>> mPlayerKills = new HashMap<>();
-	private final Map<String, SoulEntry> mSoulLookupCache = new HashMap<>();
 	private final Plugin mPlugin;
 
 	public BestiaryRedisStorage(final Plugin plugin) {
@@ -68,16 +67,10 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 				return;
 			}
 
-			if (mSoulLookupCache.isEmpty()) {
-				for (SoulEntry soul : database.getSouls()) {
-					mSoulLookupCache.put(nameToHex(soul.getLabel()), soul);
-				}
-			}
-
 			final Map<SoulEntry, Integer> playerKills = new HashMap<>();
 
 			for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
-				final SoulEntry soul = mSoulLookupCache.get(entry.getKey());
+				final SoulEntry soul = database.getSoulByLookupKey(entry.getKey());
 				if (soul != null) {
 					playerKills.put(soul, entry.getValue().getAsInt());
 				}

@@ -77,6 +77,7 @@ public class SoulsDatabase {
 	 * A SoulEntry may appear here many times
 	 */
 	private final Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
+	private final Map<String, SoulEntry> mSoulLookupIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin, boolean loadHistory) throws Exception {
 		mPlugin = plugin;
@@ -160,6 +161,10 @@ public class SoulsDatabase {
 
 	public @Nullable SoulEntry getSoul(String name) {
 		return mSouls.get(name);
+	}
+
+	public @Nullable SoulEntry getSoulByLookupKey(String key) {
+		return mSoulLookupIndex.get(key);
 	}
 
 	public List<SoulPartyEntry> getSoulParties() {
@@ -541,6 +546,7 @@ public class SoulsDatabase {
 		mLocsIndex.clear();
 		mNoLocMobs.clear();
 		mTypesIndex.clear();
+		mSoulLookupIndex.clear();
 		for (SoulEntry soul : mSouls.values()) {
 			/* Update location index */
 			Set<String> locs = soul.getLocationNames();
@@ -557,6 +563,9 @@ public class SoulsDatabase {
 			String id = soul.getId().getKey().toLowerCase(Locale.ROOT);
 			List<SoulEntry> lst = mTypesIndex.computeIfAbsent(id, k -> new ArrayList<>());
 			lst.add(soul);
+
+			/* Update bestiary lookup index */
+			mSoulLookupIndex.put(Integer.toHexString(soul.getLabel().hashCode()), soul);
 		}
 	}
 
