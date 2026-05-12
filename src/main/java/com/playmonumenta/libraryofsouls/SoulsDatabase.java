@@ -77,6 +77,11 @@ public class SoulsDatabase {
 	 * A SoulEntry may appear here many times
 	 */
 	private final Map<String, List<SoulEntry>> mTypesIndex = new HashMap<>();
+	/*
+	 * This is an index based on author. All authors in the history of the
+	 * soul entry will point to the latest version of the SoulEntry.
+	 */
+	private final Map<String, List<SoulEntry>> mAuthorsIndex = new HashMap<>();
 
 	public SoulsDatabase(Plugin plugin, boolean loadHistory) throws Exception {
 		mPlugin = plugin;
@@ -142,6 +147,10 @@ public class SoulsDatabase {
 
 	public @Nullable List<SoulEntry> getSoulsByType(String id) {
 		return mTypesIndex.get(id);
+	}
+
+	public @Nullable List<SoulEntry> getSoulsByAuthor(String author) {
+		return mAuthorsIndex.get(author);
 	}
 
 	public List<SoulEntry> getSouls() {
@@ -554,9 +563,19 @@ public class SoulsDatabase {
 			}
 
 			/* Update type index */
-			String id = soul.getId().getKey().toLowerCase(Locale.ROOT);
-			List<SoulEntry> lst = mTypesIndex.computeIfAbsent(id, k -> new ArrayList<>());
-			lst.add(soul);
+			{
+				String id = soul.getId().getKey().toLowerCase(Locale.ROOT);
+				List<SoulEntry> lst = mTypesIndex.computeIfAbsent(id, k -> new ArrayList<>());
+				lst.add(soul);
+			}
+
+			/* Update author index */
+			for (Soul oldSoul : soul.getHistory()) {
+				// Latest version
+				String author = oldSoul.getModifiedBy();
+				List<SoulEntry> lst = mAuthorsIndex.computeIfAbsent(author, k -> new ArrayList<>());
+				lst.add(soul);
+			}
 		}
 	}
 
@@ -607,6 +626,10 @@ public class SoulsDatabase {
 			throw new RuntimeException("SoulsDatabase not loaded");
 		}
 		return INSTANCE;
+	}
+
+	public Set<String> listAuthors() {
+		return new HashSet<>(mAuthorsIndex.keySet());
 	}
 
 	public Set<String> listMobNames() {
