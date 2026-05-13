@@ -42,6 +42,7 @@ public class LibraryOfSoulsCommand {
 	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_PARTIES_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPartyNames().toArray(String[]::new));
 	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_POOLS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulPoolNames().toArray(String[]::new));
 	public static final ArgumentSuggestions<CommandSender> LIST_SOUL_GROUPS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listSoulGroupNames().toArray(String[]::new));
+	public static final ArgumentSuggestions<CommandSender> LIST_AUTHORS_FUNCTION = ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listAuthors().toArray(String[]::new));
 	private static final String COMMAND = "los";
 	private static final Pattern VALID_SOUL_GROUP_LABEL = Pattern.compile("[0-9A-Za-z_]+");
 
@@ -53,6 +54,7 @@ public class LibraryOfSoulsCommand {
 		LocationArgument pos2Arg = new LocationArgument("pos2");
 		Argument<String> areaArg = new StringArgument("area").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobLocations().toArray(String[]::new)));
 		Argument<String> idArg = new StringArgument("id").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobTypes().toArray(String[]::new)));
+		Argument<String> authorArg = new StringArgument("author").replaceSuggestions(LIST_AUTHORS_FUNCTION);
 
 		/* los open */
 		new CommandAPICommand(COMMAND)
@@ -230,6 +232,23 @@ public class LibraryOfSoulsCommand {
 					throw CommandAPI.failWithString("Mob type '" + id + "' not found");
 				}
 				new SoulsInventory(player, souls, id)
+					.openInventory(player, LibraryOfSouls.getInstance());
+			})
+			.register();
+
+		/* los searchauthor <author> */
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.search"))
+			.withArguments(new LiteralArgument("searchauthor"))
+			.withArguments(authorArg)
+			.executes((sender, args) -> {
+				Player player = getPlayer(sender);
+				String author = args.getByArgument(authorArg);
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByAuthor(author);
+				if (souls == null) {
+					throw CommandAPI.failWithString("Mobs authored by '" + author + "' not found");
+				}
+				new SoulsInventory(player, souls, author)
 					.openInventory(player, LibraryOfSouls.getInstance());
 			})
 			.register();
