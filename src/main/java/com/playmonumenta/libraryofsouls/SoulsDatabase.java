@@ -550,6 +550,7 @@ public class SoulsDatabase {
 		mLocsIndex.clear();
 		mNoLocMobs.clear();
 		mTypesIndex.clear();
+		mAuthorsIndex.clear();
 		for (SoulEntry soul : mSouls.values()) {
 			/* Update location index */
 			Set<String> locs = soul.getLocationNames();
