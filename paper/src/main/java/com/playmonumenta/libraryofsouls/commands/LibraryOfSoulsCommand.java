@@ -11,6 +11,7 @@ import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.SoulsInventory;
 import com.playmonumenta.libraryofsouls.SpawnerInventory;
 import com.playmonumenta.libraryofsouls.nbt.BookOfSouls;
+import com.playmonumenta.libraryofsouls.utils.ReflectionUtils;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -266,6 +267,14 @@ public class LibraryOfSoulsCommand {
 					throw CommandAPI.failWithString("Soul '" + name + "' not found");
 				}
 				SpawnerInventory.openSpawnerInventory(soul, player, null);
+			})
+			.register();
+
+		// TEST
+		new CommandAPICommand(COMMAND)
+			.withArguments(new LiteralArgument("meow"))
+			.executes((sender, args) -> {
+				ReflectionUtils.test(sender, args);
 			})
 			.register();
 	}
