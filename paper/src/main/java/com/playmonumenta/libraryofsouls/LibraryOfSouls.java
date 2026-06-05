@@ -9,6 +9,7 @@ import com.playmonumenta.libraryofsouls.commands.SpawnerNBTCommand;
 import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.libraryofsouls.nbt.BookOfSoulsListener;
 import com.playmonumenta.libraryofsouls.utils.NmsUtils;
+import com.playmonumenta.libraryofsouls.utils.ReflectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -115,6 +116,8 @@ public class LibraryOfSouls extends JavaPlugin {
 			}
 
 			new SoulsDatabase(this, !Config.isReadOnly());
+
+			ReflectionUtils.init();
 		} catch (Exception e) {
 			MMLog.severe("Failed to load souls database! This plugin will not function", e);
 		}
