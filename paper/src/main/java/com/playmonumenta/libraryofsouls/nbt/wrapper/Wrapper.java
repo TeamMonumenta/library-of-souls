@@ -1,12 +1,10 @@
 package com.playmonumenta.libraryofsouls.nbt.wrapper;
 
 import dev.jorel.commandapi.CommandAPICommand;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 
 public abstract class Wrapper<T extends Entity> {
 
