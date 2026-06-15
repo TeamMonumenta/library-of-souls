@@ -21,6 +21,6 @@ public class EntityWrapper extends Wrapper<Entity> {
 
 	@Override
 	public Component getDescription() {
-
+		return null;
 	}
 }
