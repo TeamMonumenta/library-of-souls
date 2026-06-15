@@ -20,6 +20,7 @@ dependencies {
 		}
 	}
 	compileOnly(libs.gson)
+	compileOnly(libs.monumenta.common)
 }
 
 // Relocation / shading
