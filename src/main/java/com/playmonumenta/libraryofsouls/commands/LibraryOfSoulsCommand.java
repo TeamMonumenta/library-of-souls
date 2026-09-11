@@ -1,6 +1,15 @@
 package com.playmonumenta.libraryofsouls.commands;
 
 import com.goncalomb.bukkit.nbteditor.bos.BookOfSouls;
+import com.goncalomb.bukkit.nbteditor.nbt.EntityNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.MobNBT;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.Attribute;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
+import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.LibraryOfSoulsAPI;
 import com.playmonumenta.libraryofsouls.Soul;
@@ -16,25 +25,46 @@ import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.Argument;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.DoubleArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.LocationArgument;
+import dev.jorel.commandapi.arguments.LocationType;
 import dev.jorel.commandapi.arguments.ScoreHolderArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.attribute.AttributeModifier;
+import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ProxiedCommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.Nullable;
+
+import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
@@ -50,6 +80,7 @@ public class LibraryOfSoulsCommand {
 
 	public static void register() {
 		LocationArgument locationArg = new LocationArgument("location");
+		LocationArgument blockLocationArg = new LocationArgument("location", LocationType.BLOCK_POSITION);
 		LocationArgument pos1Arg = new LocationArgument("pos1");
 		LocationArgument pos2Arg = new LocationArgument("pos2");
 		Argument<String> areaArg = new StringArgument("area").replaceSuggestions(ArgumentSuggestions.strings((info) -> SoulsDatabase.getInstance().listMobLocations().toArray(String[]::new)));
@@ -268,6 +299,239 @@ public class LibraryOfSoulsCommand {
 				SpawnerInventory.openSpawnerInventory(soul, player, null);
 			})
 			.register();
+
+		/* los search <area> */
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.getarea"))
+			.withArguments(new LiteralArgument("getarea"))
+			.withArguments(blockLocationArg)
+			.withArguments(areaArg)
+			.executes((sender, args) -> {
+				String area = args.getByArgument(areaArg);
+				List<SoulEntry> souls = SoulsDatabase.getInstance().getSoulsByLocation(area);
+				if (souls == null) {
+					throw CommandAPI.failWithString("Area '" + area + "' not found");
+				}
+				Location loc = args.getByArgument(blockLocationArg);
+				if (loc == null) {
+					return;
+				}
+				int start = 0;
+				while (start < souls.size()) {
+					while (!loc.getBlock().isEmpty()) {
+						loc = loc.add(1, 0, 0);
+					}
+					Block block = loc.getBlock();
+					block.setType(Material.CHEST);
+					Chest state = (Chest) block.getState();
+					Inventory inventory = state.getBlockInventory();
+
+					for (int i = start; i < Math.min(souls.size(), start + 27); i++) {
+						SoulEntry soulEntry = souls.get(i);
+						inventory.setItem(i - start, soulEntry.getBoS());
+					}
+					start += 27;
+				}
+			})
+			.register();
+
+		for (SoulModifier soulModifier : SoulModifier.values()) {
+			new CommandAPICommand(COMMAND)
+				.withPermission(CommandPermission.fromString("los.massedit"))
+				.withArguments(new LiteralArgument("massedit"))
+				.withArguments(blockLocationArg, new LiteralArgument(soulModifier.name().toLowerCase(Locale.ROOT)), new DoubleArgument("multiplier", 0))
+				.executesPlayer((player, args) -> {
+					Location location = args.getByArgument(blockLocationArg);
+					if (location == null) {
+						throw CommandAPI.failWithString("No location provided");
+					}
+					Block block = location.getBlock();
+					if (!(block.getState() instanceof Chest chest)) {
+						throw CommandAPI.failWithString("Not a chest!");
+					}
+					Inventory inventory = chest.getBlockInventory();
+					double multiplier = args.getOrDefaultUnchecked("multiplier", 1.0);
+					List<Component> output = new ArrayList<>(inventory.getSize());
+					@Nullable ItemStack[] contents = inventory.getContents();
+					for (int i = 0; i < contents.length; i++) {
+						ItemStack item = inventory.getItem(i);
+						if (item == null) {
+							continue;
+						}
+						BookOfSouls bos = getBos(item);
+						DoubleDoublePair result = soulModifier.modifySoul(bos, multiplier, player);
+
+						bos.saveBook();
+						ItemStack book = bos.getBook();
+						inventory.setItem(i, book);
+
+						EntityNBT nbt = bos.getEntityNBT();
+						@Nullable
+						NBTVariable nameVar = nbt.getVariable("Name");
+						Component name = nameVar != null
+							? GsonComponentSerializer.gson().deserialize(nameVar.get())
+							: Component.text(nbt.getId());
+						if (result != null) {
+							output.add(Component.empty()
+								.append(name)
+								.append(Component.text(": %s → %s".formatted(result.firstDouble(), result.secondDouble()))));
+						} else {
+							output.add(Component.empty()
+								.append(name)
+								.append(Component.text(": Skipped!", NamedTextColor.RED)));
+						}
+					}
+					if (output.isEmpty()) {
+						return;
+					}
+					player.sendMessage(Component.text("Changed souls inside this chest: ", NamedTextColor.GOLD));
+					player.sendMessage(Component.join(JoinConfiguration.separator(Component.newline()), output));
+					player.sendMessage(Component.text("[Update all souls]", NamedTextColor.GOLD, TextDecoration.BOLD)
+						.clickEvent(ClickEvent.runCommand("los massupdate %d %d %d".formatted(location.getBlockX(), location.getBlockY(), location.getBlockZ())))
+						.hoverEvent(Component.text("WARNING: This will UPDATE all the souls inside the chest!"))
+					);
+				})
+				.register();
+		}
+	}
+
+	public enum SoulModifier {
+		HEALTH((book, multiplier, player) -> {
+			EntityNBT nbt = book.getEntityNBT();
+			if (!(nbt instanceof MobNBT mobNBT)) {
+				return null;
+			}
+			NBTVariable healthVar = nbt.getVariable("Health");
+			if (healthVar == null) {
+				return null;
+			}
+			String healthString = healthVar.get();
+			if (healthString == null) {
+				return null;
+			}
+			double originalHealth = Double.parseDouble(healthString);
+			double health = originalHealth * multiplier;
+			// Heuristic
+			if (health < 5) {
+				return null;
+			}
+			if (health > 40.0) {
+				double rem = health % (double) 5;
+				if (rem < 2.5) {
+					health = health - rem;
+				} else {
+					health = health - rem + 5;
+				}
+			} else {
+				health = Math.round(health);
+			}
+			healthVar.set(String.valueOf(health), player);
+			AttributeContainer attributes = mobNBT.getAttributes();
+			Attribute attribute = attributes.getAttribute(AttributeType.MAX_HEALTH);
+			double maxHealth = attribute.getBase();
+			maxHealth *= multiplier;
+			if (maxHealth > 5) {
+				maxHealth = maxHealth - (maxHealth % 5);
+			}
+			attribute.setBase(maxHealth);
+			mobNBT.setAttributes(attributes);
+			return DoubleDoublePair.of(originalHealth, health);
+		}),
+		ATTACK_DAMAGE((book, multiplier, player) -> {
+			EntityNBT nbt = book.getEntityNBT();
+			NBTVariable handItems = nbt.getVariable("HandItems");
+			if (!(handItems instanceof ItemsVariable itemsVariable)) {
+				return null;
+			}
+			ItemStack[] items = itemsVariable.getItems();
+			@Nullable DoubleDoublePair res = null;
+			ItemStack mainhand = items[0];
+			if (mainhand != null) {
+				ItemMeta meta = mainhand.getItemMeta();
+				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
+				Collection<AttributeModifier> attackAttribute = meta.getAttributeModifiers(GENERIC_ATTACK_DAMAGE);
+				@Nullable
+				DoubleDoublePair ans = null;
+				if (existing != null && attackAttribute != null && !attackAttribute.isEmpty()) {
+					List<AttributeModifier> mutAttributes = new ArrayList<>(attackAttribute);
+					ListIterator<AttributeModifier> iter = mutAttributes.listIterator();
+					while (iter.hasNext()) {
+						AttributeModifier modifier = iter.next();
+						if (modifier.getOperation() != AttributeModifier.Operation.ADD_NUMBER) {
+							continue;
+						}
+						double originalModifier = modifier.getAmount();
+						double newModifier = Math.round(originalModifier * multiplier);
+						iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
+						ans = DoubleDoublePair.of(originalModifier, newModifier);
+					}
+					existing = HashMultimap.create(existing);
+					existing.replaceValues(GENERIC_ATTACK_DAMAGE, mutAttributes);
+					mainhand.setItemMeta(meta);
+					meta.setAttributeModifiers(existing);
+					items[1] = mainhand;
+					itemsVariable.setItems(items);
+				}
+				res = ans;
+			}
+			if (res != null) {
+				return res;
+			}
+
+			if (!(nbt instanceof MobNBT mobNBT)) {
+				return null;
+			}
+			AttributeContainer attributes = mobNBT.getAttributes();
+			@Nullable
+			Attribute attribute = attributes.getAttribute(AttributeType.ATTACK_DAMAGE);
+			if (attribute == null) {
+				return null;
+			}
+			double originalAttack = attribute.getBase();
+			double attack = Math.round(originalAttack * multiplier);
+			attribute.setBase(attack);
+			mobNBT.setAttributes(attributes);
+			return DoubleDoublePair.of(originalAttack, attack);
+		}),
+		BOW_POWER((book, multiplier, player) -> {
+			EntityNBT nbt = book.getEntityNBT();
+			NBTVariable handItems = nbt.getVariable("HandItems");
+			if (!(handItems instanceof ItemsVariable itemsVariable)) {
+				return null;
+			}
+			ItemStack[] items = itemsVariable.getItems();
+			ItemStack mainhand = items[0];
+			if (mainhand == null) {
+				return null;
+			}
+			ItemMeta meta = mainhand.getItemMeta();
+			int originalPower = meta.getEnchantLevel(Enchantment.ARROW_DAMAGE);
+			int power = (int) Math.round(originalPower * multiplier);
+			if (power == 0) {
+				return null;
+			}
+			meta.addEnchant(Enchantment.ARROW_DAMAGE, power, true);
+			items[0] = mainhand;
+			itemsVariable.setItems(items);
+			return DoubleDoublePair.of(originalPower, power);
+		}),
+		;
+
+		@FunctionalInterface
+		private interface ModifierInterface {
+			@Nullable
+			DoubleDoublePair modify(BookOfSouls book, double multiplier, Player player);
+		}
+
+		private final ModifierInterface mSoulModifier;
+
+		SoulModifier(ModifierInterface soulModifier) {
+			mSoulModifier = soulModifier;
+		}
+
+		public @Nullable DoubleDoublePair modifySoul(BookOfSouls bos, double multiplier, Player player) {
+			return mSoulModifier.modify(bos, multiplier, player);
+		}
 	}
 
 	public static void registerWriteAccessCommands() {
@@ -304,6 +568,36 @@ public class LibraryOfSoulsCommand {
 				BookOfSouls bos = getBos(player);
 
 				SoulsDatabase.getInstance().update(player, bos);
+			})
+			.register();
+
+		/* los massupdate */
+		new CommandAPICommand(COMMAND)
+			.withPermission(CommandPermission.fromString("los.update"))
+			.withArguments(new LiteralArgument("massupdate"))
+			.withArguments(new LocationArgument("location", LocationType.BLOCK_POSITION))
+			.executes((sender, args) -> {
+				Location location = args.getUnchecked("location");
+				if (location == null) {
+					throw CommandAPI.failWithString("No location provided");
+				}
+				Block block = location.getBlock();
+				if (!(block.getState() instanceof Chest chest)) {
+					throw CommandAPI.failWithString("Not a chest!");
+				}
+				Player player = getPlayer(sender);
+				Inventory inventory = chest.getBlockInventory();
+				ArrayList<BookOfSouls> souls = new ArrayList<>(inventory.getSize());
+				for (ItemStack item : inventory) {
+					if (item == null) {
+						continue;
+					}
+					if (BookOfSouls.isValidBook(item)) {
+						BookOfSouls bos = getBos(item);
+						souls.add(bos);
+					}
+				}
+				SoulsDatabase.getInstance().update(player, souls.toArray(new BookOfSouls[0]));
 			})
 			.register();
 
@@ -444,13 +738,16 @@ public class LibraryOfSoulsCommand {
 
 	private static BookOfSouls getBos(Player player) throws WrapperCommandSyntaxException {
 		ItemStack item = player.getInventory().getItemInMainHand();
+		return getBos(item);
+	}
+
+	private static BookOfSouls getBos(ItemStack item) throws WrapperCommandSyntaxException {
 		if (BookOfSouls.isValidBook(item)) {
 			BookOfSouls bos = BookOfSouls.getFromBook(item);
 			if (bos != null) {
 				return bos;
 			}
-			throw CommandAPI.failWithString("That Book of Souls is corrupted!");
 		}
-		throw CommandAPI.failWithString("You must be holding a Book of Souls!");
+		throw CommandAPI.failWithString("That Book of Souls is corrupted!");
 	}
 }
