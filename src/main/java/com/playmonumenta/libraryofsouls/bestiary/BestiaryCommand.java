@@ -4,6 +4,7 @@ import com.playmonumenta.libraryofsouls.LibraryOfSouls;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.commands.LibraryOfSoulsCommand;
+import com.playmonumenta.libraryofsouls.utils.MMLog;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
@@ -12,6 +13,7 @@ import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.arguments.ObjectiveArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.arguments.TextArgument;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.Component;
@@ -20,6 +22,8 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -159,6 +163,11 @@ public class BestiaryCommand {
 							}
 						}
 					})))
+			.withSubcommand(new CommandAPICommand("reload")
+				.withPermission(CommandPermission.fromString("los.bestiary.reload"))
+				.executes((sender, args) -> {
+					LibraryOfSouls.Config.loadBestiary(LibraryOfSouls.getInstance().getDataFolder());
+				}))
 			.register();
 	}
 

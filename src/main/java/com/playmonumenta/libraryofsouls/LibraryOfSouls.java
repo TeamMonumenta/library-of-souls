@@ -44,18 +44,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 			if (loadBestiary) {
 				/* Bestiary config file */
-				configFile = new File(dataFolder, "bestiary_config.yml");
-				if (configFile.exists() && configFile.isFile()) {
-					try {
-						FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
-
-						if (yamlConfig.isConfigurationSection("bestiary")) {
-							mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
-						}
-					} catch (Exception ex) {
-						MMLog.severe("Failed to load bestiary configuration", ex);
-					}
-				}
+				loadBestiary(dataFolder);
 			}
 		}
 
@@ -65,6 +54,21 @@ public class LibraryOfSouls extends JavaPlugin {
 
 		public static @Nullable BestiaryArea getBestiary() {
 			return mBestiary;
+		}
+
+		public static void loadBestiary(File dataFolder) {
+			File configFile = new File(dataFolder, "bestiary_config.yml");
+			if (configFile.exists() && configFile.isFile()) {
+				try {
+					FileConfiguration yamlConfig = YamlConfiguration.loadConfiguration(configFile);
+
+					if (yamlConfig.isConfigurationSection("bestiary")) {
+						mBestiary = new BestiaryArea(null, "Areas", yamlConfig.getConfigurationSection("bestiary"));
+					}
+				} catch (Exception ex) {
+					MMLog.severe("Failed to load bestiary configuration", ex);
+				}
+			}
 		}
 	}
 
