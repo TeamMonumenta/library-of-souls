@@ -79,8 +79,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 		}
 
 		if (config.contains("additional_souls")) {
-			ConfigurationSection additionalSouls = config.getConfigurationSection("additional_souls");
-			Set<String> soulKeys = additionalSouls.getKeys(false);
+			List<String> soulKeys = config.getStringList("additional_souls");
 			for (String soul : soulKeys) {
 				try {
 					mChildren.add(SoulsDatabase.getInstance().getSoul(soul));
