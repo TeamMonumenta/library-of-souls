@@ -423,6 +423,7 @@ public class SoulHistoryEntry implements Soul {
 				case AXOLOTL -> Material.AXOLOTL_BUCKET;
 				case BAT -> Material.BLACK_DYE;
 				case BLAZE -> Material.BLAZE_POWDER;
+				case BLOCK_DISPLAY, ITEM_DISPLAY, TEXT_DISPLAY, INTERACTION, MARKER -> Material.STRUCTURE_VOID;
 				case BEE -> Material.HONEYCOMB;
 				case CAT -> Material.STRING;
 				case CAMEL -> Material.SANDSTONE;

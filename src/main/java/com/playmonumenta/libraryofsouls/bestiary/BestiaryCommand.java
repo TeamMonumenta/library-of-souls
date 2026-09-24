@@ -159,6 +159,11 @@ public class BestiaryCommand {
 							}
 						}
 					})))
+			.withSubcommand(new CommandAPICommand("reload")
+				.withPermission(CommandPermission.fromString("los.bestiary.reload"))
+				.executes((sender, args) -> {
+					LibraryOfSouls.Config.loadBestiary(LibraryOfSouls.getInstance().getDataFolder());
+				}))
 			.register();
 	}
 

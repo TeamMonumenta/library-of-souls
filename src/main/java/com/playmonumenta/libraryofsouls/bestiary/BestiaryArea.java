@@ -30,7 +30,7 @@ public class BestiaryArea implements BestiaryEntryInterface {
 	private final @Nullable String mLocation;
 	private final @Nullable NamespacedKey mAdvancementKey;
 	private final ItemStack mItem;
-	private final List<BestiaryEntryInterface> mChildren;
+	private final List<BestiaryEntryInterface> mChildren = new ArrayList<>();
 	private final @Nullable String mInventoryName;
 
 	private static final ItemStack NOT_FOUND_ITEM = new ItemStack(Material.PAPER);
@@ -59,13 +59,12 @@ public class BestiaryArea implements BestiaryEntryInterface {
 					souls.remove(SoulsDatabase.getInstance().getSoul(s));
 				}
 			}
-			mChildren = new ArrayList<>(souls);
+			mChildren.addAll(souls);
 		} else if (config.contains("children")) {
 			mLocation = null;
 
 			ConfigurationSection children = config.getConfigurationSection("children");
 			Set<String> childKeys = children.getKeys(false);
-			mChildren = new ArrayList<>(childKeys.size());
 			for (String childKey : childKeys) {
 				try {
 					mChildren.add(new BestiaryArea(this, childKey, children.getConfigurationSection(childKey)));
@@ -73,8 +72,22 @@ public class BestiaryArea implements BestiaryEntryInterface {
 					MMLog.warning("Failed to load bestiary area " + childKey, ex);
 				}
 			}
+		} else if (config.contains("additional_souls")) { // not mutually exclusive with the other two, but required if neither exists
+			mLocation = null;
 		} else {
-			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " must contain location_tag OR children");
+			throw new Exception("Bestiary entry " + Utils.plainText(mName) + " must contain location_tag OR children OR additional_souls");
+		}
+
+		if (config.contains("additional_souls")) {
+			List<String> soulKeys = config.getStringList("additional_souls");
+			for (String soul : soulKeys) {
+				try {
+					mChildren.add(SoulsDatabase.getInstance().getSoul(soul));
+				} catch (Exception ex) {
+					MMLog.warning("Failed to load additional_souls for bestiary area \"%s\", failed on soul %s"
+						.formatted(name, soul), ex);
+				}
+			}
 		}
 
 		if (config.contains("required_advancement")) {
