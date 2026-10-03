@@ -33,9 +33,9 @@ import dev.jorel.commandapi.arguments.LocationType;
 import dev.jorel.commandapi.arguments.ScoreHolderArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import it.unimi.dsi.fastutil.doubles.DoubleDoublePair;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
@@ -62,9 +62,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.BoundingBox;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static org.bukkit.attribute.Attribute.GENERIC_ATTACK_DAMAGE;
+import static org.bukkit.attribute.Attribute.HORSE_JUMP_STRENGTH;
 
 public class LibraryOfSoulsCommand {
 	/* Several sub commands have this same tab completion */
@@ -359,7 +361,7 @@ public class LibraryOfSoulsCommand {
 							continue;
 						}
 						BookOfSouls bos = getBos(item);
-						DoubleDoublePair result = soulModifier.modifySoul(bos, multiplier, player);
+						List<SoulModifier.Modification> result = soulModifier.modifySoul(bos, multiplier, player);
 
 						bos.saveBook();
 						ItemStack book = bos.getBook();
@@ -371,10 +373,10 @@ public class LibraryOfSoulsCommand {
 						Component name = nameVar != null
 							? GsonComponentSerializer.gson().deserialize(nameVar.get())
 							: Component.text(nbt.getId());
-						if (result != null) {
+						if (!result.isEmpty()) {
 							output.add(Component.empty()
 								.append(name)
-								.append(Component.text(": %s → %s".formatted(result.firstDouble(), result.secondDouble()))));
+								.append(Component.text(result.toString())));
 						} else {
 							output.add(Component.empty()
 								.append(name)
@@ -399,21 +401,21 @@ public class LibraryOfSoulsCommand {
 		HEALTH((book, multiplier, player) -> {
 			EntityNBT nbt = book.getEntityNBT();
 			if (!(nbt instanceof MobNBT mobNBT)) {
-				return null;
+				return List.of();
 			}
 			NBTVariable healthVar = nbt.getVariable("Health");
 			if (healthVar == null) {
-				return null;
+				return List.of();
 			}
 			String healthString = healthVar.get();
 			if (healthString == null) {
-				return null;
+				return List.of();
 			}
 			double originalHealth = Double.parseDouble(healthString);
 			double health = originalHealth * multiplier;
 			// Heuristic
 			if (health < 5) {
-				return null;
+				return List.of();
 			}
 			if (health > 40.0) {
 				double rem = health % (double) 5;
@@ -428,30 +430,35 @@ public class LibraryOfSoulsCommand {
 			healthVar.set(String.valueOf(health), player);
 			AttributeContainer attributes = mobNBT.getAttributes();
 			Attribute attribute = attributes.getAttribute(AttributeType.MAX_HEALTH);
-			double maxHealth = attribute.getBase();
-			maxHealth *= multiplier;
+			double originalMaxHealth = attribute.getBase();
+			double maxHealth = originalMaxHealth * multiplier;
 			if (maxHealth > 5) {
 				maxHealth = maxHealth - (maxHealth % 5);
 			}
 			attribute.setBase(maxHealth);
 			mobNBT.setAttributes(attributes);
-			return DoubleDoublePair.of(originalHealth, health);
+			if (maxHealth - health < 0.01) {
+				return List.of(Modification.of(originalHealth, health, "❤ Health"));
+			}
+			return List.of(
+				Modification.of(originalHealth, health, "❤ Health"),
+				Modification.of(originalMaxHealth, maxHealth, "❤ Max Health")
+			);
 		}),
 		ATTACK_DAMAGE((book, multiplier, player) -> {
 			EntityNBT nbt = book.getEntityNBT();
 			NBTVariable handItems = nbt.getVariable("HandItems");
 			if (!(handItems instanceof ItemsVariable itemsVariable)) {
-				return null;
+				return List.of();
 			}
 			ItemStack[] items = itemsVariable.getItems();
-			@Nullable DoubleDoublePair res = null;
+			List<Modification> res = new ArrayList<>(4);
 			ItemStack mainhand = items[0];
-			if (mainhand != null) {
+			// crossbows evil
+			if (mainhand != null && mainhand.getType() != Material.CROSSBOW) {
 				ItemMeta meta = mainhand.getItemMeta();
 				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
 				Collection<AttributeModifier> attackAttribute = meta.getAttributeModifiers(GENERIC_ATTACK_DAMAGE);
-				@Nullable
-				DoubleDoublePair ans = null;
 				if (existing != null && attackAttribute != null && !attackAttribute.isEmpty()) {
 					List<AttributeModifier> mutAttributes = new ArrayList<>(attackAttribute);
 					ListIterator<AttributeModifier> iter = mutAttributes.listIterator();
@@ -463,7 +470,8 @@ public class LibraryOfSoulsCommand {
 						double originalModifier = modifier.getAmount();
 						double newModifier = Math.round(originalModifier * multiplier);
 						iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
-						ans = DoubleDoublePair.of(originalModifier, newModifier);
+						res.add(Modification.of(originalModifier, newModifier, "🗡 Weapon Damage"));
+						break;
 					}
 					existing = HashMultimap.create(existing);
 					existing.replaceValues(GENERIC_ATTACK_DAMAGE, mutAttributes);
@@ -472,55 +480,126 @@ public class LibraryOfSoulsCommand {
 					items[1] = mainhand;
 					itemsVariable.setItems(items);
 				}
-				res = ans;
-			}
-			if (res != null) {
-				return res;
 			}
 
 			if (!(nbt instanceof MobNBT mobNBT)) {
-				return null;
+				return res;
 			}
 			AttributeContainer attributes = mobNBT.getAttributes();
 			@Nullable
 			Attribute attribute = attributes.getAttribute(AttributeType.ATTACK_DAMAGE);
 			if (attribute == null) {
-				return null;
+				return res;
 			}
 			double originalAttack = attribute.getBase();
 			double attack = Math.round(originalAttack * multiplier);
 			attribute.setBase(attack);
 			mobNBT.setAttributes(attributes);
-			return DoubleDoublePair.of(originalAttack, attack);
+			res.add(Modification.of(originalAttack, attack, "⚔ Attributes Damage"));
+			return res;
 		}),
-		BOW_POWER((book, multiplier, player) -> {
+		BLAZE_FIREBALL((book, multiplier, player) -> {
 			EntityNBT nbt = book.getEntityNBT();
 			NBTVariable handItems = nbt.getVariable("HandItems");
 			if (!(handItems instanceof ItemsVariable itemsVariable)) {
-				return null;
+				return List.of();
 			}
 			ItemStack[] items = itemsVariable.getItems();
 			ItemStack mainhand = items[0];
 			if (mainhand == null) {
-				return null;
+				return List.of();
 			}
 			ItemMeta meta = mainhand.getItemMeta();
-			int originalPower = meta.getEnchantLevel(Enchantment.ARROW_DAMAGE);
-			int power = (int) Math.round(originalPower * multiplier);
-			if (power == 0) {
-				return null;
+			Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
+			Collection<AttributeModifier> attackAttribute = meta.getAttributeModifiers(HORSE_JUMP_STRENGTH);
+			if (existing != null && attackAttribute != null && !attackAttribute.isEmpty()) {
+				List<AttributeModifier> mutAttributes = new ArrayList<>(attackAttribute);
+				ListIterator<AttributeModifier> iter = mutAttributes.listIterator();
+				while (iter.hasNext()) {
+					AttributeModifier modifier = iter.next();
+					if (modifier.getOperation() != AttributeModifier.Operation.ADD_NUMBER) {
+						continue;
+					}
+					double originalModifier = modifier.getAmount();
+					double newModifier = Math.round(originalModifier * multiplier);
+					iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
+					existing = HashMultimap.create(existing);
+					existing.replaceValues(HORSE_JUMP_STRENGTH, mutAttributes);
+					mainhand.setItemMeta(meta);
+					meta.setAttributeModifiers(existing);
+					items[1] = mainhand;
+					itemsVariable.setItems(items);
+					return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD25 Fireball Damage"));
+				}
 			}
-			meta.addEnchant(Enchantment.ARROW_DAMAGE, power, true);
-			items[0] = mainhand;
-			itemsVariable.setItems(items);
-			return DoubleDoublePair.of(originalPower, power);
+			return List.of();
+		}),
+		PROJECTILE_DAMAGE((book, multiplier, player) -> {
+			EntityNBT nbt = book.getEntityNBT();
+			NBTVariable handItems = nbt.getVariable("HandItems");
+			if (!(handItems instanceof ItemsVariable itemsVariable)) {
+				return List.of();
+			}
+			ItemStack[] items = itemsVariable.getItems();
+			ItemStack mainhand = items[0];
+			if (mainhand == null) {
+				return List.of();
+			}
+			if (mainhand.getType() == Material.BOW) {
+				ItemMeta meta = mainhand.getItemMeta();
+				int originalPower = meta.getEnchantLevel(Enchantment.ARROW_DAMAGE);
+				int power = (int) Math.round(originalPower * multiplier);
+				if (power == 0) {
+					return List.of();
+				}
+				meta.addEnchant(Enchantment.ARROW_DAMAGE, power, true);
+				items[0] = mainhand;
+				itemsVariable.setItems(items);
+				return List.of(Modification.of(originalPower, power, "🏹 Bow power"));
+			} else if (mainhand.getType() == Material.CROSSBOW || mainhand.getType() == Material.TRIDENT) {
+				ItemMeta meta = mainhand.getItemMeta();
+				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
+				Collection<AttributeModifier> attackAttribute = meta.getAttributeModifiers(GENERIC_ATTACK_DAMAGE);
+				if (existing != null && attackAttribute != null && !attackAttribute.isEmpty()) {
+					List<AttributeModifier> mutAttributes = new ArrayList<>(attackAttribute);
+					ListIterator<AttributeModifier> iter = mutAttributes.listIterator();
+					while (iter.hasNext()) {
+						AttributeModifier modifier = iter.next();
+						if (modifier.getOperation() != AttributeModifier.Operation.ADD_NUMBER) {
+							continue;
+						}
+						double originalModifier = modifier.getAmount();
+						double newModifier = Math.round(originalModifier * multiplier);
+						iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
+						existing = HashMultimap.create(existing);
+						existing.replaceValues(GENERIC_ATTACK_DAMAGE, mutAttributes);
+						mainhand.setItemMeta(meta);
+						meta.setAttributeModifiers(existing);
+						items[1] = mainhand;
+						itemsVariable.setItems(items);
+						return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD31 Weapon Damage"));
+					}
+				}
+				return List.of();
+			}
+			return List.of();
 		}),
 		;
 
 		@FunctionalInterface
 		private interface ModifierInterface {
-			@Nullable
-			DoubleDoublePair modify(BookOfSouls book, double multiplier, Player player);
+			@NotNull List<Modification> modify(BookOfSouls book, double multiplier, Player player);
+		}
+
+		private record Modification(double originalValue, double newValue, String name) {
+			public static Modification of(double originalValue, double newValue, String name) {
+				return new Modification(originalValue, newValue, name);
+			}
+
+			@Override
+			public @NotNull String toString() {
+				return "(%s: %s → %s)".formatted(name, originalValue, newValue);
+			}
 		}
 
 		private final ModifierInterface mSoulModifier;
@@ -529,7 +608,7 @@ public class LibraryOfSoulsCommand {
 			mSoulModifier = soulModifier;
 		}
 
-		public @Nullable DoubleDoublePair modifySoul(BookOfSouls bos, double multiplier, Player player) {
+		private List<Modification> modifySoul(BookOfSouls bos, double multiplier, Player player) {
 			return mSoulModifier.modify(bos, multiplier, player);
 		}
 	}
