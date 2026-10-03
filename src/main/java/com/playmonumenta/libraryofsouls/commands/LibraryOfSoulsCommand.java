@@ -48,6 +48,7 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.attribute.AttributeModifier;
@@ -341,8 +342,11 @@ public class LibraryOfSoulsCommand {
 			new CommandAPICommand(COMMAND)
 				.withPermission(CommandPermission.fromString("los.massedit"))
 				.withArguments(new LiteralArgument("massedit"))
-				.withArguments(blockLocationArg, new LiteralArgument(soulModifier.name().toLowerCase(Locale.ROOT)), new DoubleArgument("multiplier", 0))
-				.executesPlayer((player, args) -> {
+				.withArguments(
+					blockLocationArg,
+					new LiteralArgument(soulModifier.name().toLowerCase(Locale.ROOT)),
+					new DoubleArgument("multiplier", 0)
+				).executesPlayer((player, args) -> {
 					Location location = args.getByArgument(blockLocationArg);
 					if (location == null) {
 						throw CommandAPI.failWithString("No location provided");
@@ -455,7 +459,7 @@ public class LibraryOfSoulsCommand {
 			List<Modification> res = new ArrayList<>(4);
 			ItemStack mainhand = items[0];
 			// crossbows evil
-			if (mainhand != null && mainhand.getType() != Material.CROSSBOW) {
+			if (mainhand != null && mainhand.getType() != Material.CROSSBOW && mainhand.getType() != Material.TRIDENT) {
 				ItemMeta meta = mainhand.getItemMeta();
 				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
 				Collection<AttributeModifier> attackAttribute = meta.getAttributeModifiers(GENERIC_ATTACK_DAMAGE);
@@ -475,8 +479,8 @@ public class LibraryOfSoulsCommand {
 					}
 					existing = HashMultimap.create(existing);
 					existing.replaceValues(GENERIC_ATTACK_DAMAGE, mutAttributes);
-					mainhand.setItemMeta(meta);
 					meta.setAttributeModifiers(existing);
+					mainhand.setItemMeta(meta);
 					items[1] = mainhand;
 					itemsVariable.setItems(items);
 				}
@@ -525,8 +529,8 @@ public class LibraryOfSoulsCommand {
 					iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
 					existing = HashMultimap.create(existing);
 					existing.replaceValues(HORSE_JUMP_STRENGTH, mutAttributes);
-					mainhand.setItemMeta(meta);
 					meta.setAttributeModifiers(existing);
+					mainhand.setItemMeta(meta);
 					items[1] = mainhand;
 					itemsVariable.setItems(items);
 					return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD25 Fireball Damage"));
@@ -548,14 +552,17 @@ public class LibraryOfSoulsCommand {
 			if (mainhand.getType() == Material.BOW) {
 				ItemMeta meta = mainhand.getItemMeta();
 				int originalPower = meta.getEnchantLevel(Enchantment.ARROW_DAMAGE);
-				int power = (int) Math.round(originalPower * multiplier);
-				if (power == 0) {
+				if (originalPower == 0) {
 					return List.of();
 				}
+				double originalDamage = 2.5 + originalPower * 0.5;
+				double newDamage = originalDamage * multiplier;
+				int power = (int) Math.max(Math.round(2 * newDamage - 5), 0);
 				meta.addEnchant(Enchantment.ARROW_DAMAGE, power, true);
+				mainhand.setItemMeta(meta);
 				items[0] = mainhand;
 				itemsVariable.setItems(items);
-				return List.of(Modification.of(originalPower, power, "🏹 Bow power"));
+				return List.of(Modification.of(originalPower, power, "🏹 Bow Power"));
 			} else if (mainhand.getType() == Material.CROSSBOW || mainhand.getType() == Material.TRIDENT) {
 				ItemMeta meta = mainhand.getItemMeta();
 				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
@@ -573,8 +580,8 @@ public class LibraryOfSoulsCommand {
 						iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
 						existing = HashMultimap.create(existing);
 						existing.replaceValues(GENERIC_ATTACK_DAMAGE, mutAttributes);
-						mainhand.setItemMeta(meta);
 						meta.setAttributeModifiers(existing);
+						mainhand.setItemMeta(meta);
 						items[1] = mainhand;
 						itemsVariable.setItems(items);
 						return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD31 Weapon Damage"));
