@@ -8,6 +8,7 @@ import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeContainer;
 import com.goncalomb.bukkit.nbteditor.nbt.attributes.AttributeType;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.ItemsVariable;
 import com.goncalomb.bukkit.nbteditor.nbt.variables.NBTVariable;
+import com.goncalomb.bukkit.nbteditor.nbt.variables.PassengersVariable;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.playmonumenta.libraryofsouls.LibraryOfSouls;
@@ -364,34 +365,20 @@ public class LibraryOfSoulsCommand {
 							continue;
 						}
 						BookOfSouls bos = getBos(item);
-						List<SoulModifier.Modification> result = soulModifier.modifySoul(bos, multiplier, player);
+						List<Component> changes = soulModifier.modifySoul(bos.getEntityNBT(), multiplier, player, true);
+
+						output.addAll(changes);
 
 						bos.saveBook();
 						ItemStack book = bos.getBook();
 						inventory.setItem(i, book);
-
-						EntityNBT nbt = bos.getEntityNBT();
-						@Nullable
-						NBTVariable nameVar = nbt.getVariable("Name");
-						Component name = nameVar != null
-							? GsonComponentSerializer.gson().deserialize(nameVar.get())
-							: Component.text(nbt.getId());
-						if (!result.isEmpty()) {
-							output.add(Component.empty()
-								.append(name)
-								.append(Component.text(result.toString())));
-						} else {
-							output.add(Component.empty()
-								.append(name)
-								.append(Component.text(": Skipped!", NamedTextColor.RED)));
-						}
 					}
 					if (output.isEmpty()) {
 						return;
 					}
-					player.sendMessage(Component.text("Changed souls inside this chest: ", NamedTextColor.GOLD));
+					player.sendMessage(Component.text("Changed souls inside this chest: ", NamedTextColor.WHITE, TextDecoration.BOLD));
 					player.sendMessage(Component.join(JoinConfiguration.separator(Component.newline()), output));
-					player.sendMessage(Component.text("[Update all souls]", NamedTextColor.GOLD, TextDecoration.BOLD)
+					player.sendMessage(Component.text("[Update all souls]", NamedTextColor.GREEN, TextDecoration.BOLD)
 						.clickEvent(ClickEvent.runCommand("los massupdate %d %d %d".formatted(location.getBlockX(), location.getBlockY(), location.getBlockZ())))
 						.hoverEvent(Component.text("WARNING: This will UPDATE all the souls inside the chest!"))
 					);
@@ -401,8 +388,7 @@ public class LibraryOfSoulsCommand {
 	}
 
 	public enum SoulModifier {
-		HEALTH((book, multiplier, player) -> {
-			EntityNBT nbt = book.getEntityNBT();
+		HEALTH((nbt, multiplier, player) -> {
 			if (!(nbt instanceof MobNBT mobNBT)) {
 				return List.of();
 			}
@@ -448,8 +434,7 @@ public class LibraryOfSoulsCommand {
 				Modification.of(originalMaxHealth, maxHealth, "❤ Max Health")
 			);
 		}),
-		ATTACK_DAMAGE((book, multiplier, player) -> {
-			EntityNBT nbt = book.getEntityNBT();
+		ATTACK_DAMAGE((nbt, multiplier, player) -> {
 			NBTVariable handItems = nbt.getVariable("HandItems");
 			if (!(handItems instanceof ItemsVariable itemsVariable)) {
 				return List.of();
@@ -501,8 +486,7 @@ public class LibraryOfSoulsCommand {
 			res.add(Modification.of(originalAttack, attack, "⚔ Attributes Damage"));
 			return res;
 		}),
-		BLAZE_FIREBALL((book, multiplier, player) -> {
-			EntityNBT nbt = book.getEntityNBT();
+		BLAZE_FIREBALL((nbt, multiplier, player) -> {
 			NBTVariable handItems = nbt.getVariable("HandItems");
 			if (!(handItems instanceof ItemsVariable itemsVariable)) {
 				return List.of();
@@ -537,8 +521,7 @@ public class LibraryOfSoulsCommand {
 			}
 			return List.of();
 		}),
-		PROJECTILE_DAMAGE((book, multiplier, player) -> {
-			EntityNBT nbt = book.getEntityNBT();
+		PROJECTILE_DAMAGE((nbt, multiplier, player) -> {
 			NBTVariable handItems = nbt.getVariable("HandItems");
 			if (!(handItems instanceof ItemsVariable itemsVariable)) {
 				return List.of();
@@ -594,7 +577,7 @@ public class LibraryOfSoulsCommand {
 
 		@FunctionalInterface
 		private interface ModifierInterface {
-			@NotNull List<Modification> modify(BookOfSouls book, double multiplier, Player player);
+			@NotNull List<Modification> modify(EntityNBT nbt, double multiplier, Player player);
 		}
 
 		private record Modification(double originalValue, double newValue, String name) {
@@ -606,6 +589,14 @@ public class LibraryOfSoulsCommand {
 			public @NotNull String toString() {
 				return "(%s: %s → %s)".formatted(name, originalValue, newValue);
 			}
+
+			public Component toComponent() {
+				return Component.empty()
+					.append(Component.text(name + ": ", NamedTextColor.GRAY))
+					.append(Component.text(String.valueOf(originalValue), NamedTextColor.WHITE))
+					.append(Component.text(" → ", NamedTextColor.GRAY))
+					.append(Component.text(String.valueOf(newValue), NamedTextColor.GREEN));
+			}
 		}
 
 		private final ModifierInterface mSoulModifier;
@@ -614,8 +605,45 @@ public class LibraryOfSoulsCommand {
 			mSoulModifier = soulModifier;
 		}
 
-		private List<Modification> modifySoul(BookOfSouls bos, double multiplier, Player player) {
-			return mSoulModifier.modify(bos, multiplier, player);
+		private List<Component> modifySoul(EntityNBT nbt, double multiplier, Player player, boolean baseMob) {
+			List<Component> output = new ArrayList<>();
+
+			List<Modification> modifications = mSoulModifier.modify(nbt, multiplier, player);
+			// Get name for component
+			@Nullable
+			NBTVariable nameVar = nbt.getVariable("Name");
+			Component name = nameVar != null
+				? GsonComponentSerializer.gson().deserialize(nameVar.get())
+				: Component.text(nbt.getId());
+			if (!baseMob) {
+				name = Component.empty().append(Component.text("︙- ", NamedTextColor.GRAY)).append(name);
+			}
+
+			if (!modifications.isEmpty()) {
+				List<Component> modificationText = new ArrayList<>(modifications.size());
+				for (Modification modification : modifications) {
+					modificationText.add(modification.toComponent());
+				}
+				output.add(Component.empty()
+					.append(name)
+					.append(Component.text(": "))
+					.append(Component.join(JoinConfiguration.commas(true), modificationText)));
+			} else {
+				output.add(Component.empty()
+					.append(name)
+					.append(Component.text(": Skipped!", NamedTextColor.RED, TextDecoration.ITALIC)));
+			}
+
+			// Add passengers recursively
+			if (nbt.getVariable("Passengers") instanceof PassengersVariable passengersVariable) {
+				EntityNBT[] passengers = passengersVariable.getPassengers();
+				for (EntityNBT passenger : passengers) {
+					// recursively do it for evil mobs like colossus of terror
+					output.addAll(modifySoul(passenger, multiplier, player, false));
+				}
+				passengersVariable.setPassengers(passengers);
+			}
+			return output;
 		}
 	}
 
