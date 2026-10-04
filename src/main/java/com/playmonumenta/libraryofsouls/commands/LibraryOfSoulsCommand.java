@@ -427,11 +427,11 @@ public class LibraryOfSoulsCommand {
 			attribute.setBase(maxHealth);
 			mobNBT.setAttributes(attributes);
 			if (maxHealth - health < 0.01) {
-				return List.of(Modification.of(originalHealth, health, "❤ Health"));
+				return List.of(Modification.of(originalHealth, health, "Health"));
 			}
 			return List.of(
-				Modification.of(originalHealth, health, "❤ Health"),
-				Modification.of(originalMaxHealth, maxHealth, "❤ Max Health")
+				Modification.of(originalHealth, health, "Health"),
+				Modification.of(originalMaxHealth, maxHealth, "Max Health")
 			);
 		}),
 		ATTACK_DAMAGE((nbt, multiplier, player) -> {
@@ -458,7 +458,7 @@ public class LibraryOfSoulsCommand {
 						double originalModifier = modifier.getAmount();
 						double newModifier = Math.round(originalModifier * multiplier);
 						iter.set(new AttributeModifier(modifier.getUniqueId(), modifier.getName(), newModifier, modifier.getOperation(), modifier.getSlot()));
-						res.add(Modification.of(originalModifier, newModifier, "🗡 Weapon Damage"));
+						res.add(Modification.of(originalModifier, newModifier, "Attack Damage"));
 						break;
 					}
 					existing = HashMultimap.create(existing);
@@ -483,7 +483,7 @@ public class LibraryOfSoulsCommand {
 			double attack = Math.round(originalAttack * multiplier);
 			attribute.setBase(attack);
 			mobNBT.setAttributes(attributes);
-			res.add(Modification.of(originalAttack, attack, "⚔ Attributes Damage"));
+			res.add(Modification.of(originalAttack, attack, "Attack Damage"));
 			return res;
 		}),
 		BLAZE_FIREBALL((nbt, multiplier, player) -> {
@@ -516,7 +516,7 @@ public class LibraryOfSoulsCommand {
 					mainhand.setItemMeta(meta);
 					items[1] = mainhand;
 					itemsVariable.setItems(items);
-					return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD25 Fireball Damage"));
+					return Collections.singletonList(Modification.of(originalModifier, newModifier, "Fireball Damage"));
 				}
 			}
 			return List.of();
@@ -544,7 +544,7 @@ public class LibraryOfSoulsCommand {
 				mainhand.setItemMeta(meta);
 				items[0] = mainhand;
 				itemsVariable.setItems(items);
-				return List.of(Modification.of(originalPower, power, "🏹 Bow Power"));
+				return List.of(Modification.of(originalPower, power, "Bow Power"));
 			} else if (mainhand.getType() == Material.CROSSBOW || mainhand.getType() == Material.TRIDENT) {
 				ItemMeta meta = mainhand.getItemMeta();
 				Multimap<org.bukkit.attribute.Attribute, AttributeModifier> existing = meta.getAttributeModifiers();
@@ -566,7 +566,7 @@ public class LibraryOfSoulsCommand {
 						mainhand.setItemMeta(meta);
 						items[1] = mainhand;
 						itemsVariable.setItems(items);
-						return Collections.singletonList(Modification.of(originalModifier, newModifier, "\uD83D\uDD31 Weapon Damage"));
+						return Collections.singletonList(Modification.of(originalModifier, newModifier, "Projectile Damage"));
 					}
 				}
 				return List.of();
@@ -587,14 +587,14 @@ public class LibraryOfSoulsCommand {
 
 			@Override
 			public @NotNull String toString() {
-				return "(%s: %s → %s)".formatted(name, originalValue, newValue);
+				return "(%s: %s -> %s)".formatted(name, originalValue, newValue);
 			}
 
 			public Component toComponent() {
 				return Component.empty()
 					.append(Component.text(name + ": ", NamedTextColor.GRAY))
 					.append(Component.text(String.valueOf(originalValue), NamedTextColor.WHITE))
-					.append(Component.text(" → ", NamedTextColor.GRAY))
+					.append(Component.text(" -> ", NamedTextColor.GRAY))
 					.append(Component.text(String.valueOf(newValue), NamedTextColor.GREEN));
 			}
 		}
@@ -616,7 +616,13 @@ public class LibraryOfSoulsCommand {
 				? GsonComponentSerializer.gson().deserialize(nameVar.get())
 				: Component.text(nbt.getId());
 			if (!baseMob) {
-				name = Component.empty().append(Component.text("︙- ", NamedTextColor.GRAY)).append(name);
+				name = Component.empty()
+					.append(Component.text("  - ", NamedTextColor.GRAY))
+					.append(name);
+			} else {
+				name = Component.empty()
+					.append(Component.text("- ", NamedTextColor.GRAY))
+					.append(name);
 			}
 
 			if (!modifications.isEmpty()) {
@@ -631,7 +637,8 @@ public class LibraryOfSoulsCommand {
 			} else {
 				output.add(Component.empty()
 					.append(name)
-					.append(Component.text(": Skipped!", NamedTextColor.RED, TextDecoration.ITALIC)));
+					.append(Component.text(": "))
+					.append(Component.text("Skipped!", NamedTextColor.RED, TextDecoration.ITALIC)));
 			}
 
 			// Add passengers recursively
