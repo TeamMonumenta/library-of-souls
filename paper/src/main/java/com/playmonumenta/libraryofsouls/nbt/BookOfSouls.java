@@ -101,7 +101,7 @@ public class BookOfSouls {
 	}
 
 	public BookOfSouls(final Entity entity) {
-		this(null, entity.createSnapshot());
+		this(null, EntityNBTUtils.createSnapshot(entity));
 	}
 
 	public BookOfSouls(final EntitySnapshot snapshot) {
@@ -113,7 +113,7 @@ public class BookOfSouls {
 	}
 
 	public BookOfSouls(ItemStack book, final Entity entity) {
-		this(book, entity.createSnapshot());
+		this(book, EntityNBTUtils.createSnapshot(entity));
 	}
 
 	public BookOfSouls(ItemStack book, final EntitySnapshot snapshot) {
@@ -159,8 +159,12 @@ public class BookOfSouls {
 		return _entityNbt;
 	}
 
+	public Entity getFakeEntity() {
+		return EntityNBTUtils.getFakeEntity(_entityNbt);
+	}
+
 	public void saveEntityNBT(Entity entity) {
-		final var snapshot = entity.createSnapshot();
+		final var snapshot = EntityNBTUtils.createSnapshot(entity);
 		final var newNBT = EntityNBTUtils.getNBTFromEntitySnapshot(snapshot);
 		_entityNbt = newNBT;
 	}

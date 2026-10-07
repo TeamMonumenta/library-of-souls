@@ -76,6 +76,7 @@ public class LibraryOfSouls extends JavaPlugin {
 
 	@Override
 	public void onLoad() {
+		MMLog.init(getName());
 		/*
 		 * CommandAPI commands which register directly and are usable in functions
 		 *

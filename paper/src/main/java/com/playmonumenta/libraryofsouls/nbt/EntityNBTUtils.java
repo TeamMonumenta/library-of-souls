@@ -45,6 +45,14 @@ public final class EntityNBTUtils {
 		return NmsUtils.getVersionAdapter().getNBTFromEntitySnapshot(snapshot);
 	}
 
+	public static EntitySnapshot createSnapshot(Entity entity) {
+		final var persistent = entity.isPersistent();
+		entity.setPersistent(true);
+		final var snapshot = entity.createSnapshot(); // ! - this method only returns not null if entity is persistent
+		entity.setPersistent(persistent);
+		return snapshot;
+	}
+
 	public final class EntityWrapper implements AutoCloseable {
 		public final EntitySnapshot mOldSnapshot;
 		public final Entity mEntity;
@@ -59,8 +67,8 @@ public final class EntityNBTUtils {
 
 		@Override
 		public void close() {
-			final var newSnapshot = mEntity.createSnapshot();
-			newNBT = NmsUtils.getVersionAdapter().getNBTFromEntitySnapshot(newSnapshot);
+			final var newSnapshot = EntityNBTUtils.createSnapshot(mEntity);
+			newNBT = getNBTFromEntitySnapshot(newSnapshot);
 		}
 	}
 }

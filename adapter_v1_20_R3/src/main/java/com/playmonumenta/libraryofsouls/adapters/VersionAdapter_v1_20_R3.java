@@ -4,7 +4,10 @@ import de.tr7zw.nbtapi.NBT;
 import de.tr7zw.nbtapi.NBTContainer;
 import de.tr7zw.nbtapi.iface.ReadWriteNBT;
 import java.util.logging.Logger;
+import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.nbt.CompoundTag;
+import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_20_R3.entity.CraftEntitySnapshot;
 import org.bukkit.entity.EntitySnapshot;
 
@@ -38,5 +41,9 @@ public class VersionAdapter_v1_20_R3 implements VersionAdapter {
 		}
 
 		return NBT.wrapNMSTag(cfSnapshot.getData());
+	}
+
+	public void meow(World world) {
+		final var a = ((CraftWorld) world);
 	}
 }
