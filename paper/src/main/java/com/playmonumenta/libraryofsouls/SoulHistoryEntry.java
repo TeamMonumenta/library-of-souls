@@ -95,10 +95,10 @@ public class SoulHistoryEntry implements Soul {
 		mModifiedOn = modifiedOn;
 		mModifiedBy = modifiedBy;
 		mLocs = locations;
-		String tags = mNBT.get
+		final var fakeEntity = EntityNBTUtils.getFakeEntity(mNBT);
+		final var tags = fakeEntity.getScoreboardTags();
 		mFakePlayer = tags != null && tags.contains("\"boss_player\"");
-		mId = mFakePlayer ? EntityType.PLAYER.getKey() : entityNBT.getEntityType().getKey();
-		mId = EntityNBTUtils.getEntityType(nbt).orElseThrow().getKey();
+		mId = mFakePlayer ? EntityType.PLAYER.getKey() : EntityNBTUtils.getEntityType(nbt).orElseThrow().getKey();
 		mLore = lore;
 		mDescription = description;
 		mWidth = width;
@@ -413,7 +413,7 @@ public class SoulHistoryEntry implements Soul {
 		if (mFakePlayer) {
 			material = Material.PLAYER_HEAD;
 		} else {
-			final var type = EntityNBTUtils.getEntityType(mNBT);
+			final var type = EntityNBTUtils.getEntityType(mNBT).orElseThrow();
 			material = switch (type) {
 				case ALLAY -> Material.AMETHYST_SHARD;
 				case ARMOR_STAND -> Material.ARMOR_STAND;
