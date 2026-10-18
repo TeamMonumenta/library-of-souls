@@ -246,34 +246,36 @@ public class SoulsDatabase {
 		save();
 	}
 
-	public void update(Player sender, BookOfSouls bos) {
+	public void update(Player sender, BookOfSouls... souls) {
 		SoulEntry soul;
 
-		try {
-			NBTTagCompound nbt = bos.getEntityNBT().getData();
-			Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
-			String label = Utils.getLabelFromName(name);
+		for (BookOfSouls bos : souls) {
+			try {
+				NBTTagCompound nbt = bos.getEntityNBT().getData();
+				Component name = GsonComponentSerializer.gson().deserialize(nbt.getString("CustomName"));
+				String label = Utils.getLabelFromName(name);
 
-			soul = mSouls.get(label);
-			if (soul == null) {
-				sender.sendMessage(text("Mob '" + label + "' does not exist!", RED));
+				soul = mSouls.get(label);
+				if (soul == null) {
+					sender.sendMessage(text("Mob '" + label + "' does not exist!", RED));
+					return;
+				}
+
+				if (!soul.getName().equals(name)) {
+					sender.sendMessage(text("BoS name mismatches with existing name! Fix name capitalization and formatting.", RED));
+					sender.sendMessage(text("LoS name: ", RED).append(soul.getName()));
+					sender.sendMessage(text("BoS name: ", RED).append(name));
+					return;
+				}
+
+				soul.update(sender, nbt);
+			} catch (Exception ex) {
+				sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
 				return;
 			}
-
-			if (!soul.getName().equals(name)) {
-				sender.sendMessage(text("BoS name mismatches with existing name! Fix name capitalization and formatting.", RED));
-				sender.sendMessage(text("LoS name: ", RED).append(soul.getName()));
-				sender.sendMessage(text("BoS name: ", RED).append(name));
-				return;
-			}
-
-			soul.update(sender, nbt);
-		} catch (Exception ex) {
-			sender.sendMessage(text("Error parsing BoS: " + ex.getMessage(), RED));
-			return;
+			sender.sendMessage(text("Updated " + soul.getLabel(), GREEN));
 		}
 
-		sender.sendMessage(text("Updated " + soul.getLabel(), GREEN));
 		updateIndex();
 		save();
 	}
