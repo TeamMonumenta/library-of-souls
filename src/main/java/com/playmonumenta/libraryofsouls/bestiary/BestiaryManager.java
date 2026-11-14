@@ -1,5 +1,6 @@
 package com.playmonumenta.libraryofsouls.bestiary;
 
+import com.playmonumenta.common.LocUtil;
 import com.playmonumenta.libraryofsouls.SoulEntry;
 import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.bestiary.storage.BestiaryRedisStorage;
@@ -186,7 +187,7 @@ public class BestiaryManager implements Listener {
 					// too many times
 					List<Player> otherPlayers = player.getWorld().getPlayers();
 					otherPlayers.remove(player);
-					otherPlayers.removeIf(p -> p.getLocation().distanceSquared(player.getLocation()) > 20 * 20);
+					otherPlayers.removeIf(p -> LocUtil.notWithinRangeAnyWorld(p.getLocation(), player.getLocation(), 20));
 					otherPlayers.removeIf(p -> getKillsForMob(p, soul) > 0);
 					for (Player p : otherPlayers) {
 						try {
