@@ -7,6 +7,7 @@ import com.playmonumenta.libraryofsouls.SoulsDatabase;
 import com.playmonumenta.libraryofsouls.utils.MMLog;
 import com.playmonumenta.redissync.MonumentaRedisSyncAPI;
 import com.playmonumenta.redissync.event.PlayerSaveEvent;
+import com.playmonumenta.redissync.event.PlayerSessionEndEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,7 +19,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -153,17 +153,12 @@ public class BestiaryRedisStorage implements BestiaryStorage, Listener {
 		MMLog.debug("Main thread work took " + (System.currentTimeMillis() - startMainTime) + " milliseconds");
 	}
 
-	/* When player leaves, remove it from the local storage a short bit later */
+	/* After the player's final save, remove it from the local storage */
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = false)
-	public void playerQuitEvent(final PlayerQuitEvent event) {
-		Bukkit.getScheduler().runTaskLater(mPlugin, () -> {
-			final Player player = event.getPlayer();
-			final UUID uuid = player.getUniqueId();
-			if (!player.isOnline() && Bukkit.getPlayer(uuid) == null) {
-				mPlayerOriginalData.remove(uuid);
-				mPlayerKills.remove(uuid);
-			}
-		}, 100);
+	public void playerSessionEndEvent(final PlayerSessionEndEvent event) {
+		final UUID uuid = event.getPlayer().getUniqueId();
+		mPlayerOriginalData.remove(uuid);
+		mPlayerKills.remove(uuid);
 	}
 
 	@Override
